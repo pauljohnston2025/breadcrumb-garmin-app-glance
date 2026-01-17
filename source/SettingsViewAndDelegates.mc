@@ -3003,6 +3003,7 @@ class SettingsDataFieldTypeDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
+(:settingsView)
 function getFontSizeString(font as Number) as ResourceId {
     switch (font) {
         case Graphics.FONT_XTINY:
