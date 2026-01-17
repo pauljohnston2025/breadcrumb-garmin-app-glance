@@ -641,7 +641,7 @@ class BreadcrumbView extends WatchUi.View {
             renderer.renderUi(dc);
         }
 
-        renderer.renderCurrentScale(dc);
+        renderer.renderDataFields(dc);
 
         var lastPoint = _breadcrumbContext.track.lastPoint();
         if (lastPoint != null) {

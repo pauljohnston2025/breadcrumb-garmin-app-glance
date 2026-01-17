@@ -11,7 +11,6 @@ const WRONG_DIRECTION_TOLERANCE_M = 2; // meters
 const SKIP_FORWARD_TOLERANCE_M = 0.1; // meters (needs to be kept small, see details at usage below)
 
 const TRACK_ID = -1;
-const MIN_DISTANCE_M = 5; // meters
 const RESTART_STABILITY_POINT_COUNT = 10; // number of points in a row that need to be within RESTART_STABILITY_DISTANCE_M to be considered a valid course
 //note: RESTART_STABILITY_POINT_COUNT should be set based on DELAY_COMPUTE_COUNT
 // if DELAY_COMPUTE_COUNT = 5 seconds, 10 points give us startup checking for 50 seconds, enough time to get a lock
@@ -86,7 +85,7 @@ class BreadcrumbTrack {
     var seenStartupPoints as Number = 0;
     var possibleBadPointsAdded as Number = 0;
     var inRestartMode as Boolean = true;
-    var minDistanceMScaled as Float = MIN_DISTANCE_M.toFloat(); // SCALED
+    var minDistanceMScaled as Float = 5f; // SCALED
     var maxDistanceMScaled as Float = STABILITY_MAX_DISTANCE_M.toFloat(); // SCALED
 
     var boundingBox as [Float, Float, Float, Float] = BOUNDING_BOX_DEFAULT(); // SCALED -- since the points are used to generate it on failure
@@ -331,7 +330,13 @@ class BreadcrumbTrack {
         coordinates.add(newPoint);
         updateBoundingBox(newPoint);
         // todo have a local ref to settings
-        if (coordinates.restrictPoints(getApp()._breadcrumbContext.settings.maxTrackPoints)) {
+        if (
+            coordinates.restrictPoints(
+                getApp()._breadcrumbContext.settings.maxTrackPoints,
+                getApp()._breadcrumbContext.settings.trackPointReductionMethod,
+                getApp()._breadcrumbContext.cachedValues.currentScale
+            )
+        ) {
             // a resize occurred, calculate important data again
             updatePointDataFromAllPoints();
             // opt to remove more points then less, to ensure we get the bad point, or 1 of the good points instead
@@ -952,7 +957,7 @@ class BreadcrumbTrack {
                             // As the user travels up the page on segment (1) they get closer to the 'x' point, which could jump forward to the next segment (2). If we check again instantly, it could jump forwards to the next segment (3), and then again jump to segment (4)
                             // But the user is still traveling up the page, so when they actually reach segment (2) we then think they are going backwards in the wrong direction because we incorrectly jumped forwards to segments (2,3,4).
                             // To prevent this we should choose larger values for check interval, and have a really small SKIP_FORWARD_TOLERANCE_M.
-                            // setting SKIP_FORWARD_TOLERANCE_M = 0 results in essentially the same old code 'distToNextSegmentAndPoint[0] <= distToCurrentSegmentAndPoint[0]' note: its '<=' and not just '<'. 
+                            // setting SKIP_FORWARD_TOLERANCE_M = 0 results in essentially the same old code 'distToNextSegmentAndPoint[0] <= distToCurrentSegmentAndPoint[0]' note: its '<=' and not just '<'.
                             // Checking just '<' can result in wrong direction alerts too because it will never switch to the second segment if they are colinear, and then look like we are going backwards.
                             var compareDistance =
                                 distToNextSegmentAndPoint[0] - distToCurrentSegmentAndPoint[0];
