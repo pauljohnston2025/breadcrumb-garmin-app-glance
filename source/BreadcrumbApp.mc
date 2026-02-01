@@ -61,7 +61,7 @@ class SettingsSent extends Communications.ConnectionListener {
 class BreadcrumbApp extends Application.AppBase {
     var _breadcrumbContext as BreadcrumbContext;
     var _view as BreadcrumbView;
-    var timer as Timer.Timer? = new Timer.Timer();
+    var timer as Timer.Timer? = null;
 
     var _commStatus as CommStatus = new CommStatus();
 
@@ -81,6 +81,12 @@ class BreadcrumbApp extends Application.AppBase {
         WatchUi.requestUpdate();
     }
 
+    function onPosition(info as Position.Info) as Void {
+        // position pulled from timerCallback with Activity.getActivityInfo()
+        // but we have to turn it on, otherwise the activity will not always do it for us
+    }
+
+
     function onSettingsChanged() as Void {
         try {
             _breadcrumbContext.settings.onSettingsChanged();
@@ -97,10 +103,13 @@ class BreadcrumbApp extends Application.AppBase {
             Communications.registerForPhoneAppMessages(method(:onPhone));
         }
 
-        var timerLocal = timer;
-        if (timerLocal != null) {
-            timerLocal.start(method(:timerCallback), 1000, true);
+        if (timer == null) {
+            // just make sure it get set
+            timer = new Timer.Timer();
+            timer.start(method(:timerCallback), 1000, true);
         }
+
+        Position.enableLocationEvents(Position.LOCATION_CONTINUOUS, method(:onPosition));
     }
 
     // onStop() is called when your application is exiting

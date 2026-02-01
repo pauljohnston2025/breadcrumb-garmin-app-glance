@@ -6,6 +6,7 @@ import Toybox.Communications;
 import Toybox.Graphics;
 import Toybox.Attention;
 import Toybox.System;
+import Toybox.Position;
 
 typedef Alert as interface {
     function text() as String;
@@ -197,6 +198,7 @@ class BreadcrumbView extends WatchUi.View {
     var FULL_RENDER_INTERVAL_S as Number = 5;
     var imageAlert as Alert? = null;
     var imageAlertShowAt as Number = 0;
+    var quality as Position.Quality = Position.QUALITY_NOT_AVAILABLE;
 
     // Set the label of the data field here.
     function initialize(breadcrumbContext as BreadcrumbContext) {
@@ -314,6 +316,11 @@ class BreadcrumbView extends WatchUi.View {
 
     // see onUpdate explanation for when each is called
     function actualCompute(info as Activity.Info) as Void {
+        var currentLocationAccuracy = info.currentLocationAccuracy;
+        if (currentLocationAccuracy != null) {
+            quality = currentLocationAccuracy;
+        }
+
         _computeCounter++;
 
         // logD("compute");
@@ -557,6 +564,25 @@ class BreadcrumbView extends WatchUi.View {
 
         try {
             actualOnUpdate(dc);
+            var qualityMsg = "";
+            if (quality == Position.QUALITY_NOT_AVAILABLE) {
+                qualityMsg = "GPS: Unavailable";
+            } else if (quality == Position.QUALITY_LAST_KNOWN) {
+                qualityMsg = "GPS: Last Known";
+            }/* else if (quality == Position.QUALITY_POOR) {
+                qualityMsg = "GPS: Poor";
+            }*/
+
+            if (!qualityMsg.equals("")) {
+                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(
+                    dc.getWidth() / 2,
+                    dc.getHeight() / 4,
+                    Graphics.FONT_MEDIUM,
+                    qualityMsg,
+                    Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+                );
+            }
         } catch (e) {
             logE("failed onUpdate: " + e.getErrorMessage());
             ++$.globalExceptionCounter;
