@@ -243,7 +243,8 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
         var key = keyEvent.getKey();
         logT("got key event: " + key);
         if (key == WatchUi.KEY_ENTER) {
-            if (!_breadcrumbContext.session.isRecording()) {
+            var sessionLocal = _breadcrumbContext.session;
+            if (sessionLocal == null || !sessionLocal.isRecording()) {
                 // If we are NOT recording, start the session.
                 _breadcrumbContext.startSession(); // resume the session
                 WatchUi.showToast("Activity Started", null);
@@ -270,7 +271,8 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
 
             return true;
         } else if (key == WatchUi.KEY_ESC) {
-            if (_breadcrumbContext.session.isRecording()) {
+            var sessionLocal = _breadcrumbContext.session;
+            if (sessionLocal != null && sessionLocal.isRecording()) {
                 pauseAndConfirmExit(_breadcrumbContext);
                 return true;
             }
@@ -326,7 +328,10 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
 }
 
 function pauseAndConfirmExit(breadcrumbContext as BreadcrumbContext) as Void {
-    breadcrumbContext.session.stop();
+    var sessionLocal = breadcrumbContext.session;
+    if (sessionLocal != null) {
+        sessionLocal.stop();
+    }
     var menuView = new Rez.Menus.Exit();
     var delegate = new ExitMenuDelegate(breadcrumbContext);
     WatchUi.pushView(menuView, delegate, WatchUi.SLIDE_IMMEDIATE);
@@ -340,27 +345,30 @@ class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
         _breadcrumbContext = context;
     }
 
+    public function onBack() as Void {
+        resume();
+    }
+
+    private function resume() as Void {
+        _breadcrumbContext.startSession();
+        WatchUi.showToast("Resumed", null);
+
+        // Pop the menu off the screen.
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+    }
+
     // This function is called when the user selects an item from the menu.
     public function onSelect(item as WatchUi.MenuItem) as Void {
         var itemId = item.getId();
 
-        if (itemId == :resume) {
-            // User wants to resume.
-            // 1. Pop the menu off the screen.
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-            // 2. Resume the session recording.
-            _breadcrumbContext.startSession();
-            WatchUi.showToast("Resumed", null);
-        } else if (itemId == :saveAndExit) {
+        //if (itemId == :resume) {
+        // fallthrough to resume
+        if (itemId == :saveAndExit) {
             // User wants to save and exit the app.
             // 1. Call your existing helper to save the session.
             _breadcrumbContext.stopAndSaveSession();
             WatchUi.showToast("Activity Saved", null);
-
-            // 2. Exit the app completely by popping the main view.
-            // Since the menu is on top, we pop it first, then the main app view.
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+            System.exit();
         } else if (itemId == :exitWithoutSaving) {
             // User wants to discard the activity.
             var message = "Discard Activity?";
@@ -369,7 +377,10 @@ class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
 
             // Push the confirmation view to the user.
             WatchUi.pushView(confirmationView, delegate, WatchUi.SLIDE_IMMEDIATE);
+            return;
         }
+
+        resume();
     }
 }
 
@@ -390,10 +401,7 @@ class DiscardConfirmationDelegate extends WatchUi.ConfirmationDelegate {
             _breadcrumbContext.discardSession();
             WatchUi.showToast("Activity Discarded", null);
 
-            // 2. Exit the app completely by popping both the menu
-            //    and the main view from the view stack.
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+            System.exit();
         }
         // If the user selects "No" (CONFIRM_NO), the system automatically
         // pops the confirmation dialog, returning them to the previous menu.

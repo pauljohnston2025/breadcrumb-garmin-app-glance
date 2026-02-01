@@ -274,7 +274,6 @@ class BreadcrumbView extends WatchUi.View {
             } catch (e) {
                 logE("failed to turn on backlight: " + e.getErrorMessage());
             }
-
             try {
                 if (Attention has :vibrate) {
                     System.println("" + Time.now().value() + " " + "showing vibrate");
@@ -381,8 +380,9 @@ class BreadcrumbView extends WatchUi.View {
             settings.setMapEnabled(false);
         }
 
-        if (!_breadcrumbContext.session.isRecording()) {
-            // we are paused, do not add any new track points, we still wan tto do the above stuff though, get all the tiles ready etc.
+        var sessionLocal = _breadcrumbContext.session;
+        if (sessionLocal == null || !sessionLocal.isRecording()) {
+            // we are paused, do not add any new track points, we still want to do the above stuff though, get all the tiles ready etc.
             return;
         }
 
@@ -571,7 +571,8 @@ class BreadcrumbView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
 
-        if (!_breadcrumbContext.session.isRecording()) {
+        var sessionLocal = _breadcrumbContext.session;
+        if (sessionLocal == null || !sessionLocal.isRecording()) {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
             dc.drawText(
                 dc.getWidth() / 2,

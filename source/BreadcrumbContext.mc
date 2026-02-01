@@ -6,7 +6,7 @@ import Toybox.Application;
 
 class BreadcrumbContext {
     var settings as Settings;
-    var session as ActivityRecording.Session; // we don't want to handle nulls, so make sure one always exists
+    var session as ActivityRecording.Session? = null;
     var cachedValues as CachedValues;
     var breadcrumbRenderer as BreadcrumbRenderer;
     var routes as Array<BreadcrumbTrack>;
@@ -18,12 +18,7 @@ class BreadcrumbContext {
     // Set the label of the data field here.
     function initialize() {
         settings = new Settings();
-        session = ActivityRecording.createSession({
-            :name => "BreadcrumApp",
-            :sport => ActivityRecording.SPORT_GENERIC,
-            :subSport => ActivityRecording.SUB_SPORT_GENERIC,
-            // todo if type is pool, provide :poolLength setting
-        });
+        session = null;
         cachedValues = new CachedValues(settings);
 
         routes = [];
@@ -44,36 +39,55 @@ class BreadcrumbContext {
         });
     }
     function sessionChanged() as Void {
-        if (session.isRecording()) {
-            // we can't do much. Maybe we stop and start it? but then we get 2 activities.
-            return;
+        var sessionLocal = session;
+        if (sessionLocal != null) {
+            if (sessionLocal.isRecording()) {
+                // we can't do much. Maybe we stop and start it? but then we get 2 activities.
+                return;
+            }
         }
+
         discardSession();
     }
 
     function startSession() as Void {
-        session.start();
+        if (session == null) {
+            createNewSession();
+        }
+
+        var sessionLocal = session;
+        if (sessionLocal != null) {
+            sessionLocal.start();
+        }
         getApp()._view.onTimerStart();
     }
+
     function stopAndSaveSession() as Void {
+        var sessionLocal = session;
+        if (sessionLocal != null) {
+            sessionLocal.stop();
+            sessionLocal.save();
+        }
+
         // make sure we replace it once its stopped/saved, otherwise we get an error
         // Details: a class method was invoked on a Session that is no longer valid
-        session.stop();
-        session.save();
-        createNewSession(); // create a new session for the next run
+        session = null;
     }
+
     function discardSession() as Void {
-        if (session.isRecording()) {
-            session.stop();
+        var sessionLocal = session;
+        if (sessionLocal != null) {
+            sessionLocal.stop();
+            sessionLocal.discard();
         }
-        session.discard();
-        // Get ready for the next recording
-        createNewSession();
+
+        // make sure we replace it once its stopped/saved, otherwise we get an error
+        // Details: a class method was invoked on a Session that is no longer valid
+        session = null;
     }
 
     function setup() as Void {
         settings.setup(); // we want to make sure everything is done later
-        sessionChanged();
         cachedValues.setup();
         tileCache.setup();
 

@@ -61,7 +61,7 @@ class SettingsSent extends Communications.ConnectionListener {
 class BreadcrumbApp extends Application.AppBase {
     var _breadcrumbContext as BreadcrumbContext;
     var _view as BreadcrumbView;
-    var timer as Timer.Timer = new Timer.Timer();
+    var timer as Timer.Timer? = new Timer.Timer();
 
     var _commStatus as CommStatus = new CommStatus();
 
@@ -97,12 +97,29 @@ class BreadcrumbApp extends Application.AppBase {
             Communications.registerForPhoneAppMessages(method(:onPhone));
         }
 
-        timer.start(method(:timerCallback), 1000, true);
+        var timerLocal = timer;
+        if (timerLocal != null) {
+            timerLocal.start(method(:timerCallback), 1000, true);
+        }
     }
 
     // onStop() is called when your application is exiting
     function onStop(state as Dictionary?) as Void {
-        timer.stop();
+        // https://forums.garmin.com/developer/connect-iq/f/discussion/872/battery-drain-when-connectiq-app-is-not-running/2006348
+        // https://forums.garmin.com/developer/connect-iq/i/bug-reports/bug-battery-drain-after-app-exit-caused-by-activityrecording-api
+        var timerLocal = timer;
+        if (timerLocal != null) {
+            timerLocal.stop();
+        }
+        timer = null;
+        timerLocal = null;
+        _breadcrumbContext.discardSession(); // it should have been discarded already, but be sure
+
+        // suggested by Brian https://forums.garmin.com/developer/connect-iq/f/discussion/872/battery-drain-when-connectiq-app-is-not-running/1661071
+        Position.enableLocationEvents(Position.LOCATION_DISABLE, null); //not in the api but good to do if using GPS
+        Sensor.unregisterSensorDataListener(); // if using a data listener, unregister
+        Sensor.setEnabledSensors([]); // this is in the CIQ api
+        Sensor.enableSensorEvents(null); // this is NOT in the CIQ api and is a Garmin bug.
     }
 
     // Return the initial view of your application here
