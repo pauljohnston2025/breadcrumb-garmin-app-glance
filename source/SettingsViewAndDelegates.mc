@@ -147,6 +147,7 @@ function safeSetIcon(menu as WatchUi.Menu2, id as Object, value as WatchUi.Drawa
     }
 }
 
+(:settingsView)
 function getActivityTypeString(combinedValue as Number) as String or ResourceId {
     switch (combinedValue) {
         case 0:
@@ -451,6 +452,35 @@ function getActivityTypeString(combinedValue as Number) as String or ResourceId 
     return Rez.Strings.ActGeneric;
 }
 
+(:noSettingsView)
+function getActivityTypeString(combinedValue as Number) as String or ResourceId {
+    switch (combinedValue) {
+        case 0:
+            return Rez.Strings.ActGeneric;
+        case 1000:
+            return Rez.Strings.ActRun;
+        case 2000:
+            return Rez.Strings.ActCycle;
+        case 5000:
+            return Rez.Strings.ActSwim;
+        case 11000:
+            return Rez.Strings.ActWalk;
+        case 15000:
+            return Rez.Strings.ActRowing;
+        case 17000:
+            return Rez.Strings.ActHiking;
+        case 37000:
+            return Rez.Strings.ActSup;
+        case 41000:
+            return Rez.Strings.ActKayak;
+        case 62000:
+            return Rez.Strings.ActHiit;
+    }
+
+    // Fallback for any unknown value
+    return Rez.Strings.ActGeneric;
+}
+
 // https://forums.garmin.com/developer/connect-iq/f/discussion/304179/programmatically-set-the-state-of-togglemenuitem
 (:settingsView)
 class SettingsMain extends Rez.Menus.SettingsMain {
@@ -477,6 +507,7 @@ class SettingsMain extends Rez.Menus.SettingsMain {
     }
 
     function rerender() as Void {
+        var settings = getApp()._breadcrumbContext.settings;
         safeSetSubLabel(
             me,
             :settingsMainActivityType,
@@ -1298,7 +1329,6 @@ class SettingsMainDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     public function onSelect(item as WatchUi.MenuItem) as Void {
-        var settings = getApp()._breadcrumbContext.settings;
         var itemId = item.getId();
         if (itemId == :settingsMainActivityType) {
             WatchUi.pushView(
@@ -2575,6 +2605,7 @@ class SettingsDebugDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
+(:settingsView)
 class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
     var parent as SettingsMain;
 
@@ -3034,6 +3065,67 @@ class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
                     break;
                 case :ActWakesurf:
                     combinedValue = 77000;
+                    break;
+            }
+        }
+
+        // Call the new method in your settings class
+        settings.setSportAndSubSport(combinedValue);
+
+        // Rerender the parent menu to show the new selection
+        parent.rerender();
+
+        // Go back to the parent menu
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+    }
+}
+
+(:noSettingsView)
+class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
+    var parent as SettingsMain;
+
+    function initialize(parentView as SettingsMain) {
+        Menu2InputDelegate.initialize();
+        parent = parentView;
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var settings = getApp()._breadcrumbContext.settings;
+        var itemId = item.getId();
+        var combinedValue = 0; // Default to Generic
+
+        if (itemId != null) {
+            // This switch statement maps the menu item ID back to the combined numeric value
+            switch (itemId) {
+                case :ActGeneric:
+                    combinedValue = 0;
+                    break;
+                case :ActRun:
+                    combinedValue = 1000;
+                    break;
+                case :ActCycle:
+                    combinedValue = 2000;
+                    break;
+                case :ActSwim:
+                    combinedValue = 5000;
+                    break;
+                case :ActWalk:
+                    combinedValue = 11000;
+                    break;
+                case :ActRowing:
+                    combinedValue = 15000;
+                    break;
+                case :ActHiking:
+                    combinedValue = 17000;
+                    break;
+                case :ActSup:
+                    combinedValue = 37000;
+                    break;
+                case :ActKayak:
+                    combinedValue = 41000;
+                    break;
+                case :ActHiit:
+                    combinedValue = 62000;
                     break;
             }
         }

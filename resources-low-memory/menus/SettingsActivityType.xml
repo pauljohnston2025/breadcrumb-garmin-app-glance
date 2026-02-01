@@ -1,0 +1,13 @@
+<menu2 id="SettingsActivityType" title="@Strings.activityTypeTitle">
+    <!-- Each ID should be unique. Using the string ID is a good convention. -->
+    <menu-item id="ActGeneric" label="@Strings.ActGeneric"/>
+    <menu-item id="ActRun" label="@Strings.ActRun"/>
+    <menu-item id="ActCycle" label="@Strings.ActCycle"/>
+    <menu-item id="ActSwim" label="@Strings.ActSwim"/>
+    <menu-item id="ActWalk" label="@Strings.ActWalk"/>
+    <menu-item id="ActRowing" label="@Strings.ActRowing"/>
+    <menu-item id="ActHiking" label="@Strings.ActHiking"/>
+    <menu-item id="ActSup" label="@Strings.ActSup"/>
+    <menu-item id="ActKayak" label="@Strings.ActKayak"/>
+    <menu-item id="ActHiit" label="@Strings.ActHiit"/>
+</menu2>

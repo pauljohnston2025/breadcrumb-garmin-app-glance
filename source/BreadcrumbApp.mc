@@ -115,7 +115,8 @@ class BreadcrumbApp extends Application.AppBase {
 
     (:noSettingsView)
     function myGetSettingsView() as [Views, InputDelegates] {
-        return [new $.Rez.Menus.SettingsMain(), new $.SettingsMainDelegate()];
+        var settings = new $.SettingsMain();
+        return [settings, new $.SettingsMainDelegate(settings)];
     }
 
     (:settingsView)

@@ -1,0 +1,20 @@
+<strings>
+    <!-- Generic -->
+    <string id="ActGeneric">Generic</string>
+    <!-- Running -->
+    <string id="ActRun">Running</string>
+    <!-- Cycling -->
+    <string id="ActCycle">Cycling</string>
+    <!-- Swimming -->
+    <string id="ActSwim">Swimming</string>
+    <!-- Walking -->
+    <string id="ActWalk">Walking</string>
+    <!-- Outdoor -->
+    <string id="ActRowing">Rowing</string>
+    <string id="ActHiking">Hiking</string>
+    <!-- Water -->
+    <string id="ActSup">Stand Up Paddleboarding</string>
+    <string id="ActKayak">Kayaking</string>
+    <!-- Newer Additions -->
+    <string id="ActHiit">HIIT</string>
+</strings>

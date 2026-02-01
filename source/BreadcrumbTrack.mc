@@ -1052,7 +1052,7 @@ class BreadcrumbTrack {
             return [false, false];
         }
 
-        var distance = lastPoint.distanceTo(newScaledPoint);
+        var distance = lastPoint.distanceTo(newScaledPoint as RectangularPoint);
         if (distance < minDistanceMScaled) {
             // point too close, so we can skip it
             return [false, false];
@@ -1063,7 +1063,7 @@ class BreadcrumbTrack {
             return [false, false];
         }
 
-        return [true, addPointRaw(newScaledPoint, distance)];
+        return [true, addPointRaw(newScaledPoint as RectangularPoint, distance)];
     }
 
     function setMinDistanceM(minTrackPointDistanceM as Float, currentScale as Float) as Void {
