@@ -451,9 +451,22 @@ class Settings {
     var storageSeedRouteDistanceM as Float = 10f; // if seeding based on route (storageSeedBoundingBox = false) seed this far around the route
     var storageTileCachePageCount as Number = 1;
 
+    (:blackAndWhite)
+    var trackColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var defaultRouteColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var elevationColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var userColour as Number = Graphics.COLOR_WHITE;
+
+    (:fullColours)
     var trackColour as Number = Graphics.COLOR_GREEN;
+    (:fullColours)
     var defaultRouteColour as Number = Graphics.COLOR_BLUE;
+    (:fullColours)
     var elevationColour as Number = Graphics.COLOR_ORANGE;
+    (:fullColours)
     var userColour as Number = Graphics.COLOR_ORANGE;
     // this should probably be the same as tileCacheSize? since there is no point having 20 outstanding if we can only store 10 of them
     var maxPendingWebRequests as Number = 5;
@@ -494,9 +507,19 @@ class Settings {
     var routesEnabled as Boolean = true;
     var disableMapsFailureCount as Number = 200; // 0 for unlimited
     var displayRouteNames as Boolean = true;
+    (:blackAndWhite)
+    var normalModeColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var uiColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var debugColour as Number = Graphics.COLOR_WHITE;
+    
+    (:fullColours)
     var normalModeColour as Number = Graphics.COLOR_BLUE;
+    (:fullColours)
     var uiColour as Number = Graphics.COLOR_DK_GRAY;
-    var debugColour as Number = 0xfeffffff; // white, but colour_white results in FFFFFFFF (-1) when we parse it and that is fully transparent
+    (:fullColours)
+    var debugColour as Number = Graphics.COLOR_WHITE;
     // I did get up to 4 large routes working with off track alerts, but any more than that and watchdog catches us out, 3 is a safer limit.
     // currently we still load disabled routes into memory, so its also not great having this large and a heap of disabled routes
     private var _routeMax as Number = 3;
@@ -1545,6 +1568,16 @@ class Settings {
         return routes[routeIndex]["style"] as Number;
     }
     
+    (:blackAndWhite)
+    function routeWidth(routeId as Number) as Number {
+        var routeIndex = getRouteIndexById(routeId);
+        if (routeIndex == null) {
+            return 2;
+        }
+        return routes[routeIndex]["width"] as Number;
+    }
+    
+    (:fullColours)
     function routeWidth(routeId as Number) as Number {
         var routeIndex = getRouteIndexById(routeId);
         if (routeIndex == null) {

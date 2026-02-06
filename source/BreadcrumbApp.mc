@@ -4,6 +4,7 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 import Toybox.Communications;
 import Toybox.Timer;
+import Toybox.Position;
 
 var globalExceptionCounter as Number = 0;
 var sourceMustBeNativeColorFormatCounter as Number = 0;
