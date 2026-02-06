@@ -24,6 +24,7 @@ class BreadcrumbRenderer {
     var _disableMapProgress as Number = 0;
     var settings as Settings;
     var _cachedValues as CachedValues;
+    private var _distanceAccumulator as Float = 0.0f;
 
     // units in mm (float/int)
     const SCALE_KEYS as Array<Number> = [
@@ -533,8 +534,8 @@ class BreadcrumbRenderer {
                 (rotateSin * userPosUnrotatedX + rotateCos * userPosUnrotatedY);
         }
 
-        var triangleSizeY = 10;
-        var triangleSizeX = 4;
+        var triangleSizeY = 16;
+        var triangleSizeX = 10;
         var triangleTopX = userPosRotatedX;
         var triangleTopY = userPosRotatedY - triangleSizeY;
 
@@ -588,17 +589,20 @@ class BreadcrumbRenderer {
         }
 
         dc.setColor(settings.userColour, Graphics.COLOR_BLACK);
-        dc.setPenWidth(6);
-        dc.drawLine(triangleTopX, triangleTopY, triangleRightX, triangleRightY);
-        dc.drawLine(triangleRightX, triangleRightY, triangleLeftX, triangleLeftY);
-        dc.drawLine(triangleLeftX, triangleLeftY, triangleTopX, triangleTopY);
+        dc.fillPolygon([
+            [triangleTopX, triangleTopY],
+            [triangleRightX, triangleRightY],
+            [triangleLeftX, triangleLeftY],
+        ]);
     }
 
     function renderTrackUnrotated(
         dc as Dc,
         breadcrumb as BreadcrumbTrack,
         colour as Graphics.ColorType,
-        drawEndMarker as Boolean
+        drawEndMarker as Boolean,
+        style as Number,
+        width as Number
     ) as Void {
         var centerPosition = _cachedValues.centerPosition; // local lookup faster
         var rotateAroundScreenXOffsetFactoredIn = _cachedValues.rotateAroundScreenXOffsetFactoredIn; // local lookup faster
@@ -611,7 +615,13 @@ class BreadcrumbRenderer {
         }
 
         dc.setColor(colour, Graphics.COLOR_BLACK);
-        dc.setPenWidth(4);
+        dc.setPenWidth(width);
+        if (style == TRACK_STYLE_BOXES) {
+            dc.setPenWidth(1); // to only change once, not every renderLine call
+        }
+
+        var halfWidth = width / 2;
+        _distanceAccumulator = 0.0f;
 
         var size = breadcrumb.coordinates.size();
         var coordinatesRaw = breadcrumb.coordinates._internalArrayBuffer;
@@ -633,7 +643,7 @@ class BreadcrumbRenderer {
                     rotateAroundScreenYOffsetFactoredIn -
                     (coordinatesRaw[i + 1] - centerPosition.y);
 
-                dc.drawLine(lastX, lastY, nextX, nextY);
+                renderLine(dc, style, width, halfWidth, lastX, lastY, nextX, nextY);
 
                 lastX = nextX;
                 lastY = nextY;
@@ -1015,7 +1025,9 @@ class BreadcrumbRenderer {
         dc as Dc,
         breadcrumb as BreadcrumbTrack,
         colour as Graphics.ColorType,
-        drawEndMarker as Boolean
+        drawEndMarker as Boolean,
+        style as Number,
+        width as Number
     ) as Void {
         var xHalfPhysical = _cachedValues.xHalfPhysical; // local lookup faster
         var yHalfPhysical = _cachedValues.yHalfPhysical; // local lookup faster
@@ -1037,7 +1049,9 @@ class BreadcrumbRenderer {
         dc as Dc,
         breadcrumb as BreadcrumbTrack,
         colour as Graphics.ColorType,
-        drawEndMarker as Boolean
+        drawEndMarker as Boolean,
+        style as Number,
+        width as Number
     ) as Void {
         var centerPosition = _cachedValues.centerPosition; // local lookup faster
         var rotateCos = _cachedValues.rotateCos; // local lookup faster
@@ -1052,7 +1066,13 @@ class BreadcrumbRenderer {
         }
 
         dc.setColor(colour, Graphics.COLOR_BLACK);
-        dc.setPenWidth(4);
+        dc.setPenWidth(width);
+        if (style == TRACK_STYLE_BOXES) {
+            dc.setPenWidth(1); // to only change once, not every renderLine call
+        }
+
+        var halfWidth = width / 2;
+        _distanceAccumulator = 0.0f;
 
         var size = breadcrumb.coordinates.size();
         var coordinatesRaw = breadcrumb.coordinates._internalArrayBuffer;
@@ -1087,7 +1107,16 @@ class BreadcrumbRenderer {
                     rotateAroundScreenYOffsetFactoredIn -
                     (rotateSin * nextXScaledAtCenter + rotateCos * nextYScaledAtCenter);
 
-                dc.drawLine(lastXRotated, lastYRotated, nextXRotated, nextYRotated);
+                renderLine(
+                    dc,
+                    style,
+                    width,
+                    halfWidth,
+                    lastXRotated,
+                    lastYRotated,
+                    nextXRotated,
+                    nextYRotated
+                );
 
                 lastXRotated = nextXRotated;
                 lastYRotated = nextYRotated;
@@ -1101,6 +1130,135 @@ class BreadcrumbRenderer {
                 lastYRotated,
                 drawEndMarker
             );
+        }
+    }
+
+    function renderLineSafe(
+        dc as Dc,
+        style as Number,
+        width as Number,
+        halfWidth as Number,
+        xStart as Float,
+        yStart as Float,
+        xEnd as Float,
+        yEnd as Float
+    ) as Boolean {
+        if (style == TRACK_STYLE_LINE) {
+            dc.drawLine(xStart, yStart, xEnd, yEnd);
+            return true;
+        } else if (style == TRACK_STYLE_POINTS) {
+            dc.fillCircle(xStart, yStart, width);
+            return true;
+        } else if (style == TRACK_STYLE_POINTS_OUTLINE) {
+            dc.drawCircle(xStart, yStart, width);
+            return true;
+        } else if (style == TRACK_STYLE_FILLED_SQUARE) {
+            dc.fillRectangle(xStart - halfWidth, yStart - halfWidth, width, width);
+            return true;
+        } else if (style == TRACK_STYLE_BOXES) {
+            dc.drawRectangle(xStart - halfWidth, yStart - halfWidth, width, width);
+            return true;
+        }
+
+        return false;
+    }
+
+    function renderLine(
+        dc as Dc,
+        style as Number,
+        width as Number,
+        halfWidth as Number,
+        xStart as Float,
+        yStart as Float,
+        xEnd as Float,
+        yEnd as Float
+    ) as Void {
+        if (renderLineSafe(dc, style, width, halfWidth, xStart, yStart, xEnd, yEnd)) {
+            return;
+        }
+
+        renderInterpolatedLines(dc, style, width, halfWidth, xStart, yStart, xEnd, yEnd);
+    }
+
+    function renderInterpolatedLines(
+        dc as Dc,
+        style as Number,
+        width as Number,
+        halfWidth as Number,
+        xStart as Float,
+        yStart as Float,
+        xEnd as Float,
+        yEnd as Float
+    ) as Void {
+        var dx = xEnd - xStart;
+        var dy = yEnd - yStart;
+        var distance = Math.sqrt(dx * dx + dy * dy).toFloat();
+
+        if (distance < 0.1f) {
+            return;
+        }
+
+        var unitX = dx / distance;
+        var unitY = dy / distance;
+        var stepSize = width * 4.0f;
+        var dashLength = width * 2.0f;
+
+        // --- 1. FALLBACK FOR SMALL SEGMENTS (Zoomed Out) ---
+        // If the segment is shorter than one dash/dot cycle, we don't loop.
+        if (distance < stepSize - _distanceAccumulator) {
+            // If we are in the "visible" part of the accumulator cycle, draw the segment.
+            if (_distanceAccumulator < dashLength || style != TRACK_STYLE_DASHED) {
+                renderLineSafe(
+                    dc,
+                    style == TRACK_STYLE_DASHED ? TRACK_STYLE_LINE : style - 1,
+                    width,
+                    halfWidth,
+                    xStart,
+                    yStart,
+                    xEnd,
+                    yEnd
+                );
+            }
+            _distanceAccumulator += distance;
+
+            // Reset accumulator if it exceeds a full cycle
+            if (_distanceAccumulator >= stepSize) {
+                _distanceAccumulator -= stepSize;
+            }
+            return;
+        }
+
+        // --- 2. VERTEX PROTECTION ---
+        // Only draw the actual vertex if the pattern rhythm calls for it.
+        if (style != TRACK_STYLE_DASHED && _distanceAccumulator <= 0.1f) {
+            renderLineSafe(dc, style - 1, width, halfWidth, xStart, yStart, xStart, yStart);
+        }
+
+        // --- 3. MAIN INTERPOLATION LOOP ---
+        var currentDist = stepSize - _distanceAccumulator;
+
+        while (currentDist <= distance) {
+            var posX = xStart + unitX * currentDist;
+            var posY = yStart + unitY * currentDist;
+
+            if (style == TRACK_STYLE_DASHED) {
+                var endStep = currentDist + dashLength;
+                var actualEndX = endStep > distance ? xEnd : xStart + unitX * endStep;
+                var actualEndY = endStep > distance ? yEnd : yStart + unitY * endStep;
+                dc.drawLine(posX, posY, actualEndX, actualEndY);
+            } else {
+                renderLineSafe(dc, style - 1, width, halfWidth, posX, posY, posX, posY);
+            }
+            currentDist += stepSize;
+        }
+
+        // --- 4. ACCUMULATOR SYNC ---
+        // The leftover distance becomes the starting accumulator for the next segment.
+        _distanceAccumulator = distance - (currentDist - stepSize);
+
+        // Clamp to prevent negative drift from floating point precision
+        if (_distanceAccumulator < 0) {
+            _distanceAccumulator = 0.0f;
         }
     }
 

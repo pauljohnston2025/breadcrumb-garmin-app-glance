@@ -821,7 +821,14 @@ class BreadcrumbView extends WatchUi.View {
                 continue;
             }
             var routeColour = settings.routeColour(route.storageIndex);
-            renderer.renderTrack(dc, route, routeColour, true);
+            renderer.renderTrack(
+                dc,
+                route,
+                routeColour,
+                true,
+                settings.routeStyle(route.storageIndex),
+                settings.routeWidth(route.storageIndex)
+            );
             if (settings.showPoints) {
                 renderer.renderTrackPoints(dc, route, Graphics.COLOR_ORANGE);
             }
@@ -832,7 +839,14 @@ class BreadcrumbView extends WatchUi.View {
                 renderer.renderTrackDirectionPoints(dc, route, Graphics.COLOR_PURPLE);
             }
         }
-        renderer.renderTrack(dc, track, settings.trackColour, false);
+        renderer.renderTrack(
+            dc,
+            track,
+            settings.trackColour,
+            false,
+            settings.trackStyle,
+            settings.trackWidth
+        );
         if (settings.showPoints) {
             renderer.renderTrackPoints(dc, track, Graphics.COLOR_ORANGE);
         }
@@ -856,7 +870,14 @@ class BreadcrumbView extends WatchUi.View {
                 continue;
             }
             var routeColour = settings.routeColour(route.storageIndex);
-            renderer.renderTrackUnrotated(dc, route, routeColour, true);
+            renderer.renderTrackUnrotated(
+                dc,
+                route,
+                routeColour,
+                true,
+                settings.routeStyle(route.storageIndex),
+                settings.routeWidth(route.storageIndex)
+            );
             if (settings.showPoints) {
                 renderer.renderTrackPointsUnrotated(dc, route, Graphics.COLOR_ORANGE);
             }
@@ -867,7 +888,14 @@ class BreadcrumbView extends WatchUi.View {
                 renderer.renderTrackDirectionPointsUnrotated(dc, route, Graphics.COLOR_PURPLE);
             }
         }
-        renderer.renderTrackUnrotated(dc, track, settings.trackColour, false);
+        renderer.renderTrackUnrotated(
+            dc,
+            track,
+            settings.trackColour,
+            false,
+            settings.trackStyle,
+            settings.trackWidth
+        );
         if (settings.showPoints) {
             renderer.renderTrackPointsUnrotated(dc, track, Graphics.COLOR_ORANGE);
         }
