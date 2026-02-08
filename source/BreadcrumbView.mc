@@ -827,6 +827,7 @@ class BreadcrumbView extends WatchUi.View {
                 routeColour,
                 true,
                 settings.routeStyle(route.storageIndex),
+                settings.routeTexture(route.storageIndex),
                 settings.routeWidth(route.storageIndex)
             );
             if (settings.showPoints) {
@@ -845,6 +846,7 @@ class BreadcrumbView extends WatchUi.View {
             settings.trackColour,
             false,
             settings.trackStyle,
+            settings.trackTexture,
             settings.trackWidth
         );
         if (settings.showPoints) {
@@ -876,6 +878,7 @@ class BreadcrumbView extends WatchUi.View {
                 routeColour,
                 true,
                 settings.routeStyle(route.storageIndex),
+                settings.routeTexture(route.storageIndex),
                 settings.routeWidth(route.storageIndex)
             );
             if (settings.showPoints) {
@@ -894,6 +897,7 @@ class BreadcrumbView extends WatchUi.View {
             settings.trackColour,
             false,
             settings.trackStyle,
+            settings.trackTexture,
             settings.trackWidth
         );
         if (settings.showPoints) {
@@ -1263,6 +1267,9 @@ class BreadcrumbView extends WatchUi.View {
                     renderer._xElevationStart,
                     route,
                     settings.routeColour(route.storageIndex),
+                    settings.routeStyle(route.storageIndex),
+                    settings.routeTexture(route.storageIndex),
+                    settings.routeWidth(route.storageIndex),
                     hScale,
                     vScale,
                     startAt
@@ -1274,6 +1281,9 @@ class BreadcrumbView extends WatchUi.View {
             renderer._xElevationStart,
             track,
             settings.trackColour,
+            settings.trackStyle,
+            settings.trackTexture,
+            settings.trackWidth,
             hScale,
             vScale,
             startAt
@@ -1326,6 +1336,9 @@ class BreadcrumbView extends WatchUi.View {
                     elevationStartX,
                     route,
                     settings.routeColour(route.storageIndex),
+                    settings.routeStyle(route.storageIndex),
+                    settings.routeTexture(route.storageIndex),
+                    settings.routeWidth(route.storageIndex),
                     hScale,
                     vScale,
                     startAt
@@ -1337,6 +1350,9 @@ class BreadcrumbView extends WatchUi.View {
             renderer._xElevationStart,
             track,
             settings.trackColour,
+            settings.trackStyle,
+            settings.trackTexture,
+            settings.trackWidth,
             hScale,
             vScale,
             startAt
