@@ -1695,21 +1695,175 @@ class BreadcrumbRenderer {
         );
     }
 
-    function renderUi(dc as Dc) as Void {
-        var currentScale = _cachedValues.currentScale; // local lookup faster
-        var centerPosition = _cachedValues.centerPosition; // local lookup faster
-        var physicalScreenWidth = _cachedValues.physicalScreenWidth; // local lookup faster
-        var physicalScreenHeight = _cachedValues.physicalScreenHeight; // local lookup faster
-        var xHalfPhysical = _cachedValues.xHalfPhysical; // local lookup faster
-        var yHalfPhysical = _cachedValues.yHalfPhysical; // local lookup faster
+    (:fiveButton)
+    function renderButtonUi(dc as Dc) as Void {
+        var width = dc.getWidth();
+        var height = dc.getHeight();
+        var center = [width / 2, height / 2];
+        var radius = width / 2;
+        var arcThickness = 3;
 
-        if (settings.drawHitBoxes) {
-            drawHitBoxes(dc, physicalScreenWidth, physicalScreenHeight);
+        dc.setPenWidth(arcThickness);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+
+        var TOP_LEFT_DEG = 150;
+        var MIDDLE_LEFT_DEG = 180;
+        var BOTTOM_LEFT_DEG = 210;
+        var TOP_RIGHT_DEG = 30;
+        var BOTTOM_RIGHT_DEG = 330;
+
+        // var topLeft = getButtonCoordinate(dc, center, radius, TOP_LEFT_DEG);
+        // var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
+        // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
+        // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+
+        var topRight = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        renderModeLetter(dc, topRight[0], topRight[1]);
+
+        var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+        dc.drawText(
+            bottomRight[0],
+            bottomRight[1],
+            Graphics.FONT_XTINY,
+            "X",
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
+
+        var halfArrowSize = ARROW_SIZE / 2.0f;
+        if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
+            var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
+            var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
+
+            // --- Draw LEFT Arrow (Centered on middleLeft) ---
+            var lx = middleLeft[0];
+            var ly = middleLeft[1];
+
+            // Calculate horizontal bounds based on ARROW_SIZE
+            var leftTipX = lx - ARROW_SIZE / 2;
+            var leftBaseX = leftTipX + halfArrowSize;
+            var leftTailX = leftTipX + ARROW_SIZE;
+
+            dc.drawLine(leftTipX, ly, leftBaseX, ly - halfArrowSize); // Upper chevron
+            dc.drawLine(leftTipX, ly, leftBaseX, ly + halfArrowSize); // Lower chevron
+            dc.drawLine(leftTipX, ly, leftTailX, ly); // Shaft
+
+            // --- Draw RIGHT Arrow (Centered on bottomLeft) ---
+            var rx = bottomLeft[0];
+            var ry = bottomLeft[1];
+
+            // Tip points right (+X), tail is to the left (-X)
+            var rightTipX = rx + ARROW_SIZE / 2;
+            var rightBaseX = rightTipX - halfArrowSize;
+            var rightTailX = rightTipX - ARROW_SIZE;
+
+            dc.drawLine(rightTipX, ry, rightBaseX, ry - halfArrowSize); // Upper chevron
+            dc.drawLine(rightTipX, ry, rightBaseX, ry + halfArrowSize); // Lower chevron
+            dc.drawLine(rightTipX, ry, rightTailX, ry); // Shaft
         }
 
-        dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(1);
+        if (settings.mode == MODE_MAP_MOVE_UP_DOWN) {
+            var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
+            var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
 
+            // --- Draw UP Arrow (Centered on middleLeft) ---
+            var mx = middleLeft[0];
+            var my = middleLeft[1];
+
+            // We offset the tip and tail by half the total ARROW_SIZE to keep it centered
+            var upTipY = my - ARROW_SIZE / 2;
+            var upBaseY = upTipY + halfArrowSize;
+            var upTailY = upTipY + ARROW_SIZE;
+
+            dc.drawLine(mx, upTipY, mx - halfArrowSize, upBaseY); // Left chevron
+            dc.drawLine(mx, upTipY, mx + halfArrowSize, upBaseY); // Right chevron
+            dc.drawLine(mx, upTipY, mx, upTailY); // Shaft
+
+            if (settings.getAttribution() == null || !settings.mapEnabled) {
+                // --- Draw DOWN Arrow (Centered on bottomLeft) ---
+                var bx = bottomLeft[0];
+                var by = bottomLeft[1];
+
+                var dnTipY = by + ARROW_SIZE / 2;
+                var dnBaseY = dnTipY - halfArrowSize;
+                var dnTailY = dnTipY - ARROW_SIZE;
+
+                dc.drawLine(bx, dnTipY, bx - halfArrowSize, dnBaseY); // Left chevron
+                dc.drawLine(bx, dnTipY, bx + halfArrowSize, dnBaseY); // Right chevron
+                dc.drawLine(bx, dnTipY, bx, dnTailY); // Shaft
+            }
+        }
+
+        if (settings.mode == MODE_MAP_MOVE_ZOOM) {
+            var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
+            var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
+
+            // Half-length for the plus/minus lines
+            var hll = 10;
+
+            // --- PLUS Icon (Centered on Middle Left Button) ---
+            var mx = middleLeft[0];
+            var my = middleLeft[1];
+
+            if (!_cachedValues.scaleCanInc) {
+                // Center the "No Smoking" sign on the button anchor
+                drawNoSmokingSign(dc, mx, my);
+            } else {
+                // Horizontal line of the Plus
+                dc.drawLine(mx - hll, my, mx + hll, my);
+                // Vertical line of the Plus
+                dc.drawLine(mx, my - hll, mx, my + hll);
+            }
+
+            // --- MINUS Icon (Centered on Bottom Left Button) ---
+            var bx = bottomLeft[0];
+            var by = bottomLeft[1];
+
+            if (!_cachedValues.scaleCanDec) {
+                // Center the "No Smoking" sign on the button anchor
+                drawNoSmokingSign(dc, bx, by);
+            } else {
+                // Horizontal line of the Minus
+                dc.drawLine(bx - hll, by, bx + hll, by);
+            }
+        }
+    }
+
+    // Helper to keep the main function clean
+    function getButtonCoordinate(
+        dc as Dc,
+        center as [Number, Number],
+        radius as Number,
+        angle as Number
+    ) as [Float, Float] {
+        var arcLength = 15; // degrees
+        // Draw the Arc
+        dc.drawArc(
+            center[0],
+            center[1],
+            radius - 2,
+            Graphics.ARC_COUNTER_CLOCKWISE,
+            angle - arcLength / 2,
+            angle + arcLength / 2
+        );
+
+        // Calculate Text Position (slightly offset from the arc)
+        var rad = Math.toRadians(angle);
+        var tx = center[0] + (radius - 10) * Math.cos(rad);
+        var ty = center[1] - (radius - 10) * Math.sin(rad);
+
+        return [tx.toFloat(), ty.toFloat()];
+    }
+    // (:twoButton)
+    // function renderButtonUi(dc as Dc) as Void {
+
+    // }
+
+    function renderUi(dc as Dc) as Void {
+        renderTouchUi(dc);
+        renderButtonUi(dc);
+    }
+
+    function renderModeLetter(dc as Dc, x as Number or Float, y as Number or Float) as Void {
         // current mode displayed
         var modeLetter = "T";
         switch (settings.mode) {
@@ -1737,12 +1891,30 @@ class BreadcrumbRenderer {
         }
 
         dc.drawText(
-            modeSelectX,
-            modeSelectY,
+            x,
+            y,
             Graphics.FONT_XTINY,
             modeLetter,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
+    }
+
+    function renderTouchUi(dc as Dc) as Void {
+        var currentScale = _cachedValues.currentScale; // local lookup faster
+        var centerPosition = _cachedValues.centerPosition; // local lookup faster
+        var physicalScreenWidth = _cachedValues.physicalScreenWidth; // local lookup faster
+        var physicalScreenHeight = _cachedValues.physicalScreenHeight; // local lookup faster
+        var xHalfPhysical = _cachedValues.xHalfPhysical; // local lookup faster
+        var yHalfPhysical = _cachedValues.yHalfPhysical; // local lookup faster
+
+        if (settings.drawHitBoxes) {
+            drawHitBoxes(dc, physicalScreenWidth, physicalScreenHeight);
+        }
+
+        dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+
+        renderModeLetter(dc, modeSelectX, modeSelectY);
 
         if (settings.mode == MODE_DEBUG) {
             // mode button is the only thing to show
@@ -1754,7 +1926,10 @@ class BreadcrumbRenderer {
         var lineFromEdge = 10;
 
         // clear routes
-        if (_cachedValues.isTouchScreen && (settings.mode == MODE_NORMAL || settings.mode == MODE_ELEVATION)) {
+        if (
+            _cachedValues.isTouchScreen &&
+            (settings.mode == MODE_NORMAL || settings.mode == MODE_ELEVATION)
+        ) {
             // clear routes
             dc.drawText(
                 clearRouteX,
