@@ -1,6 +1,7 @@
 <properties>
     <!-- https://developer.garmin.com/connect-iq/core-topics/properties-and-app-settings/ -->
 	<property id="mode" type="number">0</property>
+	<property id="modeDisplayOrder" type="string">0,1,2</property>
 	<property id="elevationMode" type="number">0</property>
 	<property id="uiMode" type="number">0</property>
 	<property id="renderMode" type="number">0</property>
@@ -28,7 +29,7 @@
 	<property id="packingFormat" type="number">1</property>
 
 	<property id="trackColour" type="string">00FF00</property>
-	<property id="routeColour" type="string">0000FF</property>
+	<property id="trackColour2" type="string">FFFFFFFF</property>
 	<property id="elevationColour" type="string">FF5500</property>
 	<property id="userColour" type="string">FF5500</property>
 	<property id="normalModeColour" type="string">0000FF</property>
@@ -53,12 +54,10 @@
 	<property id="storageMapTilesOnly" type="boolean">false</property>
 	<property id="httpErrorTileTTLS" type="number">60</property>
 	<property id="errorTileTTLS" type="number">20</property>
-	<property id="showPoints" type="boolean">false</property>
 	<property id="drawLineToClosestTrack" type="boolean">false</property>
 	<property id="showTileBorders" type="boolean">false</property>
 	<property id="showErrorTileMessages" type="boolean">false</property>
 	<property id="tileErrorColour" type="string">00000000</property>
-	<property id="includeDebugPageInOnScreenUi" type="boolean">false</property>
 	<property id="useDrawBitmap" type="boolean">false</property>
 	<property id="offTrackWrongDirection" type="boolean">false</property>
 	<property id="drawCheverons" type="boolean">false</property>

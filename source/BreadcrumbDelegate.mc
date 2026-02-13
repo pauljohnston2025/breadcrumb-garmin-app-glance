@@ -104,6 +104,27 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
 
     // see BreadcrumbDataFieldView if touch stops working
     function onTap(evt as WatchUi.ClickEvent) as Boolean {
+        if(onTapInner(evt))
+        {
+            try {
+                if (Attention has :vibrate) {
+                    // quick little buzz to let them know the screen tap has been acknowledged (haptic feedback)
+                    // might need to make this a setting to disable it?
+                    var vibeData = [
+                        new Attention.VibeProfile(50, 100),
+                    ];
+                    // this is not documented that it throws, but got bit by the backlight, so protecting it too in order to always show our alerts
+                    Attention.vibrate(vibeData);
+                }
+            } catch (e) {
+                logE("failed to vibrate: " + e.getErrorMessage());
+            }
+            return false;
+        }
+
+        return true;
+    }
+    function onTapInner(evt as WatchUi.ClickEvent) as Boolean {
         if (getApp()._view.imageAlert != null) {
             // any touch cancels the alert
             getApp()._view.imageAlert = null;
@@ -162,9 +183,12 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             return true;
         }
 
-        if (settings.mode == MODE_DEBUG) {
+        if (settings.mode == MODE_DEBUG || settings.mode == MODE_ELEVATION) {
             return false;
         }
+
+        var xHalfPhysical = cachedValues.xHalfPhysical; // local lookup faster
+        var yHalfPhysical = cachedValues.yHalfPhysical; // local lookup faster
 
         if (inHitbox(x, y, renderer.returnToUserX, renderer.returnToUserY, halfHitboxSize)) {
             // return to users location
@@ -175,38 +199,74 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             renderer.returnToUser();
             return true;
         }
-        //  else if (
-        //     y > renderer.mapEnabledY - halfHitboxSize &&
-        //     y < renderer.mapEnabledY + halfHitboxSize &&
-        //     x > renderer.mapEnabledX - halfHitboxSize &&
-        //     x < renderer.mapEnabledX + halfHitboxSize
-        // ) {
-        //     // botom right
-        //     // map enable/disable now handled above
-        //     // if (settings.mode == MODE_NORMAL) {
-        //     //     settings.toggleMapEnabled();
-        //     //     return true;
-        //     // }
 
-        //     return false;
-        // }
-        // todo update these to use inHitbox ?
-        else if (y < hitboxSize) {
-            if (settings.mode == MODE_MAP_MOVE) {
+        if (settings.mode == MODE_MAP_MOVE_ZOOM) {
+            if (y < yHalfPhysical) {
+                // anywhere top half of screen other than the mode button checked above
+                renderer.incScale();
+                return true;
+            }
+
+            renderer.decScale();
+            return true;
+        }
+        
+        if (settings.mode == MODE_MAP_MOVE_UP_DOWN) {
+            if (y < yHalfPhysical) {
+                // anywhere top half of screen other than the mode button checked above
                 cachedValues.moveFixedPositionUp();
                 return true;
             }
-            // top of screen
-            renderer.incScale();
+
+            cachedValues.moveFixedPositionDown();
             return true;
+        }
+        
+         if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
+            if (x < xHalfPhysical) {
+                // anywhere left half of screen other than the mode button checked above
+                cachedValues.moveFixedPositionLeft();
+                return true;
+            }
+
+            cachedValues.moveFixedPositionRight();
+            return true;
+        }
+
+        if (inHitbox(x, y, renderer.clearRouteX, renderer.clearRouteY, halfHitboxSize)) {
+            // top left
+            if (settings.mode == MODE_MAP_MOVE) {
+                renderer.incScale();
+                return true;
+            }
+        }
+
+        if (inHitbox(x, y, renderer.mapEnabledX, renderer.mapEnabledY, halfHitboxSize)) {
+            // bottom right
+            if (settings.mode == MODE_MAP_MOVE) {
+                renderer.decScale();
+                return true;
+            }
+        }
+
+        if (y < hitboxSize) {
+            // top of screen
+            if (settings.mode == MODE_MAP_MOVE) {
+                cachedValues.moveFixedPositionUp();
+                return true;
+            } else if (settings.mode == MODE_NORMAL) {
+                renderer.incScale();
+                return true;
+            }
         } else if (y > cachedValues.physicalScreenHeight - hitboxSize) {
             // bottom of screen
             if (settings.mode == MODE_MAP_MOVE) {
                 cachedValues.moveFixedPositionDown();
                 return true;
+            } else if (settings.mode == MODE_NORMAL) {
+                renderer.decScale();
+                return true;
             }
-            renderer.decScale();
-            return true;
         } else if (x > cachedValues.physicalScreenWidth - hitboxSize) {
             // right of screen
             if (settings.mode == MODE_MAP_MOVE) {
@@ -221,9 +281,10 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             if (settings.mode == MODE_MAP_MOVE) {
                 cachedValues.moveFixedPositionLeft();
                 return true;
+            } else if (settings.mode == MODE_NORMAL) {
+                settings.nextZoomAtPaceMode();
+                return true;
             }
-            settings.nextZoomAtPaceMode();
-            return true;
         }
 
         return false;

@@ -199,6 +199,7 @@ class BreadcrumbView extends WatchUi.View {
     var imageAlert as Alert? = null;
     var imageAlertShowAt as Number = 0;
     var quality as Position.Quality = Position.QUALITY_NOT_AVAILABLE;
+    var allowTaskComputes as Boolean = true;
 
     // Set the label of the data field here.
     function initialize(breadcrumbContext as BreadcrumbContext) {
@@ -278,7 +279,6 @@ class BreadcrumbView extends WatchUi.View {
             }
             try {
                 if (Attention has :vibrate) {
-                    System.println("" + Time.now().value() + " " + "showing vibrate");
                     var vibeData = [
                         new Attention.VibeProfile(100, 500),
                         new Attention.VibeProfile(0, 150),
@@ -333,8 +333,9 @@ class BreadcrumbView extends WatchUi.View {
         // }
 
         // make sure tile seed or anything else does not stop our computes completely
+        // block any tasks until we return from setting view (settings view adds more memory, so we ned to do the least memeory intensive tasks)
         var weReallyNeedACompute = _computeCounter > 3 * settings.recalculateIntervalS;
-        if (!weReallyNeedACompute) {
+        if (!weReallyNeedACompute && allowTaskComputes) {
             // store rotations and speed every time
             var rescaleOccurred = _cachedValues.onActivityInfo(info);
             if (rescaleOccurred) {
@@ -371,6 +372,13 @@ class BreadcrumbView extends WatchUi.View {
 
         // slow down the calls to onActivityInfo as its a heavy operation checking
         // the distance we don't really need data much faster than this anyway
+        var newPoint = BreadcrumbTrack.pointFromActivityInfo(info);
+        if (newPoint == null) {
+            return;
+        }
+
+        _cachedValues.handleHeadingPoint(newPoint.clone()); // prevent scale in place from below
+
         if (_computeCounter < settings.recalculateIntervalS) {
             return;
         }
@@ -393,42 +401,39 @@ class BreadcrumbView extends WatchUi.View {
             return;
         }
 
-        var newPoint = _breadcrumbContext.track.pointFromActivityInfo(info);
-        if (newPoint != null) {
-            if (_cachedValues.currentScale != 0f) {
-                newPoint.rescaleInPlace(_cachedValues.currentScale);
+        if (_cachedValues.currentScale != 0f) {
+            newPoint.rescaleInPlace(_cachedValues.currentScale);
+        }
+        var trackAddRes = _breadcrumbContext.track.onActivityInfo(newPoint);
+        var pointAdded = trackAddRes[0];
+        var complexOperationHappened = trackAddRes[1];
+        if (pointAdded && !complexOperationHappened) {
+            // todo: PERF only update this if the new point added changed the bounding box
+            // its pretty good atm though, only recalculates once every few seconds, and only
+            // if a point is added
+            _cachedValues.updateScaleCenterAndMap();
+            var epoch = Time.now().value();
+            if (epoch - settings.offTrackCheckIntervalS < lastOffTrackAlertChecked) {
+                return;
             }
-            var trackAddRes = _breadcrumbContext.track.onActivityInfo(newPoint);
-            var pointAdded = trackAddRes[0];
-            var complexOperationHappened = trackAddRes[1];
-            if (pointAdded && !complexOperationHappened) {
-                // todo: PERF only update this if the new point added changed the bounding box
-                // its pretty good atm though, only recalculates once every few seconds, and only
-                // if a point is added
-                _cachedValues.updateScaleCenterAndMap();
-                var epoch = Time.now().value();
-                if (epoch - settings.offTrackCheckIntervalS < lastOffTrackAlertChecked) {
-                    return;
+
+            // Do not check again for this long, prevents the expensive off track calculation running constantly whilst we are on track.
+            lastOffTrackAlertChecked = epoch;
+
+            var lastPoint = _breadcrumbContext.track.lastPoint();
+            if (lastPoint != null) {
+                if (
+                    settings.enableOffTrackAlerts ||
+                    settings.drawLineToClosestPoint ||
+                    settings.drawLineToClosestTrack ||
+                    settings.offTrackWrongDirection ||
+                    settings.drawCheverons
+                ) {
+                    handleOffTrackAlerts(epoch, lastPoint);
                 }
 
-                // Do not check again for this long, prevents the expensive off track calculation running constantly whilst we are on track.
-                lastOffTrackAlertChecked = epoch;
-
-                var lastPoint = _breadcrumbContext.track.lastPoint();
-                if (lastPoint != null) {
-                    if (
-                        settings.enableOffTrackAlerts ||
-                        settings.drawLineToClosestPoint ||
-                        settings.drawLineToClosestTrack ||
-                        settings.offTrackWrongDirection ||
-                        settings.drawCheverons
-                    ) {
-                        handleOffTrackAlerts(epoch, lastPoint);
-                    }
-
-                    if (settings.turnAlertTimeS >= 0 || settings.minTurnAlertDistanceM >= 0) {
-                        handleDirections(lastPoint);
-                    }
+                if (settings.turnAlertTimeS >= 0 || settings.minTurnAlertDistanceM >= 0) {
+                    handleDirections(lastPoint);
                 }
             }
         }
@@ -559,6 +564,10 @@ class BreadcrumbView extends WatchUi.View {
     // in some other cases onUpdate is called interleaved with onCompute once a second each (think this might be when its the active screen but not currently renderring)
     // so we need to do all or heavy scaling code in compute, and make onUpdate just handle drawing, and possibly rotation (pre storing rotation could be slow/hard)
     function onUpdate(dc as Dc) as Void {
+        // we are no longer viewing the settings if we are being asked to render the main view
+        // we ned this here because settings can be closed a few ways (onBack, or after a timeout)
+        // onUpdate is not called unless we are rendering the view (so this will not work if they are on a different datascreen), but we do not really need to run tasks if we are not rendering the view
+        allowTaskComputes = true;
         // dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_RED);
         // dc.clear();
 
@@ -821,20 +830,20 @@ class BreadcrumbView extends WatchUi.View {
                 continue;
             }
             var routeColour = settings.routeColour(route.storageIndex);
+            var routeStyle = settings.routeStyle(route.storageIndex);
+            var routeTexture = settings.routeTexture(route.storageIndex);
+            var routeWidth = settings.routeWidth(route.storageIndex);
             renderer.renderTrack(
                 dc,
                 route,
                 routeColour,
                 true,
-                settings.routeStyle(route.storageIndex),
-                settings.routeTexture(route.storageIndex),
-                settings.routeWidth(route.storageIndex)
+                routeStyle,
+                routeTexture,
+                routeWidth
             );
-            if (settings.showPoints) {
-                renderer.renderTrackPoints(dc, route, Graphics.COLOR_ORANGE);
-            }
             if (settings.drawCheverons) {
-                renderer.renderTrackCheverons(dc, route, routeColour);
+                renderer.renderTrackCheverons(dc, route, routeColour, routeStyle, routeTexture, routeWidth);
             }
             if (settings.showDirectionPoints || settings.showDirectionPointTextUnderIndex > 0) {
                 renderer.renderTrackDirectionPoints(dc, route, Graphics.COLOR_PURPLE);
@@ -849,9 +858,6 @@ class BreadcrumbView extends WatchUi.View {
             settings.trackTexture,
             settings.trackWidth
         );
-        if (settings.showPoints) {
-            renderer.renderTrackPoints(dc, track, Graphics.COLOR_ORANGE);
-        }
         renderOffTrackPoint(dc);
     }
 
@@ -872,20 +878,20 @@ class BreadcrumbView extends WatchUi.View {
                 continue;
             }
             var routeColour = settings.routeColour(route.storageIndex);
+            var routeStyle = settings.routeStyle(route.storageIndex);
+            var routeTexture = settings.routeTexture(route.storageIndex);
+            var routeWidth = settings.routeWidth(route.storageIndex);
             renderer.renderTrackUnrotated(
                 dc,
                 route,
                 routeColour,
                 true,
-                settings.routeStyle(route.storageIndex),
-                settings.routeTexture(route.storageIndex),
-                settings.routeWidth(route.storageIndex)
+                routeStyle,
+                routeTexture,
+                routeWidth
             );
-            if (settings.showPoints) {
-                renderer.renderTrackPointsUnrotated(dc, route, Graphics.COLOR_ORANGE);
-            }
             if (settings.drawCheverons) {
-                renderer.renderTrackCheveronsUnrotated(dc, route, routeColour);
+                renderer.renderTrackCheveronsUnrotated(dc, route, routeColour, routeStyle, routeTexture, routeWidth);
             }
             if (settings.showDirectionPoints || settings.showDirectionPointTextUnderIndex > 0) {
                 renderer.renderTrackDirectionPointsUnrotated(dc, route, Graphics.COLOR_PURPLE);
@@ -900,9 +906,6 @@ class BreadcrumbView extends WatchUi.View {
             settings.trackTexture,
             settings.trackWidth
         );
-        if (settings.showPoints) {
-            renderer.renderTrackPointsUnrotated(dc, track, Graphics.COLOR_ORANGE);
-        }
 
         renderOffTrackPointUnrotated(dc);
     }

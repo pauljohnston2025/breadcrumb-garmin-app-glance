@@ -20,18 +20,21 @@
     <string id="tileLayerMinPrompt">2</string>
     <string id="tileCacheSizeTitle">Tile Cache Size (tiles)</string>
     <string id="modeTitle">Display Mode</string>
+    <string id="modeDisplayOrderTitle">Mode Display Order</string>
     <string id="elevationModeTitle">Elevation Mode</string>
     <string id="elevationModeStacked">Stacked</string>
     <string id="elevationModeOrderedRoutes">Ordered Routes</string>
     <string id="tileUrlTitle">Tile Url</string>
     <string id="authTokenTitle">Auth Token</string>
     <string id="tileUrlPrompt">https://fancytileserver/{z}/{x}/{y}.png</string>
-    <string id="elevationMode">Elevation</string>
-    <string id="trackRouteMode">Track/Route</string>
+    <string id="elevationMode">(1) Elevation</string>
+    <string id="trackRouteMode">(0) Track/Route</string>
     <string id="mapEnabledTitle">Map Enabled</string>
     <string id="trackColourTitle">Track Colour</string>
+    <string id="trackColour2Title">Track Colour 2</string>
     <string id="defaultRouteColourTitle">Default Route Colour</string>
     <string id="routeColourTitle">Route Colour</string>
+    <string id="routeColour2Title">Route Colour 2</string>
     <string id="routeDelete">Delete</string>
     <string id="debugColour">Debug Colour</string>
     <string id="uiColour">UI Colour</string>
@@ -126,8 +129,11 @@
     <string id="routeEnabled">Enabled</string>
     <string id="routeReversed">Reversed</string>
     <string id="routesEnabled">Enable Routes</string>
-    <string id="mapMove">Map Move</string>
-    <string id="debug">Debug</string>
+    <string id="mapMove">(2) Map Move</string>
+    <string id="debug">(3) Debug</string>
+    <string id="mapMoveZoom">(4) Zoom</string>
+    <string id="mapMoveUD">(5) Up/Down</string>
+    <string id="mapMoveLR">(6) Left/Right</string>
     <string id="clearRoutes">Clear All Routes</string>
 
     <string id="mapChoice">Map Choice</string>
@@ -139,12 +145,10 @@
 
     <string id="httpErrorTileTTLSTitle">Http Error Tile TTL (s)</string>
     <string id="errorTileTTLSTitle">Error Tile TTL (s)</string>
-    <string id="showPointsTitle">Show Points</string>
     <string id="drawLineToClosestTrackTitle">Draw Line To Closest Track</string>
     <string id="showTileBordersTitle">Show Tile Borders</string>
     <string id="showErrorTileMessagesTitle">Show Error Tile Messages</string>
     <string id="tileErrorColourTitle">Tile Error Colour</string>
-    <string id="includeDebugPageInOnScreenUiTitle">Include Debug Page In On Screen Ui</string>
 
     <string id="turnAlertTimeSTitle">Turn Alert Time (s)</string>
     <string id="minTurnAlertDistanceMTitle">Min Turn Alert Distance (m)</string>

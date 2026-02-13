@@ -17,12 +17,19 @@
         </settingConfig>
     </setting>
 
+    <setting propertyKey="@Properties.modeDisplayOrder" title="@Strings.modeDisplayOrderTitle">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+
     <setting propertyKey="@Properties.mode" title="@Strings.modeTitle">
         <settingConfig type="list">
             <listEntry value="0">@Strings.trackRouteMode</listEntry>
             <listEntry value="1">@Strings.elevationMode</listEntry>
             <listEntry value="2">@Strings.mapMove</listEntry>
             <listEntry value="3">@Strings.debug</listEntry>
+            <listEntry value="4">@Strings.mapMoveZoom</listEntry>
+            <listEntry value="5">@Strings.mapMoveUD</listEntry>
+            <listEntry value="6">@Strings.mapMoveLR</listEntry>
         </settingConfig>
     </setting>
 
@@ -317,6 +324,10 @@
         <setting propertyKey="@Properties.trackColour" title="@Strings.trackColourTitle" prompt="@Strings.colourPrompt">
             <settingConfig type="alphaNumeric"/>
         </setting>
+
+        <setting propertyKey="@Properties.trackColour2" title="@Strings.trackColour2Title" prompt="@Strings.colourPrompt">
+            <settingConfig type="alphaNumeric"/>
+        </setting>
         
         <setting propertyKey="@Properties.defaultRouteColour" title="@Strings.defaultRouteColourTitle" prompt="@Strings.colourPrompt">
             <settingConfig type="alphaNumeric"/>
@@ -354,10 +365,6 @@
     <!-- </group> -->
     
     <!-- <group id="debugSettings" title="@Strings.debugSettingsTitle"> -->
-        <setting propertyKey="@Properties.showPoints" title="@Strings.showPointsTitle">
-            <settingConfig type="boolean"/>
-        </setting>
-
         <setting propertyKey="@Properties.drawLineToClosestTrack" title="@Strings.drawLineToClosestTrackTitle">
             <settingConfig type="boolean"/>
         </setting>
@@ -372,10 +379,6 @@
 
         <setting propertyKey="@Properties.tileErrorColour" title="@Strings.tileErrorColourTitle" prompt="@Strings.colourPrompt">
             <settingConfig type="alphaNumeric"/>
-        </setting>
-
-        <setting propertyKey="@Properties.includeDebugPageInOnScreenUi" title="@Strings.includeDebugPageInOnScreenUiTitle">
-            <settingConfig type="boolean"/>
         </setting>
 
         <setting propertyKey="@Properties.drawHitBoxes" title="@Strings.drawHitBoxesTitle">

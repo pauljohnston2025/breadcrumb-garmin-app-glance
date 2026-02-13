@@ -134,20 +134,18 @@ class BreadcrumbApp extends Application.AppBase {
 
     // Return the initial view of your application here
     function getInitialView() as [Views] or [Views, InputDelegates] {
+        // the initial view is called again when the settings close (sometimes)
+        // we also catch this in the 'onUpdate' function in the main view
+        _view.allowTaskComputes = true;
         // to open settings to test the simulator has it in an obvious place
         // Settings -> Trigger App Settings (right down the bottom - almost off the screen)
         // then to go back you need to Settings -> Time Out App Settings
         return [_view, new BreadcrumbDelegate(_breadcrumbContext)];
     }
 
-    (:noSettingsView)
     function myGetSettingsView() as [Views, InputDelegates] {
-        var settings = new $.SettingsMain();
-        return [settings, new $.SettingsMainDelegate(settings)];
-    }
-
-    (:settingsView)
-    function myGetSettingsView() as [Views, InputDelegates] {
+        _view.allowTaskComputes = false;
+        _breadcrumbContext.tileCache.clearValuesWithoutStorage(); // try and use the least amount of memory whilst settings is open
         var settings = new $.SettingsMain();
         return [settings, new $.SettingsMainDelegate(settings)];
     }
