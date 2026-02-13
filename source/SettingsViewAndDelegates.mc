@@ -459,20 +459,46 @@ function getActivityTypeString(combinedValue as Number) as String or ResourceId 
 (:settingsView)
 class SettingsMain extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.settingsTitle});
-        addItem(new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.generalSettingsTitle, null, :settingsMainGeneral, {}));
+        Menu2.initialize({ :title => Rez.Strings.settingsTitle });
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.generalSettingsTitle, null, :settingsMainGeneral, {})
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.trackSettingsTitle, null, :settingsMainTrack, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.dataFieldSettingsTitle, null, :settingsMainDataField, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.zoomAtPaceTitle, null, :settingsMainZoomAtPace, {}));
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.dataFieldSettingsTitle,
+                null,
+                :settingsMainDataField,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.zoomAtPaceTitle, null, :settingsMainZoomAtPace, {})
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.routesTitle, null, :settingsMainRoutes, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.mapsettingsTitle, null, :settingsMainMap, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.offTrackAlertsGroupTitle, null, :settingsMainAlerts, {}));
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.offTrackAlertsGroupTitle,
+                null,
+                :settingsMainAlerts,
+                {}
+            )
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.coloursTitle, null, :settingsMainColours, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.debugSettingsTitle, null, :settingsMainDebug, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.clearStorage, null, :settingsMainClearStorage, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.returnToUserTitle, null, :settingsMainReturnToUser, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.resetDefaults, null, :settingsMainResetDefaults, {}));
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.clearStorage, null, :settingsMainClearStorage, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.returnToUserTitle, null, :settingsMainReturnToUser, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.resetDefaults, null, :settingsMainResetDefaults, {})
+        );
         rerender();
     }
 
@@ -489,8 +515,10 @@ class SettingsMain extends WatchUi.Menu2 {
 (:noSettingsView)
 class SettingsMain extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.settingsTitle});
-        addItem(new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {}));
+        Menu2.initialize({ :title => Rez.Strings.settingsTitle });
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {})
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.attribution, null, :settingsMapAttribution, {}));
         rerender();
     }
@@ -560,10 +588,21 @@ function getZoomAtPaceModeString(mode as Number) as ResourceId or String {
 (:settingsView)
 class SettingsZoomAtPace extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.zoomAtPaceTitle});
-        addItem(new WatchUi.MenuItem(Rez.Strings.zoomAtPaceModeTitle, null, :settingsZoomAtPaceMode, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.metersAroundUser, null, :settingsZoomAtPaceUserMeters, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.zoomAtPaceSpeedMPS, null, :settingsZoomAtPaceMPS, {}));
+        Menu2.initialize({ :title => Rez.Strings.zoomAtPaceTitle });
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.zoomAtPaceModeTitle, null, :settingsZoomAtPaceMode, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.metersAroundUser,
+                null,
+                :settingsZoomAtPaceUserMeters,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.zoomAtPaceSpeedMPS, null, :settingsZoomAtPaceMPS, {})
+        );
         rerender();
     }
 
@@ -654,16 +693,63 @@ function getRenderModeString(mode as Number) as ResourceId or String {
 (:settingsView)
 class SettingsGeneral extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.generalSettingsTitle});
-        addItem(new WatchUi.MenuItem(Rez.Strings.modeDisplayOrderTitle, null, :settingsGeneralModeDisplayOrder, {}));
+        Menu2.initialize({ :title => Rez.Strings.generalSettingsTitle });
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.modeDisplayOrderTitle,
+                null,
+                :settingsGeneralModeDisplayOrder,
+                {}
+            )
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.modeTitle, null, :settingsGeneralMode, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.uiModeTitle, null, :settingsGeneralModeUiMode, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.elevationModeTitle, null, :settingsGeneralModeElevationMode, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.recalculateIntervalSTitle, null, :settingsGeneralRecalculateIntervalS, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.renderModeTitle, null, :settingsGeneralRenderMode, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.centerUserOffsetYTitle, null, :settingsGeneralCenterUserOffsetY, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.displayLatLongTitle, null, :settingsGeneralDisplayLatLong, false, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.mapMoveScreenSizeTitle, null, :settingsGeneralMapMoveScreenSize, {}));
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.uiModeTitle, null, :settingsGeneralModeUiMode, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.elevationModeTitle,
+                null,
+                :settingsGeneralModeElevationMode,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.recalculateIntervalSTitle,
+                null,
+                :settingsGeneralRecalculateIntervalS,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.renderModeTitle, null, :settingsGeneralRenderMode, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.centerUserOffsetYTitle,
+                null,
+                :settingsGeneralCenterUserOffsetY,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.displayLatLongTitle,
+                null,
+                :settingsGeneralDisplayLatLong,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.mapMoveScreenSizeTitle,
+                null,
+                :settingsGeneralMapMoveScreenSize,
+                {}
+            )
+        );
         rerender();
     }
 
@@ -717,13 +803,45 @@ function getTrackPointReductionMethodString(mode as Number) as ResourceId or Str
 (:settingsView)
 class SettingsTrack extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.trackSettingsTitle});
-        addItem(new WatchUi.MenuItem(Rez.Strings.maxTrackPointsTitle, null, :settingsTrackMaxTrackPoints, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.trackStyleTitle, null, :settingsTrackTrackStyle, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.trackWidthTitle, null, :settingsTrackTrackWidth, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.minTrackPointDistanceMTitle, null, :settingsTrackMinTrackPointDistanceM, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.trackPointReductionMethodTitle, null, :settingTrackTrackPointReductionMethod, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.useTrackAsHeadingSpeedMPSTitle, null, :settingsTrackUseTrackAsHeadingSpeedMPS, {}));
+        Menu2.initialize({ :title => Rez.Strings.trackSettingsTitle });
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.maxTrackPointsTitle,
+                null,
+                :settingsTrackMaxTrackPoints,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.trackStyleTitle, null, :settingsTrackTrackStyle, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.trackWidthTitle, null, :settingsTrackTrackWidth, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.minTrackPointDistanceMTitle,
+                null,
+                :settingsTrackMinTrackPointDistanceM,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.trackPointReductionMethodTitle,
+                null,
+                :settingTrackTrackPointReductionMethod,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.useTrackAsHeadingSpeedMPSTitle,
+                null,
+                :settingsTrackUseTrackAsHeadingSpeedMPS,
+                {}
+            )
+        );
         rerender();
     }
 
@@ -753,10 +871,31 @@ class SettingsTrack extends WatchUi.Menu2 {
 (:settingsView)
 class SettingsDataField extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.dataFieldSettingsTitle});
-        addItem(new WatchUi.MenuItem(Rez.Strings.topDataTypeTitle, null, :settingsDataFieldTopDataType, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.bottomDataTypeTitle, null, :settingsDataFieldBottomDataType, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.dataFieldTextSizeTitle, null, :settingsDataFieldTextSize, {}));
+        Menu2.initialize({ :title => Rez.Strings.dataFieldSettingsTitle });
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.topDataTypeTitle,
+                null,
+                :settingsDataFieldTopDataType,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.bottomDataTypeTitle,
+                null,
+                :settingsDataFieldBottomDataType,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.dataFieldTextSizeTitle,
+                null,
+                :settingsDataFieldTextSize,
+                {}
+            )
+        );
         rerender();
     }
 
@@ -795,21 +934,112 @@ function getPackingFormatString(mode as Number) as ResourceId or String {
 (:settingsView)
 class SettingsMap extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.mapsettingsTitle});
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.mapEnabledTitle, null, :settingsMapEnabled, false, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.tileServerSettingsTitle, null, :settingsMapTileServerSettings, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.mapStorageSettingsTitle, null, :settingsMapStorageSettings, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.tileCacheSizeTitle, null, :settingsMapTileCacheSize, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.tileCachePaddingTitle, null, :settingsMapTileCachePadding, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.maxPendingWebRequests, null, :settingsMapMaxPendingWebRequests, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.disableMapsFailureCountTitleShort, null, :settingsMapDisableMapsFailureCount, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.httpErrorTileTTLSTitle, null, :settingsMapHttpErrorTileTTLS, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.errorTileTTLSTitle, null, :settingsMapErrorTileTTLS, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.fixedLatitude, null, :settingsMapFixedLatitude, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.fixedLongitude, null, :settingsMapFixedLongitude, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.scaleRestrictedToTileLayersTitle, null, :settingsMapScaleRestrictedToTileLayers, false, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.packingFormatTitle, null, :settingsMapPackingFormat, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.useDrawBitmapTitle, null, :settingsMapUseDrawBitmap, false, {}));
+        Menu2.initialize({ :title => Rez.Strings.mapsettingsTitle });
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.mapEnabledTitle,
+                null,
+                :settingsMapEnabled,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.tileServerSettingsTitle,
+                null,
+                :settingsMapTileServerSettings,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.mapStorageSettingsTitle,
+                null,
+                :settingsMapStorageSettings,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.tileCacheSizeTitle,
+                null,
+                :settingsMapTileCacheSize,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.tileCachePaddingTitle,
+                null,
+                :settingsMapTileCachePadding,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.maxPendingWebRequests,
+                null,
+                :settingsMapMaxPendingWebRequests,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.disableMapsFailureCountTitleShort,
+                null,
+                :settingsMapDisableMapsFailureCount,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.httpErrorTileTTLSTitle,
+                null,
+                :settingsMapHttpErrorTileTTLS,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.errorTileTTLSTitle,
+                null,
+                :settingsMapErrorTileTTLS,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.fixedLatitude, null, :settingsMapFixedLatitude, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.fixedLongitude, null, :settingsMapFixedLongitude, {})
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.scaleRestrictedToTileLayersTitle,
+                null,
+                :settingsMapScaleRestrictedToTileLayers,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.packingFormatTitle,
+                null,
+                :settingsMapPackingFormat,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.useDrawBitmapTitle,
+                null,
+                :settingsMapUseDrawBitmap,
+                false,
+                {}
+            )
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.attribution, null, :settingsMapAttribution, {}));
         rerender();
     }
@@ -929,15 +1159,28 @@ function getMapChoiceString(mapChoice as Number) as ResourceId {
 (:settingsView)
 class SettingsTileServer extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.tileServerSettingsTitle});
+        Menu2.initialize({ :title => Rez.Strings.tileServerSettingsTitle });
         addItem(new WatchUi.MenuItem(Rez.Strings.mapChoice, null, :settingsMapChoice, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.tileUrlTitle, null, :settingsTileUrl, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.authTokenTitle, null, :settingsAuthToken, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.layerTileSize, null, :settingsMapTileSize, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.scaledTileSizeTitle, null, :settingsMapScaledTileSize, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.tileLayerMaxTitle, null, :settingsMapTileLayerMax, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.tileLayerMinTitle, null, :settingsMapTileLayerMin, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.fullTileSizeTitle, null, :settingsMapFullTileSize, {}));
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.scaledTileSizeTitle,
+                null,
+                :settingsMapScaledTileSize,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.tileLayerMaxTitle, null, :settingsMapTileLayerMax, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.tileLayerMinTitle, null, :settingsMapTileLayerMin, {})
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.fullTileSizeTitle, null, :settingsMapFullTileSize, {})
+        );
         rerender();
     }
 
@@ -958,16 +1201,82 @@ class SettingsTileServer extends WatchUi.Menu2 {
 (:settingsView)
 class SettingsMapStorage extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.mapStorageSettingsTitle});
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.cacheTilesInStorageTitle, null, :settingsMapStorageCacheTilesInStorage, false, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.storageMapTilesOnlyTitle, null, :settingsMapStorageStorageMapTilesOnly, false, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.storageTileCacheSizeTitle, null, :settingsMapStorageStorageTileCacheSize, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.storageTileCachePageCountTitle, null, :settingsMapStorageStorageTileCachePageCount, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.storageSeedBoundingBoxTitle, null, :settingsMapStorageStorageSeedBoundingBox, false, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.storageSeedRouteDistanceMTitle, null, :settingsMapStorageStorageSeedRouteDistanceM, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.cacheCurrentArea, null, :settingsMapStorageCacheCurrentArea, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.cancelCacheDownload, null, :settingsMapStorageCancelCacheDownload, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.clearCachedTiles, null, :settingsMapStorageClearCachedTiles, {}));
+        Menu2.initialize({ :title => Rez.Strings.mapStorageSettingsTitle });
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.cacheTilesInStorageTitle,
+                null,
+                :settingsMapStorageCacheTilesInStorage,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.storageMapTilesOnlyTitle,
+                null,
+                :settingsMapStorageStorageMapTilesOnly,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.storageTileCacheSizeTitle,
+                null,
+                :settingsMapStorageStorageTileCacheSize,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.storageTileCachePageCountTitle,
+                null,
+                :settingsMapStorageStorageTileCachePageCount,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.storageSeedBoundingBoxTitle,
+                null,
+                :settingsMapStorageStorageSeedBoundingBox,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.storageSeedRouteDistanceMTitle,
+                null,
+                :settingsMapStorageStorageSeedRouteDistanceM,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.cacheCurrentArea,
+                null,
+                :settingsMapStorageCacheCurrentArea,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.cancelCacheDownload,
+                null,
+                :settingsMapStorageCancelCacheDownload,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.clearCachedTiles,
+                null,
+                :settingsMapStorageClearCachedTiles,
+                {}
+            )
+        );
         rerender();
     }
 
@@ -1002,28 +1311,101 @@ class SettingsMapStorage extends WatchUi.Menu2 {
             "/" +
             settings.storageTileCacheSize;
         safeSetSubLabel(me, :settingsMapStorageCacheCurrentArea, cacheSize);
-        safeSetSubLabel(me, :settingsMapStorageCancelCacheDownload, cachedValues.seeding() ? "Seeding" : "");
+        safeSetSubLabel(
+            me,
+            :settingsMapStorageCancelCacheDownload,
+            cachedValues.seeding() ? "Seeding" : ""
+        );
     }
 }
 
-function alertsCommonMenu(menu as WatchUi.Menu2) as Void
-{
-    menu.addItem(new WatchUi.MenuItem(Rez.Strings.offTrackAlertsDistanceMTitle, null, :settingsAlertsOffTrackDistanceM, {}));
-    menu.addItem(new WatchUi.MenuItem(Rez.Strings.offTrackCheckIntervalSTitle, null, :settingsAlertsOffTrackCheckIntervalS, {}));
-    menu.addItem(new WatchUi.ToggleMenuItem(Rez.Strings.drawLineToClosestPointTitle, null, :settingsAlertsDrawLineToClosestPoint, false, {}));
-    menu.addItem(new WatchUi.ToggleMenuItem(Rez.Strings.drawCheveronsTitle, null, :settingsAlertsDrawCheverons, false, {}));
-    menu.addItem(new WatchUi.ToggleMenuItem(Rez.Strings.offTrackWrongDirectionTitle, null, :settingsAlertsOffTrackWrongDirection, false, {}));
-    menu.addItem(new WatchUi.ToggleMenuItem(Rez.Strings.enableOffTrackAlertsTitle, null, :settingsAlertsEnabled, false, {}));
-    menu.addItem(new WatchUi.MenuItem(Rez.Strings.turnAlertTimeSTitle, null, :settingsAlertsTurnAlertTimeS, {}));
-    menu.addItem(new WatchUi.MenuItem(Rez.Strings.minTurnAlertDistanceMTitle, null, :settingsAlertsMinTurnAlertDistanceM, {}));
-    menu.addItem(new WatchUi.MenuItem(Rez.Strings.alertTypeTitle, null, :settingsAlertsAlertType, {}));
+function alertsCommonMenu(menu as WatchUi.Menu2) as Void {
+    menu.addItem(
+        new WatchUi.MenuItem(
+            Rez.Strings.offTrackAlertsDistanceMTitle,
+            null,
+            :settingsAlertsOffTrackDistanceM,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.MenuItem(
+            Rez.Strings.offTrackCheckIntervalSTitle,
+            null,
+            :settingsAlertsOffTrackCheckIntervalS,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.ToggleMenuItem(
+            Rez.Strings.drawLineToClosestPointTitle,
+            null,
+            :settingsAlertsDrawLineToClosestPoint,
+            false,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.ToggleMenuItem(
+            Rez.Strings.drawCheveronsTitle,
+            null,
+            :settingsAlertsDrawCheverons,
+            false,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.ToggleMenuItem(
+            Rez.Strings.offTrackWrongDirectionTitle,
+            null,
+            :settingsAlertsOffTrackWrongDirection,
+            false,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.ToggleMenuItem(
+            Rez.Strings.enableOffTrackAlertsTitle,
+            null,
+            :settingsAlertsEnabled,
+            false,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.MenuItem(
+            Rez.Strings.turnAlertTimeSTitle,
+            null,
+            :settingsAlertsTurnAlertTimeS,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.MenuItem(
+            Rez.Strings.minTurnAlertDistanceMTitle,
+            null,
+            :settingsAlertsMinTurnAlertDistanceM,
+            {}
+        )
+    );
+    menu.addItem(
+        new WatchUi.MenuItem(Rez.Strings.alertTypeTitle, null, :settingsAlertsAlertType, {})
+    );
 }
 
 (:settingsView)
 class SettingsMapDisabled extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.mapsettingsTitle});
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.mapEnabledTitle, null, :settingsMapEnabled, false, {}));
+        Menu2.initialize({ :title => Rez.Strings.mapsettingsTitle });
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.mapEnabledTitle,
+                null,
+                :settingsMapEnabled,
+                false,
+                {}
+            )
+        );
         rerender();
     }
 
@@ -1035,7 +1417,7 @@ class SettingsMapDisabled extends WatchUi.Menu2 {
 (:settingsView)
 class SettingsAlerts extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.offTrackAlertsGroupTitle});
+        Menu2.initialize({ :title => Rez.Strings.offTrackAlertsGroupTitle });
         alertsCommonMenu(self);
         rerender();
     }
@@ -1091,7 +1473,7 @@ function alertsCommon(menu as WatchUi.Menu2, settings as Settings) as Void {
 (:settingsView)
 class SettingsAlertsDisabled extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.offTrackAlertsGroupTitle});
+        Menu2.initialize({ :title => Rez.Strings.offTrackAlertsGroupTitle });
         alertsCommonMenu(self);
         rerender();
     }
@@ -1105,15 +1487,79 @@ class SettingsAlertsDisabled extends WatchUi.Menu2 {
 (:settingsView)
 class SettingsColours extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.coloursTitle});
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.trackColourTitle, null, :settingsColoursTrackColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.trackColour2Title, null, :settingsColoursTrackColour2, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.defaultRouteColourTitle, null, :settingsColoursDefaultRouteColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.elevationColourTitle, null, :settingsColoursElevationColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.userColour, null, :settingsColoursUserColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.normalModeColour, null, :settingsColoursNormalModeColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.uiColour, null, :settingsColoursUiColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.debugColour, null, :settingsColoursDebugColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
+        Menu2.initialize({ :title => Rez.Strings.coloursTitle });
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.trackColourTitle,
+                null,
+                :settingsColoursTrackColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.trackColour2Title,
+                null,
+                :settingsColoursTrackColour2,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.defaultRouteColourTitle,
+                null,
+                :settingsColoursDefaultRouteColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.elevationColourTitle,
+                null,
+                :settingsColoursElevationColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.userColour,
+                null,
+                :settingsColoursUserColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.normalModeColour,
+                null,
+                :settingsColoursNormalModeColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.uiColour,
+                null,
+                :settingsColoursUiColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.debugColour,
+                null,
+                :settingsColoursDebugColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
         rerender();
     }
 
@@ -1141,14 +1587,69 @@ class SettingsColours extends WatchUi.Menu2 {
 (:settingsView)
 class SettingsDebug extends WatchUi.Menu2 {
     function initialize() {
-        Menu2.initialize({:title=>Rez.Strings.debugSettingsTitle});
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.drawLineToClosestTrackTitle, null, :settingsDebugDrawLineToClosestTrack, false, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.showTileBordersTitle, null, :settingsDebugShowTileBorders, false, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.showErrorTileMessagesTitle, null, :settingsDebugShowErrorTileMessages, false, {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.tileErrorColourTitle, null, :settingsDebugTileErrorColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.drawHitBoxesTitle, null, :settingsDebugDrawHitBoxes, false, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.showDirectionPointsTitle, null, :settingsDebugShowDirectionPoints, false, {}));
-        addItem(new WatchUi.MenuItem(Rez.Strings.showDirectionPointTextUnderIndexTitle, null, :settingsDebugShowDirectionPointTextUnderIndex, {}));
+        Menu2.initialize({ :title => Rez.Strings.debugSettingsTitle });
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.drawLineToClosestTrackTitle,
+                null,
+                :settingsDebugDrawLineToClosestTrack,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.showTileBordersTitle,
+                null,
+                :settingsDebugShowTileBorders,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.showErrorTileMessagesTitle,
+                null,
+                :settingsDebugShowErrorTileMessages,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.tileErrorColourTitle,
+                null,
+                :settingsDebugTileErrorColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.drawHitBoxesTitle,
+                null,
+                :settingsDebugDrawHitBoxes,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.showDirectionPointsTitle,
+                null,
+                :settingsDebugShowDirectionPoints,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.showDirectionPointTextUnderIndexTitle,
+                null,
+                :settingsDebugShowDirectionPointTextUnderIndex,
+                {}
+            )
+        );
         rerender();
     }
 
@@ -1174,12 +1675,44 @@ class SettingsRoute extends WatchUi.Menu2 {
     var routeId as Number;
     var parent as SettingsRoutes;
     function initialize(settings as Settings, routeId as Number, parent as SettingsRoutes) {
-        Menu2.initialize({:title=>Rez.Strings.routesTitle});
+        Menu2.initialize({ :title => Rez.Strings.routesTitle });
         addItem(new WatchUi.MenuItem(Rez.Strings.routeName, null, :settingsRouteName, {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.routeEnabled, null, :settingsRouteEnabled, false, {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.routeColourTitle, null, :settingsRouteColour, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.IconMenuItem(Rez.Strings.routeColour2Title, null, :settingsRouteColour2, new ColourIcon(Graphics.COLOR_BLACK), {}));
-        addItem(new WatchUi.ToggleMenuItem(Rez.Strings.routeReversed, null, :settingsRouteReversed, false, {}));
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.routeEnabled,
+                null,
+                :settingsRouteEnabled,
+                false,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.routeColourTitle,
+                null,
+                :settingsRouteColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.routeColour2Title,
+                null,
+                :settingsRouteColour2,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.routeReversed,
+                null,
+                :settingsRouteReversed,
+                false,
+                {}
+            )
+        );
         addItem(new WatchUi.MenuItem(Rez.Strings.routeStyleTitle, null, :settingsRouteStyle, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.routeWidthTitle, null, :settingsRouteWidth, {}));
         addItem(new WatchUi.MenuItem(Rez.Strings.routeDelete, null, :settingsRouteDelete, {}));
@@ -1349,9 +1882,10 @@ class SettingsMainDelegate extends WatchUi.Menu2InputDelegate {
         var settings = getApp()._breadcrumbContext.settings;
         var itemId = item.getId();
         if (itemId == :settingsMainActivityType) {
+            var menuView = new $.SettingsActivityMenu(view);
             WatchUi.pushView(
-                new Rez.Menus.SettingsActivityType(),
-                new SettingsActivityTypeDelegate(view),
+                menuView,
+                new SettingsActivityMenuDelegate(menuView),
                 WatchUi.SLIDE_IMMEDIATE
             );
         } else if (itemId == :settingsMainGeneral) {
@@ -1434,7 +1968,7 @@ class SettingsMainDelegate extends WatchUi.Menu2InputDelegate {
         var itemId = item.getId();
         if (itemId == :settingsMainActivityType) {
             WatchUi.pushView(
-                new Rez.Menus.SettingsActivityType(),
+                new $.SettingsActivityType(),
                 new SettingsActivityTypeDelegate(view),
                 WatchUi.SLIDE_IMMEDIATE
             );
@@ -2618,478 +3152,22 @@ class SettingsDebugDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
-(:settingsView)
-class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
-    var parent as SettingsMain;
+(:noSettingsView)
+class SettingsActivityType extends WatchUi.Menu2 {
+    function initialize() {
+        Menu2.initialize({ :title => Rez.Strings.activityTypeTitle });
 
-    function initialize(parentView as SettingsMain) {
-        Menu2InputDelegate.initialize();
-        parent = parentView;
-    }
-
-    public function onSelect(item as WatchUi.MenuItem) as Void {
-        var settings = getApp()._breadcrumbContext.settings;
-        var itemId = item.getId();
-        var combinedValue = 0; // Default to Generic
-
-        if (itemId != null) {
-            // This switch statement maps the menu item ID back to the combined numeric value
-            switch (itemId) {
-                case :ActGeneric:
-                    combinedValue = 0;
-                    break;
-                case :ActRun:
-                    combinedValue = 1000;
-                    break;
-                case :ActRunTreadmill:
-                    combinedValue = 1001;
-                    break;
-                case :ActRunStreet:
-                    combinedValue = 1002;
-                    break;
-                case :ActRunTrail:
-                    combinedValue = 1003;
-                    break;
-                case :ActRunTrack:
-                    combinedValue = 1004;
-                    break;
-                case :ActRunIndoor:
-                    combinedValue = 1045;
-                    break;
-                case :ActRunVirtual:
-                    combinedValue = 1058;
-                    break;
-                case :ActRunObstacle:
-                    combinedValue = 1059;
-                    break;
-                case :ActRunUltra:
-                    combinedValue = 1067;
-                    break;
-                case :ActCycle:
-                    combinedValue = 2000;
-                    break;
-                case :ActCycleSpin:
-                    combinedValue = 2005;
-                    break;
-                case :ActCycleIndoor:
-                    combinedValue = 2006;
-                    break;
-                case :ActCycleRoad:
-                    combinedValue = 2007;
-                    break;
-                case :ActCycleMtn:
-                    combinedValue = 2008;
-                    break;
-                case :ActCycleDownhill:
-                    combinedValue = 2009;
-                    break;
-                case :ActCycleRecumbent:
-                    combinedValue = 2010;
-                    break;
-                case :ActCycleCyclocross:
-                    combinedValue = 2011;
-                    break;
-                case :ActCycleHand:
-                    combinedValue = 2012;
-                    break;
-                case :ActCycleTrack:
-                    combinedValue = 2013;
-                    break;
-                case :ActCycleBmx:
-                    combinedValue = 2029;
-                    break;
-                case :ActCycleGravel:
-                    combinedValue = 2046;
-                    break;
-                case :ActCycleCommute:
-                    combinedValue = 2048;
-                    break;
-                case :ActCycleMixed:
-                    combinedValue = 2049;
-                    break;
-                case :ActTransition:
-                    combinedValue = 3000;
-                    break;
-                case :ActFitness:
-                    combinedValue = 4000;
-                    break;
-                case :ActFitRow:
-                    combinedValue = 4014;
-                    break;
-                case :ActFitElliptical:
-                    combinedValue = 4015;
-                    break;
-                case :ActFitStair:
-                    combinedValue = 4016;
-                    break;
-                case :ActFitStrength:
-                    combinedValue = 4020;
-                    break;
-                case :ActFitCardio:
-                    combinedValue = 4026;
-                    break;
-                case :ActFitYoga:
-                    combinedValue = 4043;
-                    break;
-                case :ActFitPilates:
-                    combinedValue = 4044;
-                    break;
-                case :ActFitIndoorClimb:
-                    combinedValue = 4068;
-                    break;
-                case :ActFitBouldering:
-                    combinedValue = 4069;
-                    break;
-                case :ActSwim:
-                    combinedValue = 5000;
-                    break;
-                case :ActSwimLap:
-                    combinedValue = 5017;
-                    break;
-                case :ActSwimOpen:
-                    combinedValue = 5018;
-                    break;
-                case :ActBasketball:
-                    combinedValue = 6000;
-                    break;
-                case :ActSoccer:
-                    combinedValue = 7000;
-                    break;
-                case :ActTennis:
-                    combinedValue = 8000;
-                    break;
-                case :ActFootballUS:
-                    combinedValue = 9000;
-                    break;
-                case :ActTraining:
-                    combinedValue = 10000;
-                    break;
-                case :ActWalk:
-                    combinedValue = 11000;
-                    break;
-                case :ActWalkIndoor:
-                    combinedValue = 11027;
-                    break;
-                case :ActWalkCasual:
-                    combinedValue = 11030;
-                    break;
-                case :ActWalkSpeed:
-                    combinedValue = 11031;
-                    break;
-                case :ActXcSki:
-                    combinedValue = 12000;
-                    break;
-                case :ActXcSkiSkate:
-                    combinedValue = 12042;
-                    break;
-                case :ActAlpineSki:
-                    combinedValue = 13000;
-                    break;
-                case :ActAlpineSkiBack:
-                    combinedValue = 13037;
-                    break;
-                case :ActAlpineSkiResort:
-                    combinedValue = 13038;
-                    break;
-                case :ActSnowboard:
-                    combinedValue = 14000;
-                    break;
-                case :ActSnowboardBack:
-                    combinedValue = 14037;
-                    break;
-                case :ActSnowboardResort:
-                    combinedValue = 14038;
-                    break;
-                case :ActRowing:
-                    combinedValue = 15000;
-                    break;
-                case :ActMountaineering:
-                    combinedValue = 16000;
-                    break;
-                case :ActHiking:
-                    combinedValue = 17000;
-                    break;
-                case :ActMulti:
-                    combinedValue = 18000;
-                    break;
-                case :ActMultiTri:
-                    combinedValue = 18078;
-                    break;
-                case :ActMultiDu:
-                    combinedValue = 18079;
-                    break;
-                case :ActMultiBrick:
-                    combinedValue = 18080;
-                    break;
-                case :ActMultiSwimrun:
-                    combinedValue = 18081;
-                    break;
-                case :ActMultiAdvRace:
-                    combinedValue = 18082;
-                    break;
-                case :ActPaddling:
-                    combinedValue = 19000;
-                    break;
-                case :ActFlying:
-                    combinedValue = 20000;
-                    break;
-                case :ActFlyingDrone:
-                    combinedValue = 20039;
-                    break;
-                case :ActEbike:
-                    combinedValue = 21000;
-                    break;
-                case :ActEbikeFit:
-                    combinedValue = 21028;
-                    break;
-                case :ActEbikeMtn:
-                    combinedValue = 21047;
-                    break;
-                case :ActMotorcycle:
-                    combinedValue = 22000;
-                    break;
-                case :ActMotorcycleAtv:
-                    combinedValue = 22035;
-                    break;
-                case :ActMotorcycleMx:
-                    combinedValue = 22036;
-                    break;
-                case :ActBoating:
-                    combinedValue = 23000;
-                    break;
-                case :ActBoatingSail:
-                    combinedValue = 23032;
-                    break;
-                case :ActDriving:
-                    combinedValue = 24000;
-                    break;
-                case :ActGolf:
-                    combinedValue = 25000;
-                    break;
-                case :ActHangGliding:
-                    combinedValue = 26000;
-                    break;
-                case :ActHorseback:
-                    combinedValue = 27000;
-                    break;
-                case :ActHunting:
-                    combinedValue = 28000;
-                    break;
-                case :ActFishing:
-                    combinedValue = 29000;
-                    break;
-                case :ActInlineSkate:
-                    combinedValue = 30000;
-                    break;
-                case :ActRockClimb:
-                    combinedValue = 31000;
-                    break;
-                case :ActRockClimbIndoor:
-                    combinedValue = 31068;
-                    break;
-                case :ActRockClimbBoulder:
-                    combinedValue = 31069;
-                    break;
-                case :ActSailing:
-                    combinedValue = 32000;
-                    break;
-                case :ActSailingRace:
-                    combinedValue = 32065;
-                    break;
-                case :ActIceSkate:
-                    combinedValue = 33000;
-                    break;
-                case :ActIceSkateHockey:
-                    combinedValue = 33073;
-                    break;
-                case :ActSkyDiving:
-                    combinedValue = 34000;
-                    break;
-                case :ActSkyDivingWingsuit:
-                    combinedValue = 34040;
-                    break;
-                case :ActSnowshoe:
-                    combinedValue = 35000;
-                    break;
-                case :ActSnowmobile:
-                    combinedValue = 36000;
-                    break;
-                case :ActSup:
-                    combinedValue = 37000;
-                    break;
-                case :ActSurfing:
-                    combinedValue = 38000;
-                    break;
-                case :ActWakeboard:
-                    combinedValue = 39000;
-                    break;
-                case :ActWaterSki:
-                    combinedValue = 40000;
-                    break;
-                case :ActKayak:
-                    combinedValue = 41000;
-                    break;
-                case :ActKayakWhite:
-                    combinedValue = 41041;
-                    break;
-                case :ActRafting:
-                    combinedValue = 42000;
-                    break;
-                case :ActRaftingWhite:
-                    combinedValue = 42041;
-                    break;
-                case :ActWindsurf:
-                    combinedValue = 43000;
-                    break;
-                case :ActKitesurf:
-                    combinedValue = 44000;
-                    break;
-                case :ActTactical:
-                    combinedValue = 45000;
-                    break;
-                case :ActJumpmaster:
-                    combinedValue = 46000;
-                    break;
-                case :ActBoxing:
-                    combinedValue = 47000;
-                    break;
-                case :ActFloorClimb:
-                    combinedValue = 48000;
-                    break;
-                case :ActBaseball:
-                    combinedValue = 49000;
-                    break;
-                case :ActSoftballFast:
-                    combinedValue = 50000;
-                    break;
-                case :ActSoftballSlow:
-                    combinedValue = 51000;
-                    break;
-                case :ActShooting:
-                    combinedValue = 56000;
-                    break;
-                case :ActAutoRacing:
-                    combinedValue = 57000;
-                    break;
-                case :ActWinterSport:
-                    combinedValue = 58000;
-                    break;
-                case :ActGrinding:
-                    combinedValue = 59000;
-                    break;
-                case :ActHealthMon:
-                    combinedValue = 60000;
-                    break;
-                case :ActMarine:
-                    combinedValue = 61000;
-                    break;
-                case :ActHiit:
-                    combinedValue = 62000;
-                    break;
-                case :ActHiitAmrap:
-                    combinedValue = 62073;
-                    break;
-                case :ActHiitEmom:
-                    combinedValue = 62074;
-                    break;
-                case :ActHiitTabata:
-                    combinedValue = 62075;
-                    break;
-                case :ActGaming:
-                    combinedValue = 63000;
-                    break;
-                case :ActGamingEsport:
-                    combinedValue = 63077;
-                    break;
-                case :ActRacket:
-                    combinedValue = 64000;
-                    break;
-                case :ActRacketPickle:
-                    combinedValue = 64084;
-                    break;
-                case :ActRacketPadel:
-                    combinedValue = 64085;
-                    break;
-                case :ActRacketSquash:
-                    combinedValue = 64094;
-                    break;
-                case :ActRacketBadminton:
-                    combinedValue = 64095;
-                    break;
-                case :ActRacketRacquetball:
-                    combinedValue = 64096;
-                    break;
-                case :ActRacketTableTennis:
-                    combinedValue = 64097;
-                    break;
-                case :ActWheelWalk:
-                    combinedValue = 65000;
-                    break;
-                case :ActWheelWalkIndoor:
-                    combinedValue = 65086;
-                    break;
-                case :ActWheelRun:
-                    combinedValue = 66000;
-                    break;
-                case :ActWheelRunIndoor:
-                    combinedValue = 66087;
-                    break;
-                case :ActMeditation:
-                    combinedValue = 67000;
-                    break;
-                case :ActMeditationBreath:
-                    combinedValue = 67062;
-                    break;
-                case :ActParaSport:
-                    combinedValue = 68000;
-                    break;
-                case :ActDiscGolf:
-                    combinedValue = 69000;
-                    break;
-                case :ActTeamSport:
-                    combinedValue = 70000;
-                    break;
-                case :ActTeamUltimate:
-                    combinedValue = 70092;
-                    break;
-                case :ActCricket:
-                    combinedValue = 71000;
-                    break;
-                case :ActRugby:
-                    combinedValue = 72000;
-                    break;
-                case :ActHockey:
-                    combinedValue = 73000;
-                    break;
-                case :ActHockeyField:
-                    combinedValue = 73090;
-                    break;
-                case :ActHockeyIce:
-                    combinedValue = 73091;
-                    break;
-                case :ActLacrosse:
-                    combinedValue = 74000;
-                    break;
-                case :ActVolleyball:
-                    combinedValue = 75000;
-                    break;
-                case :ActTube:
-                    combinedValue = 76000;
-                    break;
-                case :ActWakesurf:
-                    combinedValue = 77000;
-                    break;
-            }
-        }
-
-        // Call the new method in your settings class
-        settings.setSportAndSubSport(combinedValue);
-
-        // Rerender the parent menu to show the new selection
-        parent.rerender();
-
-        // Go back to the parent menu
-        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+        // IDs match the XML snippet provided
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActGeneric, null, :ActGeneric, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActRun, null, :ActRun, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActCycle, null, :ActCycle, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActSwim, null, :ActSwim, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActWalk, null, :ActWalk, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActRowing, null, :ActRowing, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActHiking, null, :ActHiking, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActSup, null, :ActSup, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActKayak, null, :ActKayak, {}));
+        addItem(new WatchUi.MenuItem(Rez.Strings.ActHiit, null, :ActHiit, {}));
     }
 }
 
@@ -3150,6 +3228,349 @@ class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
         parent.rerender();
 
         // Go back to the parent menu
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+    }
+}
+
+(:settingsView)
+class SettingsActivityMenu extends WatchUi.Menu2 {
+    private var mainView as SettingsMain;
+    function initialize(mainView as SettingsMain) {
+        Menu2.initialize({ :title => Rez.Strings.activityTypeTitle });
+        me.mainView = mainView;
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.activityCategoryTitle,
+                null,
+                :settingsActivityCategory,
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsActivityActivity, {})
+        );
+        rerender();
+    }
+
+    function rerender() as Void {
+        var settings = getApp()._breadcrumbContext.settings;
+        safeSetSubLabel(
+            me,
+            :settingsActivityCategory,
+            getCategoryLabel(getCategoryFromActivity(settings.activityType()))
+        );
+        safeSetSubLabel(
+            me,
+            :settingsActivityActivity,
+            getActivityTypeString(settings.activityType())
+        );
+        mainView.rerender();
+    }
+}
+
+(:settingsView)
+class SettingsActivityMenuDelegate extends WatchUi.Menu2InputDelegate {
+    var view as SettingsActivityMenu;
+    function initialize(view as SettingsActivityMenu) {
+        WatchUi.Menu2InputDelegate.initialize();
+        me.view = view;
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var settings = getApp()._breadcrumbContext.settings;
+        var itemId = item.getId();
+        if (itemId == :settingsActivityCategory) {
+            WatchUi.pushView(
+                new EnumMenu(
+                    Rez.Strings.activityCategoryTitle,
+                    method(:getCategoryLabelL),
+                    getCategoryFromActivity(settings.activityType()),
+                    CAT_MAX
+                ),
+                new $.EnumDelegate(method(:setCategory), view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (itemId == :settingsActivityActivity) {
+            WatchUi.pushView(
+                new $.SettingsActivityType(getCategoryFromActivity(settings.activityType())),
+                new SettingsActivityTypeDelegate(view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        }
+    }
+
+    function getCategoryLabelL(catId as Number) as ResourceId or String {
+        return getCategoryLabel(catId);
+    }
+
+    function setCategory(catId as Number) as Void {
+        // category changed, pick the first sport
+        var settings = getApp()._breadcrumbContext.settings;
+        settings.setSportAndSubSport(getSubSportList(catId)[0]);
+    }
+}
+
+function getCategoryFromActivity(activityType as Number) as Number {
+    for (var i = 0; i < CAT_MAX; i++) {
+        var list = getSubSportList(i);
+        for (var j = 0; j < list.size(); j++) {
+            if (list[j] == activityType) {
+                return i;
+            }
+        }
+    }
+    return 0;
+}
+
+enum {
+    CAT_RUN,
+    CAT_CYCLE,
+    CAT_WALK_MULTI,
+    CAT_GYM,
+    CAT_WATER,
+    CAT_WINTER,
+    CAT_RACKET_BALL,
+    CAT_OUTDOOR_GOLF,
+    CAT_MISC,
+    CAT_MAX, // Used to bound the loop
+}
+
+(:settingsView)
+function getCategoryLabel(id as Number) as ResourceId or String {
+    switch (id) {
+        case CAT_RUN:
+            return Rez.Strings.CatRun;
+        case CAT_CYCLE:
+            return Rez.Strings.CatCycle;
+        case CAT_WALK_MULTI:
+            return Rez.Strings.CatWalk;
+        case CAT_GYM:
+            return Rez.Strings.CatGym;
+        case CAT_WATER:
+            return Rez.Strings.CatWater;
+        case CAT_WINTER:
+            return Rez.Strings.CatWinter;
+        case CAT_RACKET_BALL:
+            return Rez.Strings.CatRacket;
+        case CAT_OUTDOOR_GOLF:
+            return Rez.Strings.CatOutdoor;
+        case CAT_MISC:
+            return Rez.Strings.CatMisc;
+        default:
+            return "";
+    }
+}
+
+function getSubSportList(catId as Number) as Array<Number> {
+    switch (catId) {
+        case CAT_RUN:
+            return [
+                1000, // ActRun
+                1001, // ActRunTreadmill
+                1002, // ActRunStreet
+                1003, // ActRunTrail
+                1004, // ActRunTrack
+                1045, // ActRunIndoor
+                1058, // ActRunVirtual
+                1059, // ActRunObstacle
+                1067, // ActRunUltra
+            ];
+        case CAT_CYCLE:
+            return [
+                2000, // ActCycle
+                2005, // ActCycleSpin
+                2006, // ActCycleIndoor
+                2007, // ActCycleRoad
+                2008, // ActCycleMtn
+                2009, // ActCycleDownhill
+                2010, // ActCycleRecumbent
+                2011, // ActCycleCyclocross
+                2012, // ActCycleHand
+                2013, // ActCycleTrack
+                2029, // ActCycleBmx
+                2046, // ActCycleGravel
+                2048, // ActCycleCommute
+                2049, // ActCycleMixed
+                21000, // ActEbike
+                21028, // ActEbikeFit
+                21047, // ActEbikeMtn
+            ];
+        case CAT_WALK_MULTI:
+            return [
+                11000, // ActWalk
+                11027, // ActWalkIndoor
+                11030, // ActWalkCasual
+                11031, // ActWalkSpeed
+                18000, // ActMulti
+                18078, // ActMultiTri
+                18079, // ActMultiDu
+                18080, // ActMultiBrick
+                18081, // ActMultiSwimrun
+                18082, // ActMultiAdvRace
+                3000, // ActTransition
+            ];
+        case CAT_GYM:
+            return [
+                4000, // ActFitness
+                4014, // ActFitRow
+                4015, // ActFitElliptical
+                4016, // ActFitStair
+                4020, // ActFitStrength
+                4026, // ActFitCardio
+                4043, // ActFitYoga
+                4044, // ActFitPilates
+                4068, // ActFitIndoorClimb
+                4069, // ActFitBouldering
+                48000, // ActFloorClimb
+                62000, // ActHiit
+                62073, // ActHiitAmrap
+                62074, // ActHiitEmom
+                62075, // ActHiitTabata
+            ];
+        case CAT_WATER:
+            return [
+                5000, // ActSwim
+                5017, // ActSwimLap
+                5018, // ActSwimOpen
+                15000, // ActRowing
+                19000, // ActPaddling
+                23000, // ActBoating
+                23032, // ActBoatingSail
+                32000, // ActSailing
+                32065, // ActSailingRace
+                37000, // ActSup
+                38000, // ActSurfing
+                39000, // ActWakeboard
+                40000, // ActWaterSki
+                41000, // ActKayak
+                41041, // ActKayakWhite
+                42000, // ActRafting
+                42041, // ActRaftingWhite
+                43000, // ActWindsurf
+                44000, // ActKitesurf
+                76000, // ActTube
+                77000, // ActWakesurf
+            ];
+        case CAT_WINTER:
+            return [
+                12000, // ActXcSki
+                12042, // ActXcSkiSkate
+                13000, // ActAlpineSki
+                13037, // ActAlpineSkiBack
+                13038, // ActAlpineSkiResort
+                14000, // ActSnowboard
+                14037, // ActSnowboardBack
+                14038, // ActSnowboardResort
+                33000, // ActIceSkate
+                33073, // ActIceSkateHockey
+                35000, // ActSnowshoe
+                36000, // ActSnowmobile
+                58000, // ActWinterSport
+            ];
+        case CAT_RACKET_BALL:
+            return [
+                6000, // ActBasketball
+                7000, // ActSoccer
+                8000, // ActTennis
+                9000, // ActFootballUS
+                49000, // ActBaseball
+                50000, // ActSoftballFast
+                51000, // ActSoftballSlow
+                64000, // ActRacket
+                64084, // ActRacketPickle
+                64085, // ActRacketPadel
+                64094, // ActRacketSquash
+                64095, // ActRacketBadminton
+                64096, // ActRacketRacquetball
+                64097, // ActRacketTableTennis
+                70000, // ActTeamSport
+                70092, // ActTeamUltimate
+                71000, // ActCricket
+                72000, // ActRugby
+                73000, // ActHockey
+                73090, // ActHockeyField
+                73091, // ActHockeyIce
+                74000, // ActLacrosse
+                75000, // ActVolleyball
+            ];
+        case CAT_OUTDOOR_GOLF:
+            return [
+                16000, // ActMountaineering
+                17000, // ActHiking
+                25000, // ActGolf
+                26000, // ActHangGliding
+                27000, // ActHorseback
+                28000, // ActHunting
+                29000, // ActFishing
+                31000, // ActRockClimb
+                31068, // ActRockClimbIndoor
+                31069, // ActRockClimbBoulder
+                34000, // ActSkyDiving
+                34040, // ActSkyDivingWingsuit
+                69000, // ActDiscGolf
+            ];
+        case CAT_MISC:
+            return [
+                0, // ActGeneric
+                10000, // ActTraining
+                20000, // ActFlying
+                20039, // ActFlyingDrone
+                22000, // ActMotorcycle
+                22035, // ActMotorcycleAtv
+                22036, // ActMotorcycleMx
+                24000, // ActDriving
+                30000, // ActInlineSkate
+                45000, // ActTactical
+                46000, // ActJumpmaster
+                47000, // ActBoxing
+                56000, // ActShooting
+                57000, // ActAutoRacing
+                59000, // ActGrinding
+                60000, // ActHealthMon
+                61000, // ActMarine
+                63000, // ActGaming
+                63077, // ActGamingEsport
+                65000, // ActWheelWalk
+                65086, // ActWheelWalkIndoor
+                66000, // ActWheelRun
+                66087, // ActWheelRunIndoor
+                67000, // ActMeditation
+                67062, // ActMeditationBreath
+                68000, // ActParaSport
+            ];
+        default:
+            return [0];
+    }
+}
+
+(:settingsView)
+class SettingsActivityType extends WatchUi.Menu2 {
+    function initialize(catId as Number) {
+        Menu2.initialize({ :title => getCategoryLabel(catId) });
+
+        var subSports = getSubSportList(catId);
+        for (var i = 0; i < subSports.size(); i++) {
+            var val = subSports[i];
+            // Uses your existing getActivityTypeString logic for labels
+            // ID is the final (sport * 1000 + subSport) value
+            addItem(new WatchUi.MenuItem(getActivityTypeString(val), null, val, {}));
+        }
+    }
+}
+
+(:settingsView)
+class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
+    private var _parent as Renderable;
+
+    function initialize(parent as Renderable) {
+        Menu2InputDelegate.initialize();
+        _parent = parent;
+    }
+
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        var settings = getApp()._breadcrumbContext.settings;
+        settings.setSportAndSubSport(item.getId() as Number);
+        _parent.rerender();
         WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
     }
 }
