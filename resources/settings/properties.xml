@@ -11,6 +11,7 @@
 	<property id="metersAroundUser" type="number">500</property>
 	<property id="zoomAtPaceSpeedMPS" type="float">1.0</property>
 	
+	<property id="useStartForStop" type="boolean">false</property>
 	<property id="mapEnabled" type="boolean">false</property>
 	<property id="mapChoice" type="number">0</property>
 	<property id="tileUrl" type="string">http://127.0.0.1:8080</property>

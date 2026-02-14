@@ -104,15 +104,12 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
 
     // see BreadcrumbDataFieldView if touch stops working
     function onTap(evt as WatchUi.ClickEvent) as Boolean {
-        if(onTapInner(evt))
-        {
+        if (onTapInner(evt)) {
             try {
                 if (Attention has :vibrate) {
                     // quick little buzz to let them know the screen tap has been acknowledged (haptic feedback)
                     // might need to make this a setting to disable it?
-                    var vibeData = [
-                        new Attention.VibeProfile(50, 100),
-                    ];
+                    var vibeData = [new Attention.VibeProfile(50, 100)];
                     // this is not documented that it throws, but got bit by the backlight, so protecting it too in order to always show our alerts
                     Attention.vibrate(vibeData);
                 }
@@ -210,7 +207,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             renderer.decScale();
             return true;
         }
-        
+
         if (settings.mode == MODE_MAP_MOVE_UP_DOWN) {
             if (y < yHalfPhysical) {
                 // anywhere top half of screen other than the mode button checked above
@@ -221,8 +218,8 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             cachedValues.moveFixedPositionDown();
             return true;
         }
-        
-         if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
+
+        if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
             if (x < xHalfPhysical) {
                 // anywhere left half of screen other than the mode button checked above
                 cachedValues.moveFixedPositionLeft();
@@ -234,17 +231,17 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
         }
 
         if (inHitbox(x, y, renderer.clearRouteX, renderer.clearRouteY, halfHitboxSize)) {
-            // top left
+            // bottom left
             if (settings.mode == MODE_MAP_MOVE) {
-                renderer.incScale();
+                renderer.decScale();
                 return true;
             }
         }
 
         if (inHitbox(x, y, renderer.mapEnabledX, renderer.mapEnabledY, halfHitboxSize)) {
-            // bottom right
+            // bottom right (or top right with useStartForStop enabled)
             if (settings.mode == MODE_MAP_MOVE) {
-                renderer.decScale();
+                renderer.incScale();
                 return true;
             }
         }
@@ -303,35 +300,35 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     function onKey(keyEvent as WatchUi.KeyEvent) as Boolean {
         var key = keyEvent.getKey();
         logT("got key event: " + key);
-        if (key == WatchUi.KEY_ENTER) {
-            var sessionLocal = _breadcrumbContext.session;
-            if (sessionLocal == null || !sessionLocal.isRecording()) {
-                // If we are NOT recording, start the session.
-                _breadcrumbContext.startSession(); // resume the session
-                WatchUi.showToast("Activity Started", null);
-            } else {
-                var cachedValues = _breadcrumbContext.cachedValues;
-                if (cachedValues.seeding()) {
-                    cachedValues.cancelCacheCurrentMapArea();
-                    return true;
-                }
-
-                // If recording, cycle through the main display modes. or return to user if we have moved/zoomed
-                if (
-                    (cachedValues.fixedPosition != null || cachedValues.scale != null) &&
-                    (_breadcrumbContext.settings.mode == MODE_NORMAL ||
-                        _breadcrumbContext.settings.mode == MODE_MAP_MOVE)
-                ) {
-                    // force return to use, even if we are on the debug page (otherwise we cannot use the button press)
-                    // we also check if we are on the right page, otherwise the first button press will clear the users location but do nothing on th ui
-                    _breadcrumbContext.cachedValues.returnToUser();
-                } else {
-                    _breadcrumbContext.settings.nextMode();
-                }
-            }
+        var sessionLocal = _breadcrumbContext.session;
+        if ((sessionLocal == null || !sessionLocal.isRecording()) && key == WatchUi.KEY_ENTER) {
+            // If we are NOT recording, start the session.
+            _breadcrumbContext.startSession(); // resume the session
+            WatchUi.showToast("Activity Started", null);
 
             return true;
-        } else if (key == WatchUi.KEY_ESC) {
+        }
+
+        var cachedValues = _breadcrumbContext.cachedValues;
+        var settings = _breadcrumbContext.settings;
+        var renderer = _breadcrumbContext.breadcrumbRenderer;
+
+        if (
+            (key == WatchUi.KEY_ENTER && !_breadcrumbContext.settings.useStartForStop) ||
+            (key == WatchUi.KEY_ESC && _breadcrumbContext.settings.useStartForStop)
+        ) {
+            _breadcrumbContext.settings.nextMode();
+            return true;
+        } else if (
+            (key == WatchUi.KEY_ESC && !_breadcrumbContext.settings.useStartForStop) ||
+            (key == WatchUi.KEY_ENTER && _breadcrumbContext.settings.useStartForStop)
+        ) {
+            var cachedValues = _breadcrumbContext.cachedValues;
+            if (cachedValues.seeding()) {
+                cachedValues.cancelCacheCurrentMapArea();
+                return true;
+            }
+
             var sessionLocal = _breadcrumbContext.session;
             if (sessionLocal != null && sessionLocal.isRecording()) {
                 pauseAndConfirmExit(_breadcrumbContext);
@@ -339,53 +336,53 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             }
 
             return false;
+        } else if (key == WatchUi.KEY_UP_LEFT || key == WatchUi.KEY_UP) {
+            if (settings.mode == MODE_MAP_MOVE_ZOOM) {
+                renderer.incScale();
+            } else if (settings.mode == MODE_MAP_MOVE_UP_DOWN) {
+                cachedValues.moveFixedPositionUp();
+            } else if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
+                cachedValues.moveFixedPositionLeft();
+            } else if (settings.mode == MODE_NORMAL) {
+                settings.nextZoomAtPaceMode();
+            }
+        } else if (key == WatchUi.KEY_DOWN_LEFT || key == WatchUi.KEY_DOWN) {
+            if (settings.mode == MODE_MAP_MOVE_ZOOM) {
+                renderer.decScale();
+            } else if (settings.mode == MODE_MAP_MOVE_UP_DOWN) {
+                cachedValues.moveFixedPositionDown();
+            } else if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
+                cachedValues.moveFixedPositionRight();
+            } else if (settings.mode == MODE_ELEVATION) {
+                /* todo launch clear route confirmation, and render button hint */
+            } else if (settings.mode == MODE_NORMAL || settings.mode == MODE_MAP_MOVE) {
+                renderer.returnToUser();
+            }
         }
 
         return false;
     }
 
-    function onPreviousPage() as Boolean {
-        System.println("onPreviousPage");
-        var cachedValues = _breadcrumbContext.cachedValues;
-        if (cachedValues.isTouchScreen) {
-            // they should be pressing the screen, drag events are handled for map panning
-            return false; // let it propagate
-        }
-        var settings = _breadcrumbContext.settings;
-        var renderer = _breadcrumbContext.breadcrumbRenderer;
+    // function onPreviousPage() as Boolean {
+    //     System.println("onPreviousPage");
+    //     drag events are handled for map panning, key events are handled in onKey
+    //     because on touchscreens onPreviousPage and all the flick/drags are called when the user flicks the screen
+    //     return false; // let it propagate
+    // }
 
-        if (settings.mode == MODE_MAP_MOVE) {
-            cachedValues.moveFixedPositionUp();
-            return true;
-        }
-        renderer.incScale();
-        return true;
-    }
+    //function onNextPage() as Boolean {
+    //     System.println("onNextPage");
+    //     drag events are handled for map panning, key events are handled in onKey
+    //     because on touchscreens onPreviousPage and all the flick/drags are called when the user flicks the screen
+    //     return false; // let it propagate
+    //}
 
-    function onNextPage() as Boolean {
-        System.println("onNextPage");
-        var cachedValues = _breadcrumbContext.cachedValues;
-        if (cachedValues.isTouchScreen) {
-            // they should be pressing the screen, drag events are handled for map panning
-            return false; // let it propagate
-        }
-        var settings = _breadcrumbContext.settings;
-        var renderer = _breadcrumbContext.breadcrumbRenderer;
-
-        if (settings.mode == MODE_MAP_MOVE) {
-            cachedValues.moveFixedPositionDown();
-        } else {
-            renderer.decScale();
-        }
-        return true;
-    }
-
-    public function onBack() as Boolean {
-        // touchscreens swipe right to call onback, prevent this, as we only want it to happen on key press
-        // the swipe could be from a map pan drag and get misinterpreted as an onback
-        System.println("onBack");
-        return false; // let it propagate to the onKey handler
-    }
+    // public function onBack() as Boolean {
+    // touchscreens swipe right to call onback, prevent this, as we only want it to happen on key press
+    // the swipe could be from a map pan drag and get misinterpreted as an onback
+    // System.println("onBack");
+    // return false; // let it propagate to the onKey handler
+    //}
 }
 
 function pauseAndConfirmExit(breadcrumbContext as BreadcrumbContext) as Void {

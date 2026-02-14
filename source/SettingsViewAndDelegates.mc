@@ -520,6 +520,9 @@ class SettingsMain extends WatchUi.Menu2 {
             new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {})
         );
         addItem(new WatchUi.MenuItem(Rez.Strings.attribution, null, :settingsMapAttribution, {}));
+        addItem(
+            new WatchUi.MenuItem(Rez.Strings.returnToUserTitle, null, :settingsMainReturnToUser, {})
+        );
         rerender();
     }
 
@@ -743,6 +746,15 @@ class SettingsGeneral extends WatchUi.Menu2 {
             )
         );
         addItem(
+            new WatchUi.ToggleMenuItem(
+                Rez.Strings.useStartForStopTitle,
+                null,
+                :settingsGeneralUseStartForStop,
+                false,
+                {}
+            )
+        );
+        addItem(
             new WatchUi.MenuItem(
                 Rez.Strings.mapMoveScreenSizeTitle,
                 null,
@@ -780,6 +792,7 @@ class SettingsGeneral extends WatchUi.Menu2 {
             settings.centerUserOffsetY.format("%.2f")
         );
         safeSetToggle(me, :settingsGeneralDisplayLatLong, settings.displayLatLong);
+        safeSetToggle(me, :settingsGeneralUseStartForStop, settings.useStartForStop);
         safeSetSubLabel(
             me,
             :settingsGeneralMapMoveScreenSize,
@@ -1978,6 +1991,11 @@ class SettingsMainDelegate extends WatchUi.Menu2InputDelegate {
                 new $.SettingsMapAttributionDelegate(),
                 WatchUi.SLIDE_IMMEDIATE
             );
+        } else if (itemId == :settingsMainReturnToUser) {
+            var dialog = new WatchUi.Confirmation(
+                WatchUi.loadResource(Rez.Strings.returnToUserTitle) as String
+            );
+            WatchUi.pushView(dialog, new ReturnToUserDelegate(), WatchUi.SLIDE_IMMEDIATE);
         }
     }
 }
@@ -1996,7 +2014,6 @@ class ResetSettingsDelegate extends WatchUi.ConfirmationDelegate {
     }
 }
 
-(:settingsView)
 class ReturnToUserDelegate extends WatchUi.ConfirmationDelegate {
     function initialize() {
         WatchUi.ConfirmationDelegate.initialize();
@@ -2283,6 +2300,9 @@ class SettingsGeneralDelegate extends WatchUi.Menu2InputDelegate {
             );
         } else if (itemId == :settingsGeneralDisplayLatLong) {
             settings.toggleDisplayLatLong();
+            view.rerender();
+        } else if (itemId == :settingsGeneralUseStartForStop) {
+            settings.toggleUseStartForStop();
             view.rerender();
         } else if (itemId == :settingsGeneralMapMoveScreenSize) {
             startPicker(

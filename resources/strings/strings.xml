@@ -104,6 +104,7 @@
     <string id="storageSeedBoundingBoxTitle">Seed Entire Bounding Box</string>
     <string id="storageSeedRouteDistanceMTitle">Seed Route Path Distance (m)</string>
 
+    <string id="useStartForStopTitle">Use Start For Stop</string>
     <string id="coloursTitle">Colours</string>
     <string id="mapsettingsTitle">Map</string>
     <string id="tileServerSettingsTitle">Tile Server</string>

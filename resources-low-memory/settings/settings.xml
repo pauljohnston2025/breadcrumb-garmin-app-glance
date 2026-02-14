@@ -67,6 +67,10 @@
     <setting propertyKey="@Properties.displayLatLong" title="@Strings.displayLatLongTitle">
         <settingConfig type="boolean"/>
     </setting>
+    
+    <setting propertyKey="@Properties.useStartForStop" title="@Strings.useStartForStopTitle">
+        <settingConfig type="boolean"/>
+    </setting>
 
     <setting propertyKey="@Properties.maxTrackPoints" title="@Strings.maxTrackPointsTitle">
         <settingConfig type="numeric" min="1"/>

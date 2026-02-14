@@ -101,6 +101,10 @@ Configure which screen is displayed for the datafield.
 
 Determines if the current latitude and longitude are displayed on the watch screen.
 
+### Use Start For Stop
+
+Switches the buttons on the right so the start button becomes the stop/exit button instead of the back button (bottom right).
+
 ### Map Move Screen Size
 
 How far to move across the screen when panning the map using the on screen ui. Relative to screen size, eg. 0.3 moves a third of the screen, 0.5 moves half the screen.   

@@ -1704,7 +1704,7 @@ class BreadcrumbRenderer {
         var arcThickness = 3;
 
         dc.setPenWidth(arcThickness);
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
 
         var TOP_LEFT_DEG = 150;
         var MIDDLE_LEFT_DEG = 180;
@@ -1717,13 +1717,19 @@ class BreadcrumbRenderer {
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
-        var topRight = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
-        renderModeLetter(dc, topRight[0], topRight[1]);
+        var modeLetterCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+        if (settings.useStartForStop) {
+            var temp = modeLetterCoords;
+            modeLetterCoords = exitCoords;
+            exitCoords = temp;
+        }
 
-        var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+        renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+
         dc.drawText(
-            bottomRight[0],
-            bottomRight[1],
+            exitCoords[0],
+            exitCoords[1],
             Graphics.FONT_XTINY,
             "X",
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
@@ -1734,18 +1740,21 @@ class BreadcrumbRenderer {
             var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
             var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
 
-            // --- Draw LEFT Arrow (Centered on middleLeft) ---
-            var lx = middleLeft[0];
-            var ly = middleLeft[1];
+            // note on touchscreens this is already rendered, we should probably skip
+            if (!_cachedValues.isTouchScreen) {
+                // --- Draw LEFT Arrow (Centered on middleLeft) ---
+                var lx = middleLeft[0];
+                var ly = middleLeft[1];
 
-            // Calculate horizontal bounds based on ARROW_SIZE
-            var leftTipX = lx - ARROW_SIZE / 2;
-            var leftBaseX = leftTipX + halfArrowSize;
-            var leftTailX = leftTipX + ARROW_SIZE;
+                // Calculate horizontal bounds based on ARROW_SIZE
+                var leftTipX = lx - ARROW_SIZE / 2;
+                var leftBaseX = leftTipX + halfArrowSize;
+                var leftTailX = leftTipX + ARROW_SIZE;
 
-            dc.drawLine(leftTipX, ly, leftBaseX, ly - halfArrowSize); // Upper chevron
-            dc.drawLine(leftTipX, ly, leftBaseX, ly + halfArrowSize); // Lower chevron
-            dc.drawLine(leftTipX, ly, leftTailX, ly); // Shaft
+                dc.drawLine(leftTipX, ly, leftBaseX, ly - halfArrowSize); // Upper chevron
+                dc.drawLine(leftTipX, ly, leftBaseX, ly + halfArrowSize); // Lower chevron
+                dc.drawLine(leftTipX, ly, leftTailX, ly); // Shaft
+            }
 
             // --- Draw RIGHT Arrow (Centered on bottomLeft) ---
             var rx = bottomLeft[0];
@@ -1826,6 +1835,41 @@ class BreadcrumbRenderer {
                 dc.drawLine(bx - hll, by, bx + hll, by);
             }
         }
+
+        if (settings.mode == MODE_NORMAL) {
+            var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
+            // note on touchscreens this is already rendered, we should probably skip
+            if (!_cachedValues.isTouchScreen) {
+                renderZoomAtPaceModeLetter(dc, middleLeft[0], middleLeft[1]);
+            }
+        }
+
+        if (settings.mode == MODE_MAP_MOVE || settings.mode == MODE_NORMAL) {
+            if (_cachedValues.fixedPosition != null || _cachedValues.scale != null) {
+                var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
+                // crosshair
+                var centerX = bottomLeft[0];
+                var centerY = bottomLeft[1];
+                var halfSize = 18;
+
+                // Draw the outer circle and lines
+                dc.setPenWidth(2);
+
+                // Vertical line
+                dc.drawLine(centerX, centerY - halfSize, centerX, centerY + halfSize);
+                // Horizontal line
+                dc.drawLine(centerX - halfSize, centerY, centerX + halfSize, centerY);
+                // Outer circle (r=35)
+                dc.drawCircle(centerX, centerY, 14);
+
+                // Draw the middle circle
+                dc.setPenWidth(3);
+                dc.drawCircle(centerX, centerY, 9);
+
+                // Draw the inner, filled circle
+                dc.fillCircle(centerX, centerY, 4);
+            }
+        }
     }
 
     // Helper to keep the main function clean
@@ -1848,21 +1892,94 @@ class BreadcrumbRenderer {
 
         // Calculate Text Position (slightly offset from the arc)
         var rad = Math.toRadians(angle);
-        var tx = center[0] + (radius - 10) * Math.cos(rad);
-        var ty = center[1] - (radius - 10) * Math.sin(rad);
+        var tx = center[0] + (radius - 20) * Math.cos(rad);
+        var ty = center[1] - (radius - 20) * Math.sin(rad);
 
         return [tx.toFloat(), ty.toFloat()];
     }
-    // (:twoButton)
-    // function renderButtonUi(dc as Dc) as Void {
 
-    // }
+    (:twoButton)
+    function renderButtonUi(dc as Dc) as Void {
+        var width = dc.getWidth();
+        var height = dc.getHeight();
+        var center = [width / 2, height / 2];
+        var radius = width / 2;
+        var arcThickness = 3;
+
+        dc.setPenWidth(arcThickness);
+        dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
+
+        var TOP_RIGHT_DEG = 30;
+        var BOTTOM_RIGHT_DEG = 330;
+
+        // var topLeft = getButtonCoordinate(dc, center, radius, TOP_LEFT_DEG);
+        // var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
+        // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
+        // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+
+        var modeLetterCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+        if (settings.useStartForStop) {
+            var temp = modeLetterCoords;
+            modeLetterCoords = exitCoords;
+            exitCoords = temp;
+        }
+
+        renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+
+        dc.drawText(
+            exitCoords[0],
+            exitCoords[1],
+            Graphics.FONT_XTINY,
+            "X",
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
+    }
+
+    (:touchOnly)
+    function renderButtonUi(dc as Dc) as Void {}
 
     function renderUi(dc as Dc) as Void {
-        renderTouchUi(dc);
+        if (_cachedValues.isTouchScreen) {
+            renderTouchUi(dc);
+        }
         renderButtonUi(dc);
     }
 
+    function renderZoomAtPaceModeLetter(
+        dc as Dc,
+        x as Number or Float,
+        y as Number or Float
+    ) as Void {
+        // M - default, moving is zoomed view, stopped if full view
+        // S - stopped is zoomed view, moving is entire view
+        var fvText = "M";
+        // dirty hack, should pass the bool in another way
+        // ui should be its own class, as should states
+        if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_STOPPED) {
+            // zoom view
+            fvText = "S";
+        }
+        if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_NEVER_ZOOM) {
+            // zoom view
+            fvText = "N";
+        }
+        if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_ALWAYS_ZOOM) {
+            // zoom view
+            fvText = "A";
+        }
+        if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_SHOW_ROUTES_WITHOUT_TRACK) {
+            // zoom view
+            fvText = "R";
+        }
+        dc.drawText(
+            x,
+            y,
+            Graphics.FONT_XTINY,
+            fvText,
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
+    }
     function renderModeLetter(dc as Dc, x as Number or Float, y as Number or Float) as Void {
         // current mode displayed
         var modeLetter = "T";
@@ -1958,16 +2075,16 @@ class BreadcrumbRenderer {
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
             );
         } else if (settings.mode == MODE_MAP_MOVE) {
-            // minus at the bottom right
+            // minus at the bottom left
             if (!_cachedValues.scaleCanDec) {
                 // no smoking
                 drawNoSmokingSign(dc, mapEnabledX, mapEnabledY);
             } else {
                 dc.drawLine(
-                    mapEnabledX - halfLineLength,
-                    mapEnabledY,
-                    mapEnabledX + halfLineLength,
-                    mapEnabledY
+                    clearRouteX - halfLineLength,
+                    clearRouteY,
+                    clearRouteX + halfLineLength,
+                    clearRouteY
                 );
             }
         }
@@ -2088,22 +2205,22 @@ class BreadcrumbRenderer {
         }
 
         if (settings.mode == MODE_MAP_MOVE) {
-            // plus at the top left of screen
+            // plus at the bottom right of screen (or top right when useStartForStop is enabled)
             if (!_cachedValues.scaleCanInc) {
                 // no smoking
                 drawNoSmokingSign(dc, clearRouteX, clearRouteY);
             } else {
                 dc.drawLine(
-                    clearRouteX - halfLineLength,
-                    clearRouteY,
-                    clearRouteX + halfLineLength,
-                    clearRouteY
+                    mapEnabledX - halfLineLength,
+                    mapEnabledY,
+                    mapEnabledX + halfLineLength,
+                    mapEnabledY
                 );
                 dc.drawLine(
-                    clearRouteX,
-                    clearRouteY - halfLineLength,
-                    clearRouteX,
-                    clearRouteY + halfLineLength
+                    mapEnabledX,
+                    mapEnabledY - halfLineLength,
+                    mapEnabledX,
+                    mapEnabledY + halfLineLength
                 );
             }
         }
@@ -2145,34 +2262,7 @@ class BreadcrumbRenderer {
         }
 
         if (settings.mode == MODE_NORMAL) {
-            // M - default, moving is zoomed view, stopped if full view
-            // S - stopped is zoomed view, moving is entire view
-            var fvText = "M";
-            // dirty hack, should pass the bool in another way
-            // ui should be its own class, as should states
-            if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_STOPPED) {
-                // zoom view
-                fvText = "S";
-            }
-            if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_NEVER_ZOOM) {
-                // zoom view
-                fvText = "N";
-            }
-            if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_ALWAYS_ZOOM) {
-                // zoom view
-                fvText = "A";
-            }
-            if (settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_SHOW_ROUTES_WITHOUT_TRACK) {
-                // zoom view
-                fvText = "R";
-            }
-            dc.drawText(
-                halfHitboxSize,
-                yHalfPhysical,
-                Graphics.FONT_XTINY,
-                fvText,
-                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-            );
+            renderZoomAtPaceModeLetter(dc, halfHitboxSize, yHalfPhysical);
 
             if (settings.mapEnabled) {
                 renderTileCacheButton(dc);
@@ -2517,21 +2607,31 @@ class BreadcrumbRenderer {
             ((yHalfPhysical - halfHitboxSize) * (yHalfPhysical - halfHitboxSize)) / 2
         ).toFloat();
 
-        // top left
-        clearRouteX = xHalfPhysical - offsetSize;
-        clearRouteY = yHalfPhysical - offsetSize;
+        // top left (note this is swapped from datafields to better support 5 button devices, since we can use button presses to do things)
+        returnToUserX = xHalfPhysical - offsetSize;
+        returnToUserY = yHalfPhysical - offsetSize;
 
         // top right
-        modeSelectX = xHalfPhysical + offsetSize;
-        modeSelectY = yHalfPhysical - offsetSize;
+        if (!settings.useStartForStop) {
+            modeSelectX = xHalfPhysical + offsetSize;
+            modeSelectY = yHalfPhysical - offsetSize;
+        } else {
+            mapEnabledX = xHalfPhysical + offsetSize;
+            mapEnabledY = yHalfPhysical - offsetSize;
+        }
 
-        // bottom left
-        returnToUserX = xHalfPhysical - offsetSize;
-        returnToUserY = yHalfPhysical + offsetSize;
+        // bottom left (note this is swapped from datafields to better support 5 button devices, since we can use button presses to do things)
+        clearRouteX = xHalfPhysical - offsetSize;
+        clearRouteY = yHalfPhysical + offsetSize;
 
         // bottom right
-        mapEnabledX = xHalfPhysical + offsetSize;
-        mapEnabledY = yHalfPhysical + offsetSize;
+        if (!settings.useStartForStop) {
+            mapEnabledX = xHalfPhysical + offsetSize;
+            mapEnabledY = yHalfPhysical + offsetSize;
+        } else {
+            modeSelectX = xHalfPhysical + offsetSize;
+            modeSelectY = yHalfPhysical + offsetSize;
+        }
     }
 
     (:rectangle)
@@ -2539,17 +2639,17 @@ class BreadcrumbRenderer {
         var physicalScreenWidth = _cachedValues.physicalScreenWidth; // local lookup faster
         var physicalScreenHeight = _cachedValues.physicalScreenHeight; // local lookup faster
 
-        // top left
-        clearRouteX = halfHitboxSize;
-        clearRouteY = halfHitboxSize;
+        // top left (note this is swapped from datafields to better support 5 button devices, since we can use button presses to do things)
+        returnToUserX = halfHitboxSize;
+        returnToUserY = halfHitboxSize;
 
         // top right
         modeSelectX = physicalScreenWidth - halfHitboxSize;
         modeSelectY = halfHitboxSize;
 
-        // bottom left
-        returnToUserX = halfHitboxSize;
-        returnToUserY = physicalScreenHeight - halfHitboxSize;
+        // bottom left (note this is swapped from datafields to better support 5 button devices, since we can use button presses to do things)
+        clearRouteX = halfHitboxSize;
+        clearRouteY = physicalScreenHeight - halfHitboxSize;
 
         // bottom right
         mapEnabledX = physicalScreenWidth - halfHitboxSize;

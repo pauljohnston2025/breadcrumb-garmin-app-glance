@@ -388,6 +388,10 @@ class Settings {
         WatchUi.loadResource(Rez.Drawables.OpenTopMapAttribution) as BitmapResource;
     var attributionImageType as Number = ATTRIBUTION_OPENTOPOMAP;
 
+    // switches the stop button to be the same as start (conventional garmin layout)
+    // defaults to false to keep our layout consistent with the other breadcrumb datafields (top right is the mode, so start button toggles mode)
+    var useStartForStop as Boolean = false;
+
     // should be a multiple of 256 (since thats how tiles are stored, though the companion app will render them scaled for you)
     // we will support rounding up though. ie. if we use 50 the 256 tile will be sliced into 6 chunks on the phone, this allows us to support more pixel sizes.
     // so math.ceil should be used what figuring out how many meters a tile is.
@@ -539,7 +543,7 @@ class Settings {
     var uiColour as Number = Graphics.COLOR_WHITE;
     (:blackAndWhite)
     var debugColour as Number = Graphics.COLOR_WHITE;
-    
+
     (:fullColours)
     var normalModeColour as Number = Graphics.COLOR_BLUE;
     (:fullColours)
@@ -1519,6 +1523,17 @@ class Settings {
         setValue("displayLatLong", displayLatLong);
     }
 
+    (:settingsView)
+    function setUseStartForStop(value as Boolean) as Void {
+        useStartForStop = value;
+        setValue("useStartForStop", useStartForStop);
+        useStartForStopSideEffect();
+    }
+
+    function useStartForStopSideEffect() as Void {
+        getApp()._breadcrumbContext.breadcrumbRenderer.setCornerPositions();
+    }
+
     function scaleRestrictedToTileLayers() as Boolean {
         return _scaleRestrictedToTileLayers || useDrawBitmap;
     }
@@ -1595,7 +1610,7 @@ class Settings {
     function routeStyle(routeId as Number) as Number {
         return routeProp(routeId, "style", DEFAULT_ROUTE_STYLE) as Number;
     }
-    
+
     function routeTexture(routeId as Number) as Graphics.BitmapTexture or Number {
         var routeIndex = getRouteIndexById(routeId);
         if (routeIndex == null) {
@@ -1954,6 +1969,12 @@ class Settings {
     function toggleDisplayLatLong() as Void {
         displayLatLong = !displayLatLong;
         setValue("displayLatLong", displayLatLong);
+    }
+    (:settingsView)
+    function toggleUseStartForStop() as Void {
+        useStartForStop = !useStartForStop;
+        setValue("useStartForStop", useStartForStop);
+        useStartForStopSideEffect();
     }
     (:settingsView)
     function toggleScaleRestrictedToTileLayers() as Void {
@@ -2528,6 +2549,7 @@ class Settings {
                 "drawHitBoxes" => drawHitBoxes,
                 "showDirectionPoints" => showDirectionPoints,
                 "displayLatLong" => displayLatLong,
+                "useStartForStop" => useStartForStop,
                 "scaleRestrictedToTileLayers" => scaleRestrictedToTileLayers(),
                 "trackColour" => trackColour.format("%X"),
                 "trackColour2" => trackColour2.format("%X"),
@@ -2717,6 +2739,7 @@ class Settings {
         drawHitBoxes = parseBool("drawHitBoxes", drawHitBoxes);
         showDirectionPoints = parseBool("showDirectionPoints", showDirectionPoints);
         displayLatLong = parseBool("displayLatLong", displayLatLong);
+        useStartForStop = parseBool("useStartForStop", useStartForStop);
         _scaleRestrictedToTileLayers = parseBool(
             "scaleRestrictedToTileLayers",
             _scaleRestrictedToTileLayers
@@ -2835,7 +2858,7 @@ class Settings {
     function defaultNumberParser4(key as String, value as PropertyValueType) as Number {
         return parseNumberRaw(key, value, 4);
     }
-    
+
     (:fullColours)
     function defaultNumberParser4(key as String, value as PropertyValueType) as Number {
         return parseNumberRaw(key, value, 4);
@@ -2886,6 +2909,7 @@ class Settings {
         var oldTrackWidth = trackWidth;
         var oldTrackColour = trackColour;
         var oldTrackColour2 = trackColour2;
+        var oldUseStartForStop = useStartForStop;
         loadSettings();
         // route settins do not work because garmins setting spage cannot edit them
         // when any property is modified, so we have to explain to users not to touch the settings, but we cannot because it looks
@@ -2990,6 +3014,10 @@ class Settings {
             oldTrackColour2 != trackColour2
         ) {
             recomputeTrackTexture();
+        }
+
+        if (oldUseStartForStop != useStartForStop) {
+            useStartForStopSideEffect();
         }
 
         setValueSideEffect();
