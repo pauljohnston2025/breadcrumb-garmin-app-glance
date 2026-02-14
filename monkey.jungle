@@ -188,5 +188,3 @@ instinctcrossoveramoled.resourcePath = $(instinctcrossoveramoled.resourcePath);r
 # however there are no system 4 devices that are also not system 5 (this seems strange, maybe they all got updates)
 
 # we should make another app without maps, like the LWBreadcrumbDataField then we can have older system devices supported (we could do that now, but the second they enable maps it would probbaly crash with OOM, though maybe it woldn't?)
-
-
