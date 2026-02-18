@@ -291,10 +291,16 @@ class CachedValues {
 
     /** returns the new scale */
     function getNewScaleAndUpdateCenter() as Float {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         if (currentlyZoomingAroundUser) {
             var renderDistanceM = _settings.metersAroundUser;
             if (!calcCenterPoint()) {
-                var lastPoint = getApp()._breadcrumbContext.track.coordinates.lastPoint();
+                var lastPoint = _breadcrumbContextLocal.track.coordinates.lastPoint();
                 if (lastPoint != null) {
                     centerPosition = lastPoint;
                     return calculateScale(renderDistanceM.toFloat());
@@ -302,7 +308,7 @@ class CachedValues {
                 // we are zooming around the user, but we do not have a last track point
                 // resort to using bounding box
                 var boundingBox = calcOuterBoundingBoxFromTrackAndRoutes(
-                    getApp()._breadcrumbContext.routes,
+                    _breadcrumbContextLocal.routes,
                     null
                 );
                 calcCenterPointForBoundingBox(boundingBox);
@@ -313,10 +319,10 @@ class CachedValues {
         }
 
         var boundingBox = calcOuterBoundingBoxFromTrackAndRoutes(
-            getApp()._breadcrumbContext.routes,
+            _breadcrumbContextLocal.routes,
             // if no roues we will try and render the track instead
             _settings.zoomAtPaceMode == ZOOM_AT_PACE_MODE_SHOW_ROUTES_WITHOUT_TRACK &&
-                getApp()._breadcrumbContext.routes.size() != 0
+                _breadcrumbContextLocal.routes.size() != 0
                 ? null
                 : optionalTrackBoundingBox()
         );
@@ -341,9 +347,15 @@ class CachedValues {
     }
 
     function optionalTrackBoundingBox() as [Float, Float, Float, Float]? {
-        return getApp()._breadcrumbContext.track.coordinates.lastPoint() == null
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return null;
+        }
+
+        return _breadcrumbContextLocal.track.coordinates.lastPoint() == null
             ? null
-            : getApp()._breadcrumbContext.track.boundingBox;
+            : _breadcrumbContextLocal.track.boundingBox;
     }
 
     // needs to be called whenever the screen moves to a new bounding box
@@ -522,7 +534,11 @@ class CachedValues {
             updateUserRotationElements(getCenterUserOffsetY());
             var ret = updateScaleCenterAndMap();
             _settings.clearPendingWebRequests();
-            getApp()._view.resetRenderTime();
+            var _viewLocal = $._view;
+            if (_viewLocal != null) {
+                _viewLocal.resetRenderTime();
+            }
+
             return ret;
         }
 
@@ -751,6 +767,11 @@ class CachedValues {
 
     /** returns true if the scale changed */
     function handleNewScale(newScale as Float) as Boolean {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return false;
+        }
         if ((currentScale - newScale).abs() < 0.000001) {
             // ignore any minor scale changes, esp if the scale is the same but float == does not work
             return false;
@@ -767,13 +788,16 @@ class CachedValues {
             scaleFactor = newScale / currentScale;
         }
 
-        var routes = getApp()._breadcrumbContext.routes;
+        var routes = _breadcrumbContextLocal.routes;
         for (var i = 0; i < routes.size(); ++i) {
             var route = routes[i];
             route.rescale(scaleFactor); // rescale all routes, even if they are not enabled
         }
-        getApp()._breadcrumbContext.track.rescale(scaleFactor);
-        getApp()._view.rescale(scaleFactor);
+        _breadcrumbContextLocal.track.rescale(scaleFactor);
+        var _viewLocal = $._view;
+        if (_viewLocal != null) {
+            _viewLocal.rescale(scaleFactor);
+        }
         centerPosition.rescaleInPlace(scaleFactor);
 
         currentScale = newScale;
@@ -827,10 +851,13 @@ class CachedValues {
         }
         updateFixedPositionFromSettings();
         updateScaleCenterAndMap();
-        if (updateScreen) {
-            getApp()._view.updateScratchPadBitmap();
+        var _viewLocal = $._view;
+        if (_viewLocal != null) {
+            if (updateScreen) {
+                _viewLocal.updateScratchPadBitmap();
+            }
+            _viewLocal.resetRenderTime();
         }
-        getApp()._view.resetRenderTime();
     }
 
     function getNewLatLong(
@@ -916,7 +943,12 @@ class CachedValues {
             _settings.zoomAtPaceMode != ZOOM_AT_PACE_MODE_SHOW_ROUTES_WITHOUT_TRACK
         ) {
             // the hacks begin
-            var lastPoint = getApp()._breadcrumbContext.track.coordinates.lastPoint();
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal == null) {
+                breadcrumbContextWasNull();
+                return false;
+            }
+            var lastPoint = _breadcrumbContextLocal.track.coordinates.lastPoint();
             if (lastPoint != null) {
                 centerPosition = lastPoint;
                 return true;
@@ -1024,10 +1056,14 @@ class CachedValues {
         // set fixed position recalculates all on us
         _settings.setFixedPosition(null, null, true);
         setScale(null);
-        getApp()._view.updateScratchPadBitmap();
+        var _viewLocal = $._view;
+        if (_viewLocal != null) {
+            _viewLocal.updateScratchPadBitmap();
+        }
     }
 
     function setScale(_scale as Float?) as Void {
+        var _viewLocal = $._view;
         scale = _scale;
         // be very careful about putting null into properties, it breaks everything
         if (scale == null) {
@@ -1038,13 +1074,17 @@ class CachedValues {
             // they are not actually in a user scale in this case though, so makes sense to show that we are tracking the users desired zoom instead of ours
             scaleCanInc = true;
             scaleCanDec = true;
-            getApp()._view.resetRenderTime();
+            if (_viewLocal != null) {
+                _viewLocal.resetRenderTime();
+            }
             return;
         }
 
         _settings.clearPendingWebRequests(); // we want the new position to render faster, that might be the same position, which is fine they queue up pretty quick
         updateScaleCenterAndMap();
-        getApp()._view.resetRenderTime();
+        if (_viewLocal != null) {
+            _viewLocal.resetRenderTime();
+        }
     }
 
     (:noStorage)
@@ -1081,7 +1121,13 @@ class CachedValues {
             return;
         }
 
-        var tileCache = getApp()._breadcrumbContext.tileCache;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
+        var tileCache = _breadcrumbContextLocal.tileCache;
         // If we do not clear the in memory tile cache the image tiles sometimes cause us to crash.
         // Think its because the graphics pool runs out of memory, and makeImageRequest fails with
         // Error: System Error
@@ -1151,6 +1197,12 @@ class CachedValues {
     // null indicates no more tiles
     (:storage)
     function nextSeedingTileKey() as [Number, Number, Number]? {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         // DANGEROUS - could trigger watchdog
         var counter = 0;
         while (true) {
@@ -1229,7 +1281,7 @@ class CachedValues {
                     0f
                 );
             } else {
-                var routes = getApp()._breadcrumbContext.routes;
+                var routes = _breadcrumbContextLocal.routes;
                 // might be no enabled routes? or the routes might have no coordinates. Guess we just have to return finished?
                 if (routes.size() == 0 || !_settings.atLeast1RouteEnabled()) {
                     // set up a tile to be downloaded, so that 'seedNextTilesToStorageBoundingBox' returns true
@@ -1331,7 +1383,12 @@ class CachedValues {
 
     (:storage)
     function seedNextTilesToStorage() as Boolean {
-        var tileCache = getApp()._breadcrumbContext.tileCache;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return false;
+        }
+        var tileCache = _breadcrumbContextLocal.tileCache;
         // could use Bresenham's Line Algorithm to find all tiles on the path
         // instead we split the routes points up into segments, and download all the tiles for each point in the route,
         // factoring in the max distance around the route to cache
@@ -1387,7 +1444,12 @@ class CachedValues {
 
     (:storage)
     function removeFromSeedingInProgressTilesAndSeedThem() as Void {
-        var tileCache = getApp()._breadcrumbContext.tileCache;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var tileCache = _breadcrumbContextLocal.tileCache;
         var toRemove = [];
         var keys = seedingInProgressTiles.keys();
         for (var i = 0; i < seedingInProgressTiles.size(); ++i) {
@@ -1422,6 +1484,12 @@ class CachedValues {
 
     (:storage)
     function seedingProgress() as [String, Float] {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return ["bad context", 0f];
+        }
+
         // The total number of layers to process is the difference + 1.
         // e.g., from layer 15 down to 10 is (15 - 10) + 1 = 6 layers.
         var tileLayers = (_settings.tileLayerMax - _settings.tileLayerMin + 1).toFloat();
@@ -1467,7 +1535,7 @@ class CachedValues {
             ];
         }
 
-        var routes = getApp()._breadcrumbContext.routes;
+        var routes = _breadcrumbContextLocal.routes;
         if (seedingUpToRoute >= routes.size()) {
             return ["Route: " + seedingUpToRoute + "/" + routes.size(), 0f];
         }

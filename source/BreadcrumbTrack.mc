@@ -115,7 +115,7 @@ class BreadcrumbTrack {
         lastClosePoint = null; // we want to recalculate off track, since the cheveron direction will change
         // cannot save route to storage unless we scale it back to real world coordinates
         // otherwise on reload it will be scaled all sorts of wonky
-        // writeToDisk(ROUTE_KEY); 
+        // writeToDisk(ROUTE_KEY);
     }
 
     function settingsChanged() as Void {
@@ -332,18 +332,21 @@ class BreadcrumbTrack {
         coordinates.add(newPoint);
         updateBoundingBox(newPoint);
         // todo have a local ref to settings
-        if (
-            coordinates.restrictPoints(
-                getApp()._breadcrumbContext.settings.maxTrackPoints,
-                getApp()._breadcrumbContext.settings.trackPointReductionMethod,
-                getApp()._breadcrumbContext.cachedValues.currentScale
-            )
-        ) {
-            // a resize occurred, calculate important data again
-            updatePointDataFromAllPoints();
-            // opt to remove more points then less, to ensure we get the bad point, or 1 of the good points instead
-            possibleBadPointsAdded = Math.ceil(possibleBadPointsAdded / 2.0f).toNumber();
-            return true;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal != null) {
+            if (
+                coordinates.restrictPoints(
+                    _breadcrumbContextLocal.settings.maxTrackPoints,
+                    _breadcrumbContextLocal.settings.trackPointReductionMethod,
+                    _breadcrumbContextLocal.cachedValues.currentScale
+                )
+            ) {
+                // a resize occurred, calculate important data again
+                updatePointDataFromAllPoints();
+                // opt to remove more points then less, to ensure we get the bad point, or 1 of the good points instead
+                possibleBadPointsAdded = Math.ceil(possibleBadPointsAdded / 2.0f).toNumber();
+                return true;
+            }
         }
 
         return false;
@@ -543,18 +546,24 @@ class BreadcrumbTrack {
     }
 
     function weAreStillCloseToTheLastDirectionPoint() as Boolean {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return false;
+        }
+
         // note: this logic is the same as in checkDirections but is only needed for when we go backwards on the path
         // so we can skip a heap of logic, checkDirections is more optimised for when it needs to check a heap more things
-        var checkPoint = getApp()._breadcrumbContext.track.lastPoint();
+        var checkPoint = _breadcrumbContextLocal.track.lastPoint();
         if (checkPoint == null) {
             return false;
         }
 
-        var cachedValues = getApp()._breadcrumbContext.cachedValues;
+        var cachedValues = _breadcrumbContextLocal.cachedValues;
         var directionsRaw = directions._internalArrayBuffer; // raw dog access means we can do the calcs much faster
         var coordinatesRaw = coordinates._internalArrayBuffer; // raw dog access means we can do the calcs much faster
 
-        var settings = getApp()._breadcrumbContext.settings;
+        var settings = _breadcrumbContextLocal.settings;
         var turnAlertTimeS = settings.turnAlertTimeS;
         var minTurnAlertDistanceM = settings.minTurnAlertDistanceM;
 
@@ -818,7 +827,13 @@ class BreadcrumbTrack {
             nextY
         );
 
-        var currentScale = getApp()._breadcrumbContext.cachedValues.currentScale;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return new OffTrackInfo(true, checkPoint, false);
+        }
+
+        var currentScale = _breadcrumbContextLocal.cachedValues.currentScale;
         var scaleMultiplier = currentScale;
         if (scaleMultiplier == 0f) {
             scaleMultiplier = 1f;
@@ -936,8 +951,13 @@ class BreadcrumbTrack {
                                 nextSegmentNextY
                             );
 
-                            var currentScale =
-                                getApp()._breadcrumbContext.cachedValues.currentScale;
+                            var _breadcrumbContextLocal = $._breadcrumbContext;
+                            if (_breadcrumbContextLocal == null) {
+                                breadcrumbContextWasNull();
+                                return new OffTrackInfo(true, checkPoint, false);
+                            }
+
+                            var currentScale = _breadcrumbContextLocal.cachedValues.currentScale;
                             var scaleMultiplier = currentScale;
                             if (scaleMultiplier == 0f) {
                                 scaleMultiplier = 1f;

@@ -122,9 +122,10 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
     function onTapInner(evt as WatchUi.ClickEvent) as Boolean {
-        if (getApp()._view.imageAlert != null) {
+        var _viewLocal = $._view;
+        if (_viewLocal != null && _viewLocal.imageAlert != null) {
             // any touch cancels the alert
-            getApp()._view.imageAlert = null;
+            _viewLocal.imageAlert = null;
             return true;
         }
         // logT("got tap (x,y): (" + evt.getCoordinates()[0] + "," +

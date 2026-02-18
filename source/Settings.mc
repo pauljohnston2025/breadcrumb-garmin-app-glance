@@ -339,7 +339,12 @@ class TileUpdateHandler {
             return;
         }
 
-        var settings = getApp()._breadcrumbContext.settings;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
         if (settings.mapChoiceVersion != mapChoiceVersion || settings.mapChoice != 1) {
             // we have either changed version (and sent out another request that will update), or its no longer the companion app set as the desired choice
             return;
@@ -357,12 +362,17 @@ class TileUpdateHandler {
     }
 
     function openTileServer() as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
         // PROTOCOL_SEND_OPEN_APP will not work if the tile server is disabled :(
         // also send a toast
-        getApp()._breadcrumbContext.webRequestHandler.transmit(
+        _breadcrumbContextLocal.webRequestHandler.transmit(
             [PROTOCOL_SEND_OPEN_APP],
             {},
-            getApp()._commStatus
+            new CommStatus()
         );
         WatchUi.showToast("Tile Server Response Failed", {});
     }
@@ -907,8 +917,14 @@ class Settings {
             setStorageTileCacheSizeWithoutSideEffect(storageTileCacheSizeMax);
         }
 
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         // grab the min and max from the tile server
-        getApp()._breadcrumbContext.webRequestHandler.addHighPriority(
+        _breadcrumbContextLocal.webRequestHandler.addHighPriority(
             new JsonRequest(
                 "TUH-" + mapChoiceVersion,
                 tileUrl + "/tileServerDetails",
@@ -1034,7 +1050,7 @@ class Settings {
         if (tileUrl.equals(COMPANION_APP_TILE_URL) && !storageMapTilesOnly) {
             // we could also send a toast, but the transmit allows us to open the app easier on the phone
             // even though the phone side is a bit of a hack (ConnectIQMessageReceiver cannot parse the data), it's still better than having to manualy open the app.
-            transmit([PROTOCOL_SEND_OPEN_APP], {}, getApp()._commStatus);
+            transmit([PROTOCOL_SEND_OPEN_APP], {}, new CommStatus());
         }
     }
 
@@ -1087,10 +1103,15 @@ class Settings {
     }
 
     function setMinTrackPointDistanceMSideEffect() as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
         // only the track needs the setting, routes do not matter, they can stay at the default (5m) because they are limited by the companion app anyway
-        getApp()._breadcrumbContext.track.setMinDistanceM(
+        _breadcrumbContextLocal.track.setMinDistanceM(
             minTrackPointDistanceM.toFloat(),
-            getApp()._breadcrumbContext.cachedValues.currentScale
+            _breadcrumbContextLocal.cachedValues.currentScale
         );
     }
 
@@ -1197,10 +1218,15 @@ class Settings {
     }
 
     function maxTrackPointsChanged() as Void {
-        getApp()._breadcrumbContext.track.coordinates.restrictPointsToMaxMemory(
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.track.coordinates.restrictPointsToMaxMemory(
             maxTrackPoints,
-            getApp()._breadcrumbContext.settings.trackPointReductionMethod,
-            getApp()._breadcrumbContext.cachedValues.currentScale
+            _breadcrumbContextLocal.settings.trackPointReductionMethod,
+            _breadcrumbContextLocal.cachedValues.currentScale
         );
     }
 
@@ -1369,11 +1395,21 @@ class Settings {
 
     function tileCacheSizeReduced() as Void {
         clearPendingWebRequests();
-        getApp()._breadcrumbContext.tileCache.clearValuesWithoutStorage(); // do not remove our cached tiles, we only reduced the caches size, so they are still valid
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache.clearValuesWithoutStorage(); // do not remove our cached tiles, we only reduced the caches size, so they are still valid
     }
 
     function storageTileCacheSizeReduced() as Void {
-        getApp()._breadcrumbContext.tileCache._storageTileCache.clearValues();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache._storageTileCache.clearValues();
     }
 
     (:settingsView)
@@ -1403,7 +1439,12 @@ class Settings {
     }
 
     function storageTilePageCountChanged() as Void {
-        getApp()._breadcrumbContext.tileCache._storageTileCache.setNewPageCount(
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache._storageTileCache.setNewPageCount(
             storageTileCachePageCount
         );
     }
@@ -1450,8 +1491,14 @@ class Settings {
     }
 
     function mapEnabledChanged() as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         if (!mapEnabled) {
-            getApp()._breadcrumbContext.tileCache.clearValuesWithoutStorage(); // do not remove our cached tiles, we might just be temporarily disabling maps
+            _breadcrumbContextLocal.tileCache.clearValuesWithoutStorage(); // do not remove our cached tiles, we might just be temporarily disabling maps
             clearPendingWebRequests();
             clearTileCacheStats();
             clearWebStats();
@@ -1462,7 +1509,7 @@ class Settings {
         if (tileUrl.equals(COMPANION_APP_TILE_URL) && !storageMapTilesOnly) {
             // we could also send a toast, but the transmit allows us to open the app easier on the phone
             // even though the phone side is a bit of a hack (ConnectIQMessageReceiver cannot parse the data), it's still better than having to manualy open the app.
-            transmit([PROTOCOL_SEND_OPEN_APP], {}, getApp()._commStatus);
+            transmit([PROTOCOL_SEND_OPEN_APP], {}, new CommStatus());
         }
     }
 
@@ -1503,7 +1550,12 @@ class Settings {
     function setShowErrorTileMessages(value as Boolean) as Void {
         showErrorTileMessages = value;
         setValue("showErrorTileMessages", showErrorTileMessages);
-        getApp()._breadcrumbContext.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
     }
     (:settingsView)
     function setDrawHitBoxes(value as Boolean) as Void {
@@ -1531,7 +1583,12 @@ class Settings {
     }
 
     function useStartForStopSideEffect() as Void {
-        getApp()._breadcrumbContext.breadcrumbRenderer.setCornerPositions();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.breadcrumbRenderer.setCornerPositions();
     }
 
     function scaleRestrictedToTileLayers() as Boolean {
@@ -1697,7 +1754,10 @@ class Settings {
 
         var oldVal = routes[routeIndex]["reversed"];
         if (oldVal != value) {
-            getApp()._breadcrumbContext.reverseRouteId(routeId);
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal != null) {
+                _breadcrumbContextLocal.reverseRouteId(routeId);
+            }
         }
         routes[routeIndex]["reversed"] = value;
         saveRoutes();
@@ -1863,7 +1923,12 @@ class Settings {
     function setTileErrorColour(value as Number) as Void {
         tileErrorColour = value;
         setValue("tileErrorColour", tileErrorColour.format("%X"));
-        getApp()._breadcrumbContext.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
     }
 
     (:settingsView)
@@ -1953,7 +2018,12 @@ class Settings {
     function toggleShowErrorTileMessages() as Void {
         showErrorTileMessages = !showErrorTileMessages;
         setValue("showErrorTileMessages", showErrorTileMessages);
-        getApp()._breadcrumbContext.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
     }
     (:settingsView)
     function toggleDrawHitBoxes() as Void {
@@ -2056,11 +2126,21 @@ class Settings {
     }
 
     function clearTileCache() as Void {
-        getApp()._breadcrumbContext.tileCache.clearValues();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache.clearValues();
     }
 
     function clearStorageTiles() as Void {
-        getApp()._breadcrumbContext.tileCache._storageTileCache.clearValues();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache._storageTileCache.clearValues();
     }
 
     function transmit(
@@ -2068,23 +2148,46 @@ class Settings {
         options as Dictionary?,
         listener as Communications.ConnectionListener
     ) as Void {
-        getApp()._breadcrumbContext.webRequestHandler.transmit(content, options, listener);
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.webRequestHandler.transmit(content, options, listener);
     }
 
     function clearTileCacheStats() as Void {
-        getApp()._breadcrumbContext.tileCache.clearStats();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.tileCache.clearStats();
     }
 
     function clearPendingWebRequests() as Void {
-        getApp()._breadcrumbContext.webRequestHandler.clearValues();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.webRequestHandler.clearValues();
     }
 
     function updateViewSettings() as Void {
-        getApp()._view.onSettingsChanged();
+        var _viewLocal = $._view;
+        if (_viewLocal != null) {
+            _viewLocal.onSettingsChanged();
+        }
     }
 
     function updateRouteSettings() as Void {
-        var contextRoutes = getApp()._breadcrumbContext.routes;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var contextRoutes = _breadcrumbContextLocal.routes;
         for (var i = 0; i < contextRoutes.size(); ++i) {
             var route = contextRoutes[i];
             // we do not care if its curently disabled, nuke the data anyway
@@ -2097,23 +2200,48 @@ class Settings {
     }
 
     function updateCachedValues() as Void {
-        getApp()._breadcrumbContext.cachedValues.recalculateAll();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.cachedValues.recalculateAll();
     }
 
     function clearWebStats() as Void {
-        getApp()._breadcrumbContext.webRequestHandler.clearStats();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.webRequestHandler.clearStats();
     }
 
     function clearContextRoutes() as Void {
-        getApp()._breadcrumbContext.clearRoutes();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.clearRoutes();
     }
 
     function clearRouteFromContext(routeId as Number) as Void {
-        getApp()._breadcrumbContext.clearRouteId(routeId);
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.clearRouteId(routeId);
     }
 
     function purgeRoutesFromContext() as Void {
-        getApp()._breadcrumbContext.purgeRoutes();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.purgeRoutes();
     }
 
     // some times these parserswere throwing when it was an empty strings seem to result in, or wrong type
@@ -2645,7 +2773,12 @@ class Settings {
     }
 
     function sessionChanged() as Void {
-        getApp()._breadcrumbContext.sessionChanged();
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        _breadcrumbContextLocal.sessionChanged();
     }
 
     // todo split this off into setSport and setSubsport (then we can dynamically make the list for the menus and make them be able to pick a category then a sport in that category)
@@ -2833,7 +2966,10 @@ class Settings {
         var returnToUser = Application.Properties.getValue("returnToUser") as Boolean;
         if (returnToUser) {
             Application.Properties.setValue("returnToUser", false);
-            getApp()._breadcrumbContext.cachedValues.returnToUser();
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal != null) {
+                _breadcrumbContextLocal.cachedValues.returnToUser();
+            }
         }
 
         logT("loadSettings: Loading all settings");
@@ -2881,6 +3017,12 @@ class Settings {
     }
 
     function onSettingsChanged() as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         logT("onSettingsChanged: Setting Changed, loading");
         var oldSport = sport;
         var oldSubSport = subSport;
@@ -2923,7 +3065,7 @@ class Settings {
                 // we have the same route
                 var currentRouteEntry = routes[routeIndex];
                 if (oldRouteEntry["reversed"] != currentRouteEntry["reversed"]) {
-                    getApp()._breadcrumbContext.reverseRouteId(oldRouteId);
+                    _breadcrumbContextLocal.reverseRouteId(oldRouteId);
                 }
 
                 var currentStyle = currentRouteEntry["style"] as Number;
@@ -2958,7 +3100,7 @@ class Settings {
             oldTileErrorColour != tileErrorColour ||
             oldShowErrorTileMessages != showErrorTileMessages
         ) {
-            getApp()._breadcrumbContext.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
+            _breadcrumbContextLocal.tileCache.clearValuesWithoutStorage(); // remove the errored tiles from cache and redraw
         }
 
         // run any tile cache clearing that we need to when map features change

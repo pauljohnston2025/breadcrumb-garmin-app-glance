@@ -122,11 +122,17 @@ function drawScaledBitmapHelper(
     height as Numeric,
     bitmap as BitmapType
 ) as Void {
+    var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
     // is there any reason not to move this into main code and just use AffineTransform every time - even for devices that support drawScaledBitmap?
     // I assume one has a performance benifit over the other?
     // need to test which is better (or if there is any noticible difference)
     // todo cache this transform so we do nto need to recreate every time
-    var tileScaleFactor = getApp()._breadcrumbContext.cachedValues.tileScaleFactor;
+    var tileScaleFactor = _breadcrumbContextLocal.cachedValues.tileScaleFactor;
     var scaleMatrix = new AffineTransform();
     scaleMatrix.scale(tileScaleFactor, tileScaleFactor); // scale
     try {
@@ -273,4 +279,14 @@ function safeSetStorage(
 
 function mustUpdate() as Void {
     WatchUi.showToast(Rez.Strings.mustUpdate, {});
+}
+
+(:release)
+function breadcrumbContextWasNull() as Void {
+}
+    
+(:debug)
+function breadcrumbContextWasNull() as Void {
+    logE("breadcrumb context was null");
+    throw new Exception();
 }

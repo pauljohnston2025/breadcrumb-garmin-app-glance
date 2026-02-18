@@ -191,15 +191,21 @@ class WebRequestHandleWrapper {
         try {
             handler.handle(responseCode, data);
 
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal == null) {
+                breadcrumbContextWasNull();
+                return;
+            }
+
             if (
                 responseCode != 200 &&
                 webHandler._settings.tileUrl.equals(COMPANION_APP_TILE_URL) &&
-                !getApp()._breadcrumbContext.settings.storageMapTilesOnly
+                !_breadcrumbContextLocal.settings.storageMapTilesOnly
             ) {
                 // todo only send this on certain errors, and only probably only after some limit?
                 // we could also send a toast, but the transmit allows us to open the app easier on the phone
                 // even though the phone side is a bit of a hack (ConnectIQMessageReceiver cannot parse the data), it's still better than having to manualy open the app.
-                webHandler.transmit([PROTOCOL_SEND_OPEN_APP], {}, getApp()._commStatus);
+                webHandler.transmit([PROTOCOL_SEND_OPEN_APP], {}, new CommStatus());
             }
 
             // data can be null even when we mae a json request and get 200 response

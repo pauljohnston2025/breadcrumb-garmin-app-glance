@@ -59,7 +59,11 @@ class BreadcrumbContext {
         if (sessionLocal != null) {
             sessionLocal.start();
         }
-        getApp()._view.onTimerStart();
+        var _viewLocal = $._view;
+        if (_viewLocal != null)
+        {
+            _viewLocal.onTimerStart();
+        }
     }
 
     function stopAndSaveSession() as Void {

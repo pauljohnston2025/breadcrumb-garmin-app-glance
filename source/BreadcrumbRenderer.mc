@@ -1369,6 +1369,12 @@ class BreadcrumbRenderer {
     }
     (:storage)
     function renderTileSeedUi(dc as Dc) as Boolean {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         if (
             renderLeftStartConfirmation(
                 dc,
@@ -1389,7 +1395,7 @@ class BreadcrumbRenderer {
             return false;
         }
 
-        var breadcrumbContext = getApp()._breadcrumbContext;
+        var breadcrumbContext = _breadcrumbContextLocal;
         dc.setColor(settings.uiColour, Graphics.COLOR_BLACK);
         dc.clear();
 
@@ -1697,6 +1703,12 @@ class BreadcrumbRenderer {
 
     (:fiveButton)
     function renderButtonUi(dc as Dc) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         var width = dc.getWidth();
         var height = dc.getHeight();
         var center = [width / 2, height / 2];
@@ -1721,7 +1733,7 @@ class BreadcrumbRenderer {
         var modeLetterCoords = startButtonCoords;
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
-        var sessionLocal = getApp()._breadcrumbContext.session;
+        var sessionLocal = _breadcrumbContextLocal.session;
         var renderStart = sessionLocal == null || !sessionLocal.isRecording();
         var renderExit = true;
         var renderModeLetter = !renderStart;
@@ -1911,6 +1923,12 @@ class BreadcrumbRenderer {
 
     (:twoButton)
     function renderButtonUi(dc as Dc) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         var width = dc.getWidth();
         var height = dc.getHeight();
         var center = [width / 2, height / 2];
@@ -1932,7 +1950,7 @@ class BreadcrumbRenderer {
         var modeLetterCoords = startButtonCoords;
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
-        var sessionLocal = getApp()._breadcrumbContext.session;
+        var sessionLocal = _breadcrumbContextLocal.session;
         var renderStart = sessionLocal == null || !sessionLocal.isRecording();
         var renderExit = true;
         var renderModeLetter = !renderStart;
@@ -2470,7 +2488,10 @@ class BreadcrumbRenderer {
             case 3:
                 // press right to confirm, left cancels
                 if (x > xHalfPhysical) {
-                    getApp()._breadcrumbContext.clearRoutes();
+                    var _breadcrumbContextLocal = $._breadcrumbContext;
+                    if (_breadcrumbContextLocal != null) {
+                        _breadcrumbContextLocal.clearRoutes();
+                    }
                 }
                 _clearRouteProgress = 0;
                 return true;

@@ -5,6 +5,7 @@ import Toybox.WatchUi;
 import Toybox.Communications;
 import Toybox.Timer;
 import Toybox.Position;
+import Toybox.Graphics;
 
 var globalExceptionCounter as Number = 0;
 var sourceMustBeNativeColorFormatCounter as Number = 0;
@@ -52,6 +53,46 @@ class SettingsSent extends Communications.ConnectionListener {
     }
 }
 
+(:glance)
+class MyGlanceView extends WatchUi.GlanceView {
+    function initialize() {
+        GlanceView.initialize();
+    }
+
+    function onUpdate(dc as Graphics.Dc) as Void {
+        var width = dc.getWidth();
+        var height = dc.getHeight();
+
+        // 1. Clear background
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        dc.clear();
+
+        // 2. Draw App Title (Breadcrumb)
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(
+            0,
+            height * 0.3,
+            Graphics.FONT_GLANCE,
+            "BREADCRUMB",
+            Graphics.TEXT_JUSTIFY_LEFT
+        );
+
+        // 3. Draw Sub-Instruction (Tap to open)
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(
+            0,
+            height * 0.7,
+            Graphics.FONT_GLANCE,
+            "Tap to open",
+            Graphics.TEXT_JUSTIFY_LEFT
+        );
+    }
+}
+
+var _breadcrumbContext as BreadcrumbContext? = null;
+var _view as BreadcrumbView? = null; // set in getInitialView so we do not get Circular dependency detected during initialization between '$' and '$.BreadcrumbDataFieldView'.
+var timer as Timer.Timer? = null;
+
 // to get devices and their memory limits
 // cd <homedir>/AppData/Roaming/Garmin/ConnectIQ/Devices/
 // cat ./**/compiler.json | grep -E '"type": "datafield"|displayName' -B 1
@@ -59,38 +100,46 @@ class SettingsSent extends Communications.ConnectionListener {
 // for supported image formats of devices
 // cat ./**/compiler.json | grep -E 'imageFormats|displayName' -A 5
 // looks like if it does not have a key for "imageFormats" the device only supports native formats and "Source must be native color format" if trying to use anything else.
+(:glance)
 class BreadcrumbApp extends Application.AppBase {
-    var _breadcrumbContext as BreadcrumbContext;
-    var _view as BreadcrumbView;
-    var timer as Timer.Timer? = null;
-
-    var _commStatus as CommStatus = new CommStatus();
-
     function initialize() {
         AppBase.initialize();
-        _breadcrumbContext = new BreadcrumbContext();
-        _view = new BreadcrumbView(_breadcrumbContext);
-        _breadcrumbContext.setup();
     }
 
+    (:typecheck(disableBackgroundCheck))
+    function setupGlobals() as Void {
+        if ($._breadcrumbContext != null) {
+            return;
+        }
+
+        $._breadcrumbContext = new BreadcrumbContext();
+        ($._breadcrumbContext as BreadcrumbContext).setup();
+        $._view = new BreadcrumbView($._breadcrumbContext as BreadcrumbContext);
+    }
+
+    (:typecheck(disableGlanceCheck))
     function timerCallback() as Void {
         var activityInfo = Activity.getActivityInfo();
         if (activityInfo != null) {
-            _view.compute(activityInfo);
+            $._view.compute(activityInfo);
         }
         // request update every time we update the activity, similar to what data fields do
         WatchUi.requestUpdate();
     }
 
+    (:typecheck(disableGlanceCheck))
     function onPosition(info as Position.Info) as Void {
         // position pulled from timerCallback with Activity.getActivityInfo()
         // but we have to turn it on, otherwise the activity will not always do it for us
     }
 
-
+    (:typecheck(disableGlanceCheck))
     function onSettingsChanged() as Void {
         try {
-            _breadcrumbContext.settings.onSettingsChanged();
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal != null) {
+                _breadcrumbContextLocal.settings.onSettingsChanged();
+            }
         } catch (e) {
             logE("failed onSettingsChange: " + e.getErrorMessage());
             ++$.globalExceptionCounter;
@@ -98,7 +147,9 @@ class BreadcrumbApp extends Application.AppBase {
     }
 
     // onStart() is called on application start up
+    (:typecheck(disableGlanceCheck))
     function onStart(state as Dictionary?) as Void {
+        System.println("onStart");
         if (Communications has :registerForPhoneAppMessages) {
             logT("registering for phone messages");
             Communications.registerForPhoneAppMessages(method(:onPhone));
@@ -114,7 +165,9 @@ class BreadcrumbApp extends Application.AppBase {
     }
 
     // onStop() is called when your application is exiting
+    (:typecheck(disableGlanceCheck))
     function onStop(state as Dictionary?) as Void {
+        System.println("onStop");
         // https://forums.garmin.com/developer/connect-iq/f/discussion/872/battery-drain-when-connectiq-app-is-not-running/2006348
         // https://forums.garmin.com/developer/connect-iq/i/bug-reports/bug-battery-drain-after-app-exit-caused-by-activityrecording-api
         var timerLocal = timer;
@@ -133,23 +186,31 @@ class BreadcrumbApp extends Application.AppBase {
     }
 
     // Return the initial view of your application here
+    (:typecheck(disableGlanceCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
+        setupGlobals();
         // the initial view is called again when the settings close (sometimes)
         // we also catch this in the 'onUpdate' function in the main view
-        _view.allowTaskComputes = true;
+        $._view.allowTaskComputes = true;
         // to open settings to test the simulator has it in an obvious place
         // Settings -> Trigger App Settings (right down the bottom - almost off the screen)
         // then to go back you need to Settings -> Time Out App Settings
-        return [_view, new BreadcrumbDelegate(_breadcrumbContext)];
+        return [$._view, new BreadcrumbDelegate($._breadcrumbContext as BreadcrumbContext)];
     }
 
+    function getGlanceView() as [Views] or [Views, InputDelegates] {
+        return [new MyGlanceView()];
+    }
+
+    (:typecheck(disableGlanceCheck))
     function myGetSettingsView() as [Views, InputDelegates] {
-        _view.allowTaskComputes = false;
+        $._view.allowTaskComputes = false;
         _breadcrumbContext.tileCache.clearValuesWithoutStorage(); // try and use the least amount of memory whilst settings is open
         var settings = new $.SettingsMain();
         return [settings, new $.SettingsMainDelegate(settings)];
     }
 
+    (:typecheck(disableGlanceCheck))
     function onPhone(msg as Communications.PhoneAppMessage) as Void {
         try {
             var data = msg.data as Array?;

@@ -155,8 +155,14 @@ class JsonWebTileRequestHandler {
             return;
         }
 
-        var settings = getApp()._breadcrumbContext.settings;
-        var cachedValues = getApp()._breadcrumbContext.cachedValues;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
+        var settings = _breadcrumbContextLocal.settings;
+        var cachedValues = _breadcrumbContextLocal.cachedValues;
 
         if (responseCode != 200) {
             // see error codes such as Communications.NETWORK_REQUEST_TIMED_OUT
@@ -184,8 +190,13 @@ class JsonWebTileRequestHandler {
                 Null,
         addToCache as Boolean
     ) as Void {
-        var settings = getApp()._breadcrumbContext.settings;
-        var cachedValues = getApp()._breadcrumbContext.cachedValues;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+        var cachedValues = _breadcrumbContextLocal.cachedValues;
         // logT("handling success tile x: " + _x + " y: " + _y + " z: " + _z);
 
         if (!(data instanceof Dictionary)) {
@@ -429,8 +440,14 @@ class ImageWebTileRequestHandler {
             return;
         }
 
-        var settings = getApp()._breadcrumbContext.settings;
-        var cachedValues = getApp()._breadcrumbContext.cachedValues;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
+        var settings = _breadcrumbContextLocal.settings;
+        var cachedValues = _breadcrumbContextLocal.cachedValues;
 
         if (responseCode != 200) {
             // see error codes such as Communications.NETWORK_REQUEST_TIMED_OUT
@@ -464,8 +481,14 @@ class ImageWebTileRequestHandler {
                 Null,
         addToCache as Boolean
     ) as Void {
-        var settings = getApp()._breadcrumbContext.settings;
-        var cachedValues = getApp()._breadcrumbContext.cachedValues;
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
+        var settings = _breadcrumbContextLocal.settings;
+        var cachedValues = _breadcrumbContextLocal.cachedValues;
         // logT("handling success tile x: " + _x + " y: " + _y + " z: " + _z);
         if (
             data == null ||
@@ -806,7 +829,7 @@ class StorageTileCache {
         switch (tileMeta[1] as Number) {
             case STORAGE_TILE_TYPE_DICT: // fallthrough
             // bitmap has to just load as a single image (we cannot slice it because we cannot store buffered bitmaps, only the original bitmap), it could be over the 32Kb limit, but we have no other choice
-            case STORAGE_TILE_TYPE_BITMAP: 
+            case STORAGE_TILE_TYPE_BITMAP:
                 // no need to check type of the getValue call, handling code checks it
                 return [
                     200,
@@ -864,8 +887,14 @@ class StorageTileCache {
         tileKeyStr as String,
         responseCode as Number
     ) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+
         var epoch = Time.now().value();
-        var settings = getApp()._breadcrumbContext.settings;
+        var settings = _breadcrumbContextLocal.settings;
         var expiresAt =
             epoch +
             (isHttpResponseCode(responseCode)
@@ -880,8 +909,13 @@ class StorageTileCache {
     }
 
     function addWrongDataTile(x as Number, y as Number, z as Number, tileKeyStr as String) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
         var epoch = Time.now().value();
-        var settings = getApp()._breadcrumbContext.settings;
+        var settings = _breadcrumbContextLocal.settings;
         var expiresAt = epoch + settings.errorTileTTLS;
         addMetaData(x, y, z, tileKeyStr, [
             epoch,
