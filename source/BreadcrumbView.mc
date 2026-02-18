@@ -395,12 +395,6 @@ class BreadcrumbView extends WatchUi.View {
             settings.setMapEnabled(false);
         }
 
-        var sessionLocal = _breadcrumbContext.session;
-        if (sessionLocal == null || !sessionLocal.isRecording()) {
-            // we are paused, do not add any new track points, we still want to do the above stuff though, get all the tiles ready etc.
-            return;
-        }
-
         if (_cachedValues.currentScale != 0f) {
             newPoint.rescaleInPlace(_cachedValues.currentScale);
         }

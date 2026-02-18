@@ -464,6 +464,9 @@ class SettingsMain extends WatchUi.Menu2 {
             new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {})
         );
         addItem(
+            new WatchUi.MenuItem("Activity Status", null, :settingsMainActivityStatus, {})
+        );
+        addItem(
             new WatchUi.MenuItem(Rez.Strings.generalSettingsTitle, null, :settingsMainGeneral, {})
         );
         addItem(new WatchUi.MenuItem(Rez.Strings.trackSettingsTitle, null, :settingsMainTrack, {}));
@@ -509,6 +512,14 @@ class SettingsMain extends WatchUi.Menu2 {
             :settingsMainActivityType,
             getActivityTypeString(settings.activityType())
         );
+
+        var sessionLocal = getApp()._breadcrumbContext.session;
+        var running = sessionLocal != null && sessionLocal.isRecording();
+        safeSetSubLabel(
+            me,
+            :settingsMainActivityStatus,
+            running ? "Running" : "Stopped"
+        );
     }
 }
 
@@ -518,6 +529,9 @@ class SettingsMain extends WatchUi.Menu2 {
         Menu2.initialize({ :title => Rez.Strings.settingsTitle });
         addItem(
             new WatchUi.MenuItem(Rez.Strings.activityTypeTitle, null, :settingsMainActivityType, {})
+        );
+        addItem(
+            new WatchUi.MenuItem("Activity Status", null, :settingsMainActivityStatus, {})
         );
         addItem(new WatchUi.MenuItem(Rez.Strings.attribution, null, :settingsMapAttribution, {}));
         addItem(
@@ -532,6 +546,13 @@ class SettingsMain extends WatchUi.Menu2 {
             me,
             :settingsMainActivityType,
             getActivityTypeString(settings.activityType())
+        );
+        var sessionLocal = getApp()._breadcrumbContext.session;
+        var running = sessionLocal != null && sessionLocal.isRecording();
+        safeSetSubLabel(
+            me,
+            :settingsMainActivityStatus,
+            running ? "Running" : "Stopped"
         );
     }
 }
