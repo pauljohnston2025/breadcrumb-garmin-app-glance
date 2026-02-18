@@ -1717,23 +1717,34 @@ class BreadcrumbRenderer {
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
-        var modeLetterCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        var startButtonCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        var modeLetterCoords = startButtonCoords;
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+
+        var sessionLocal = getApp()._breadcrumbContext.session;
+        var renderStart = sessionLocal == null || !sessionLocal.isRecording();
+        var renderExit = true;
+        var renderModeLetter = !renderStart;
+
         if (settings.useStartForStop) {
             var temp = modeLetterCoords;
             modeLetterCoords = exitCoords;
             exitCoords = temp;
+            renderExit = !renderStart;
+            renderModeLetter = true;
         }
 
-        renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+        if (renderModeLetter) {
+            renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+        }
 
-        dc.drawText(
-            exitCoords[0],
-            exitCoords[1],
-            Graphics.FONT_XTINY,
-            "X",
-            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-        );
+        if (renderExit) {
+            renderStopSquare(dc, exitCoords[0], exitCoords[1]);
+        }
+
+        if (renderStart) {
+            renderStartTriangle(dc, startButtonCoords[0], startButtonCoords[1]);
+        }
 
         var halfArrowSize = ARROW_SIZE / 2.0f;
         if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
@@ -1917,23 +1928,61 @@ class BreadcrumbRenderer {
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
-        var modeLetterCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        var startButtonCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
+        var modeLetterCoords = startButtonCoords;
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+
+        var sessionLocal = getApp()._breadcrumbContext.session;
+        var renderStart = sessionLocal == null || !sessionLocal.isRecording();
+        var renderExit = true;
+        var renderModeLetter = !renderStart;
+
         if (settings.useStartForStop) {
             var temp = modeLetterCoords;
             modeLetterCoords = exitCoords;
             exitCoords = temp;
+            renderExit = !renderStart;
+            renderModeLetter = true;
         }
 
-        renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+        if (renderModeLetter) {
+            renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+        }
 
-        dc.drawText(
-            exitCoords[0],
-            exitCoords[1],
-            Graphics.FONT_XTINY,
-            "X",
-            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-        );
+        if (renderExit) {
+            renderStopSquare(dc, exitCoords[0], exitCoords[1]);
+        }
+
+        if (renderStart) {
+            renderStartTriangle(dc, startButtonCoords[0], startButtonCoords[1]);
+        }
+    }
+
+    const STOP_SQUARE_SIZE = 10;
+
+    function renderStopSquare(dc as Dc, x as Float, y as Float) as Void {
+        // We calculate the top-left corner based on the center (x, y)
+        var topLeftX = x - STOP_SQUARE_SIZE;
+        var topLeftY = y - STOP_SQUARE_SIZE;
+        var sideLength = STOP_SQUARE_SIZE * 2;
+
+        // fillRectangle draws a solid block
+        dc.fillRectangle(topLeftX, topLeftY, sideLength, sideLength);
+    }
+
+    const TRIANGLE_SIZE = 12;
+
+    function renderStartTriangle(dc as Dc, x as Float, y as Float) as Void {
+        // We define three points relative to the center (x, y)
+        // To make it look like a "Play" button, the tip points right.
+        var points = [
+            [x - TRIANGLE_SIZE / 2, y - TRIANGLE_SIZE], // Top Left
+            [x - TRIANGLE_SIZE / 2, y + TRIANGLE_SIZE], // Bottom Left
+            [x + TRIANGLE_SIZE, y], // Tip (Right)
+        ];
+
+        // Using fillPolygon for a solid "Start" look
+        dc.fillPolygon(points);
     }
 
     (:touchOnly)

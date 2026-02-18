@@ -573,21 +573,37 @@ class BreadcrumbView extends WatchUi.View {
 
         try {
             actualOnUpdate(dc);
-            var qualityMsg = "";
-            if (quality == Position.QUALITY_NOT_AVAILABLE) {
-                qualityMsg = "GPS: Unavailable";
-            } else if (quality == Position.QUALITY_LAST_KNOWN) {
-                qualityMsg = "GPS: Last Known";
-            }/* else if (quality == Position.QUALITY_POOR) {
-                qualityMsg = "GPS: Poor";
-            }*/
 
-            if (!qualityMsg.equals("")) {
-                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+            var qualityMsg = null;
+            if (quality == Position.QUALITY_NOT_AVAILABLE) {
+                qualityMsg = "NO GPS";
+            } else if (quality == Position.QUALITY_LAST_KNOWN) {
+                // Allow QUALITY_POOR, its still got a fix of some sort
+                qualityMsg = "~GPS~";
+            }
+
+            if (qualityMsg != null) {
+                var width = dc.getWidth();
+                var dims = dc.getTextDimensions(qualityMsg, Graphics.FONT_XTINY);
+                var bannerWidth = dims[0] + 5;
+                var bannerHeight = dims[1] + 5;
+
+                // // 1. Draw the "Blackout" background (Pill shape)
+                // dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+                // dc.fillRoundedRectangle(
+                //     width / 2 - bannerWidth / 2,
+                //     5, // 5 pixels from the top
+                //     bannerWidth,
+                //     bannerHeight,
+                //     4 // Border radius for a subtle curve
+                // );
+
+                // 2. Draw the text inside the pill
+                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
                 dc.drawText(
-                    dc.getWidth() / 2,
-                    dc.getHeight() / 4,
-                    Graphics.FONT_MEDIUM,
+                    width / 2,
+                    5 + bannerHeight / 2,
+                    Graphics.FONT_XTINY, // Use XTINY to keep the banner small
                     qualityMsg,
                     Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
                 );
@@ -605,19 +621,6 @@ class BreadcrumbView extends WatchUi.View {
     function actualOnUpdate(dc as Dc) as Void {
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
-
-        var sessionLocal = _breadcrumbContext.session;
-        if (sessionLocal == null || !sessionLocal.isRecording()) {
-            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(
-                dc.getWidth() / 2,
-                dc.getHeight() / 2,
-                Graphics.FONT_MEDIUM,
-                "Press Start to Record",
-                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-            );
-            return;
-        }
 
         var imageAlertLocal = imageAlert;
         if (imageAlertLocal != null) {
@@ -843,7 +846,14 @@ class BreadcrumbView extends WatchUi.View {
                 routeWidth
             );
             if (settings.drawCheverons) {
-                renderer.renderTrackCheverons(dc, route, routeColour, routeStyle, routeTexture, routeWidth);
+                renderer.renderTrackCheverons(
+                    dc,
+                    route,
+                    routeColour,
+                    routeStyle,
+                    routeTexture,
+                    routeWidth
+                );
             }
             if (settings.showDirectionPoints || settings.showDirectionPointTextUnderIndex > 0) {
                 renderer.renderTrackDirectionPoints(dc, route, Graphics.COLOR_PURPLE);
@@ -891,7 +901,14 @@ class BreadcrumbView extends WatchUi.View {
                 routeWidth
             );
             if (settings.drawCheverons) {
-                renderer.renderTrackCheveronsUnrotated(dc, route, routeColour, routeStyle, routeTexture, routeWidth);
+                renderer.renderTrackCheveronsUnrotated(
+                    dc,
+                    route,
+                    routeColour,
+                    routeStyle,
+                    routeTexture,
+                    routeWidth
+                );
             }
             if (settings.showDirectionPoints || settings.showDirectionPointTextUnderIndex > 0) {
                 renderer.renderTrackDirectionPointsUnrotated(dc, route, Graphics.COLOR_PURPLE);
