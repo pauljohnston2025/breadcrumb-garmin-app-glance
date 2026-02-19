@@ -70,9 +70,9 @@ class MyGlanceView extends WatchUi.GlanceView {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(
             0,
-            height * 0.3,
+            0,
             Graphics.FONT_GLANCE,
-            "GLANCE BREADCRUMB",
+            "BREADCRUMB\nGLANCE",
             Graphics.TEXT_JUSTIFY_LEFT
         );
 
