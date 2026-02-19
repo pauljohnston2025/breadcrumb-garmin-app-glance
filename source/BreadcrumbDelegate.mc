@@ -116,10 +116,10 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             } catch (e) {
                 logE("failed to vibrate: " + e.getErrorMessage());
             }
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
     function onTapInner(evt as WatchUi.ClickEvent) as Boolean {
         var _viewLocal = $._view;
