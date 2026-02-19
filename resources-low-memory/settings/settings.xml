@@ -1,21 +1,6 @@
 <settings>
     <!-- https://developer.garmin.com/connect-iq/core-topics/properties-and-app-settings/ -->
     <!-- todo add prompt to some of these -->
-    <setting propertyKey="@Properties.activityType" title="@Strings.activityTypeTitle">
-        <settingConfig type="list">
-            <!-- value = (sport * 1000) + subSport -->
-            <listEntry value="0">@Strings.ActGeneric</listEntry>
-            <listEntry value="1000">@Strings.ActRun</listEntry>
-            <listEntry value="2000">@Strings.ActCycle</listEntry>
-            <listEntry value="5000">@Strings.ActSwim</listEntry>
-            <listEntry value="11000">@Strings.ActWalk</listEntry>
-            <listEntry value="15000">@Strings.ActRowing</listEntry>
-            <listEntry value="17000">@Strings.ActHiking</listEntry>
-            <listEntry value="37000">@Strings.ActSup</listEntry>
-            <listEntry value="41000">@Strings.ActKayak</listEntry>
-            <listEntry value="62000">@Strings.ActHiit</listEntry>
-        </settingConfig>
-    </setting>
 
     <setting propertyKey="@Properties.modeDisplayOrder" title="@Strings.modeDisplayOrderTitle">
         <settingConfig type="alphaNumeric"/>

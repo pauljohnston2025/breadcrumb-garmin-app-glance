@@ -301,15 +301,6 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     function onKey(keyEvent as WatchUi.KeyEvent) as Boolean {
         var key = keyEvent.getKey();
         logT("got key event: " + key);
-        var sessionLocal = _breadcrumbContext.session;
-        if ((sessionLocal == null || !sessionLocal.isRecording()) && key == WatchUi.KEY_ENTER) {
-            // If we are NOT recording, start the session.
-            _breadcrumbContext.startSession(); // resume the session
-            WatchUi.showToast("Activity Started", null);
-
-            return true;
-        }
-
         var cachedValues = _breadcrumbContext.cachedValues;
         var settings = _breadcrumbContext.settings;
         var renderer = _breadcrumbContext.breadcrumbRenderer;
@@ -330,13 +321,13 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
                 return true;
             }
 
-            var sessionLocal = _breadcrumbContext.session;
-            if (sessionLocal != null && sessionLocal.isRecording()) {
-                pauseAndConfirmExit(_breadcrumbContext);
-                return true;
-            }
+            var confirmationView = new WatchUi.Confirmation("Exit?");
+            var delegate = new DiscardConfirmationDelegate(_breadcrumbContext);
 
-            return false;
+            // Push the confirmation view to the user.
+            WatchUi.pushView(confirmationView, delegate, WatchUi.SLIDE_IMMEDIATE);
+
+            return true;
         } else if (key == WatchUi.KEY_UP_LEFT || key == WatchUi.KEY_UP) {
             if (settings.mode == MODE_MAP_MOVE_ZOOM) {
                 renderer.incScale();
@@ -386,63 +377,6 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     //}
 }
 
-function pauseAndConfirmExit(breadcrumbContext as BreadcrumbContext) as Void {
-    var sessionLocal = breadcrumbContext.session;
-    if (sessionLocal != null) {
-        sessionLocal.stop();
-    }
-    var menuView = new Rez.Menus.Exit();
-    var delegate = new ExitMenuDelegate(breadcrumbContext);
-    WatchUi.pushView(menuView, delegate, WatchUi.SLIDE_IMMEDIATE);
-}
-
-class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
-    var _breadcrumbContext as BreadcrumbContext;
-
-    function initialize(context as BreadcrumbContext) {
-        Menu2InputDelegate.initialize();
-        _breadcrumbContext = context;
-    }
-
-    public function onBack() as Void {
-        resume();
-    }
-
-    private function resume() as Void {
-        _breadcrumbContext.startSession();
-        WatchUi.showToast("Resumed", null);
-
-        // Pop the menu off the screen.
-        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-    }
-
-    // This function is called when the user selects an item from the menu.
-    public function onSelect(item as WatchUi.MenuItem) as Void {
-        var itemId = item.getId();
-
-        //if (itemId == :resume) {
-        // fallthrough to resume
-        if (itemId == :saveAndExit) {
-            // User wants to save and exit the app.
-            // 1. Call your existing helper to save the session.
-            _breadcrumbContext.stopAndSaveSession();
-            WatchUi.showToast("Activity Saved", null);
-            System.exit();
-        } else if (itemId == :exitWithoutSaving) {
-            // User wants to discard the activity.
-            var message = "Discard Activity?";
-            var confirmationView = new WatchUi.Confirmation(message);
-            var delegate = new DiscardConfirmationDelegate(_breadcrumbContext);
-
-            // Push the confirmation view to the user.
-            WatchUi.pushView(confirmationView, delegate, WatchUi.SLIDE_IMMEDIATE);
-            return;
-        }
-
-        resume();
-    }
-}
-
 // A delegate to handle the response from a confirmation dialog.
 class DiscardConfirmationDelegate extends WatchUi.ConfirmationDelegate {
     var _breadcrumbContext as BreadcrumbContext;
@@ -452,20 +386,10 @@ class DiscardConfirmationDelegate extends WatchUi.ConfirmationDelegate {
         _breadcrumbContext = context;
     }
 
-    // This method is called when the user responds to the confirmation.
     function onResponse(response as WatchUi.Confirm) as Boolean {
         if (response == WatchUi.CONFIRM_YES) {
-            // The user confirmed they want to discard the activity.
-            // 1. Discard the session data.
-            _breadcrumbContext.discardSession();
-            WatchUi.showToast("Activity Discarded", null);
-
             System.exit();
         }
-        // If the user selects "No" (CONFIRM_NO), the system automatically
-        // pops the confirmation dialog, returning them to the previous menu.
-        // No further action is needed from us.
-
-        return true; // Indicate that we have handled the response.
+        return true;
     }
 }

@@ -1,12 +1,10 @@
 import Toybox.ActivityRecording;
 import Toybox.Position;
 import Toybox.Lang;
-import Toybox.Activity;
 import Toybox.Application;
 
 class BreadcrumbContext {
     var settings as Settings;
-    var session as ActivityRecording.Session? = null;
     var cachedValues as CachedValues;
     var breadcrumbRenderer as BreadcrumbRenderer;
     var routes as Array<BreadcrumbTrack>;
@@ -18,7 +16,6 @@ class BreadcrumbContext {
     // Set the label of the data field here.
     function initialize() {
         settings = new Settings();
-        session = null;
         cachedValues = new CachedValues(settings);
 
         routes = [];
@@ -28,66 +25,6 @@ class BreadcrumbContext {
         webRequestHandler = new WebRequestHandler(settings);
         tileCache = new TileCache(webRequestHandler, settings, cachedValues);
         mapRenderer = new MapRenderer(tileCache, settings, cachedValues);
-    }
-
-    function createNewSession() as Void {
-        session = ActivityRecording.createSession({
-            :name => "BreadcrumApp",
-            :sport => settings.sport as ActivityRecording.Sport,
-            :subSport => settings.subSport as ActivityRecording.SubSport,
-            // todo if type is pool, provide :poolLength setting
-        });
-    }
-    function sessionChanged() as Void {
-        var sessionLocal = session;
-        if (sessionLocal != null) {
-            if (sessionLocal.isRecording()) {
-                // we can't do much. Maybe we stop and start it? but then we get 2 activities.
-                return;
-            }
-        }
-
-        discardSession();
-    }
-
-    function startSession() as Void {
-        if (session == null) {
-            createNewSession();
-        }
-
-        var sessionLocal = session;
-        if (sessionLocal != null) {
-            sessionLocal.start();
-        }
-        var _viewLocal = $._view;
-        if (_viewLocal != null)
-        {
-            _viewLocal.onTimerStart();
-        }
-    }
-
-    function stopAndSaveSession() as Void {
-        var sessionLocal = session;
-        if (sessionLocal != null) {
-            sessionLocal.stop();
-            sessionLocal.save();
-        }
-
-        // make sure we replace it once its stopped/saved, otherwise we get an error
-        // Details: a class method was invoked on a Session that is no longer valid
-        session = null;
-    }
-
-    function discardSession() as Void {
-        var sessionLocal = session;
-        if (sessionLocal != null) {
-            sessionLocal.stop();
-            sessionLocal.discard();
-        }
-
-        // make sure we replace it once its stopped/saved, otherwise we get an error
-        // Details: a class method was invoked on a Session that is no longer valid
-        session = null;
     }
 
     function setup() as Void {

@@ -73,7 +73,7 @@ class MyGlanceView extends WatchUi.GlanceView {
             0,
             height * 0.3,
             Graphics.FONT_GLANCE,
-            "BREADCRUMB",
+            "GLANCE BREADCRUMB",
             Graphics.TEXT_JUSTIFY_LEFT
         );
 
@@ -176,7 +176,6 @@ class BreadcrumbApp extends Application.AppBase {
         }
         timer = null;
         timerLocal = null;
-        _breadcrumbContext.discardSession(); // it should have been discarded already, but be sure
 
         // suggested by Brian https://forums.garmin.com/developer/connect-iq/f/discussion/872/battery-drain-when-connectiq-app-is-not-running/1661071
         Position.enableLocationEvents(Position.LOCATION_DISABLE, null); //not in the api but good to do if using GPS

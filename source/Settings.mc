@@ -389,9 +389,6 @@ class TileUpdateHandler {
 // * Reset sim app data and remove apps
 // * Works fine
 class Settings {
-    var sport as Number = Activity.SPORT_GENERIC;
-    var subSport as Number = Activity.SUB_SPORT_GENERIC;
-
     // todo only load these when needed (but cache them)
     (:imageTiles)
     var attributionImage as WatchUi.BitmapResource =
@@ -2651,7 +2648,6 @@ class Settings {
                 "showDirectionPointTextUnderIndex" => showDirectionPointTextUnderIndex,
                 "errorTileTTLS" => errorTileTTLS,
                 "fullTileSize" => fullTileSize,
-                "activityType" => activityType(),
                 "scaledTileSize" => scaledTileSize,
                 "packingFormat" => packingFormat,
                 "useDrawBitmap" => useDrawBitmap,
@@ -2759,44 +2755,7 @@ class Settings {
         }
     }
 
-    function parseSportAndSubSport(combinedValue as Number) as Void {
-        // Decode the number back into sport and subSport
-        // Example: 1003 / 1000 = 1 (SPORT_RUNNING)
-        sport = combinedValue / 1000;
-        // Example: 1003 % 1000 = 3 (SUB_SPORT_TRAIL)
-        subSport = combinedValue % 1000;
-    }
-
-    function saveSportAndSubSport() as Void {
-        setValue("activityType", activityType());
-        sessionChanged();
-    }
-
-    function sessionChanged() as Void {
-        var _breadcrumbContextLocal = $._breadcrumbContext;
-        if (_breadcrumbContextLocal == null) {
-            breadcrumbContextWasNull();
-            return;
-        }
-        _breadcrumbContextLocal.sessionChanged();
-    }
-
-    // todo split this off into setSport and setSubsport (then we can dynamically make the list for the menus and make them be able to pick a category then a sport in that category)
-    // little gain doing that for now though
-    // and it will only work in on-watch settings
-    function setSportAndSubSport(combinedValue as Number) as Void {
-        parseSportAndSubSport(combinedValue);
-        saveSportAndSubSport();
-    }
-
-    function activityType() as Number {
-        return sport * 1000 + subSport;
-    }
-
     function loadSettingsPart1() as Void {
-        var activityType = parseNumber("activityType", 0);
-        parseSportAndSubSport(activityType);
-
         httpErrorTileTTLS = parseNumber("httpErrorTileTTLS", httpErrorTileTTLS);
         turnAlertTimeS = parseNumber("turnAlertTimeS", turnAlertTimeS);
         minTurnAlertDistanceM = parseNumber("minTurnAlertDistanceM", minTurnAlertDistanceM);
@@ -3024,8 +2983,6 @@ class Settings {
         }
 
         logT("onSettingsChanged: Setting Changed, loading");
-        var oldSport = sport;
-        var oldSubSport = subSport;
         var oldRoutes = routes;
         var oldRouteMax = _routeMax;
         var oldMapChoice = mapChoice;
@@ -3086,10 +3043,6 @@ class Settings {
 
             // clear the route
             clearRouteFromContext(oldRouteId);
-        }
-
-        if (oldSport != sport || oldSubSport != subSport) {
-            sessionChanged();
         }
 
         if (oldRouteMax > _routeMax) {

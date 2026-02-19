@@ -1,6 +1,6 @@
 <strings>
-    <string id="AppName">BreadcrumbApp</string>
-    <string id="settingsTitle">Breadcrumb App</string>
+    <string id="AppName">BreadcrumbAppGlance</string>
+    <string id="settingsTitle">Breadcrumb App Glance</string>
 
     <string id="activityPaused">Activity Paused</string>
     <string id="resume">Resume</string>
