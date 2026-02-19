@@ -579,7 +579,7 @@ class BreadcrumbView extends WatchUi.View {
             if (qualityMsg != null) {
                 var width = dc.getWidth();
                 var dims = dc.getTextDimensions(qualityMsg, Graphics.FONT_XTINY);
-                var bannerWidth = dims[0] + 5;
+                // var bannerWidth = dims[0] + 5;
                 var bannerHeight = dims[1] + 5;
 
                 // // 1. Draw the "Blackout" background (Pill shape)

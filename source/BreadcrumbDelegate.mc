@@ -324,13 +324,11 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             (key == WatchUi.KEY_ESC && !_breadcrumbContext.settings.useStartForStop) ||
             (key == WatchUi.KEY_ENTER && _breadcrumbContext.settings.useStartForStop)
         ) {
-            var cachedValues = _breadcrumbContext.cachedValues;
             if (cachedValues.seeding()) {
                 cachedValues.cancelCacheCurrentMapArea();
                 return true;
             }
 
-            var sessionLocal = _breadcrumbContext.session;
             if (sessionLocal != null && sessionLocal.isRecording()) {
                 pauseAndConfirmExit(_breadcrumbContext);
                 return true;

@@ -294,7 +294,7 @@ class CachedValues {
         var _breadcrumbContextLocal = $._breadcrumbContext;
         if (_breadcrumbContextLocal == null) {
             breadcrumbContextWasNull();
-            return;
+            return 0f;
         }
 
         if (currentlyZoomingAroundUser) {
@@ -1200,7 +1200,7 @@ class CachedValues {
         var _breadcrumbContextLocal = $._breadcrumbContext;
         if (_breadcrumbContextLocal == null) {
             breadcrumbContextWasNull();
-            return;
+            return null;
         }
 
         // DANGEROUS - could trigger watchdog

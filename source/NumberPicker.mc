@@ -35,7 +35,7 @@ class PositionPickerGeneric {
         radius as Number,
         numPoints as Number
     ) as Array<[Float, Float]> {
-        var points = new [numPoints];
+        var points = new [numPoints] as Array<[Float, Float]>;
         var angleIncrement = (2 * Math.PI) / numPoints;
 
         // Shift the starting position to -90 degrees (Top of the screen)
