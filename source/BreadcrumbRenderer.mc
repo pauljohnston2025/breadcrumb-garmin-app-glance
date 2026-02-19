@@ -1372,7 +1372,7 @@ class BreadcrumbRenderer {
         var _breadcrumbContextLocal = $._breadcrumbContext;
         if (_breadcrumbContextLocal == null) {
             breadcrumbContextWasNull();
-            return;
+            return false;
         }
 
         if (
