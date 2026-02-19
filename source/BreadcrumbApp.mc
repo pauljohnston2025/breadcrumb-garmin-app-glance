@@ -114,6 +114,7 @@ class BreadcrumbApp extends Application.AppBase {
         $._breadcrumbContext = new BreadcrumbContext();
         ($._breadcrumbContext as BreadcrumbContext).setup();
         $._view = new BreadcrumbView($._breadcrumbContext as BreadcrumbContext);
+        onStartActual();
     }
 
     (:typecheck(disableGlanceCheck))
@@ -148,9 +149,19 @@ class BreadcrumbApp extends Application.AppBase {
     }
 
     // onStart() is called on application start up
-    (:typecheck(disableGlanceCheck))
     function onStart(state as Dictionary?) as Void {
-        System.println("onStart");
+        if (state != null && state has :launchedFromGlance && state.launchedFromGlance) {
+            // see https://forums.garmin.com/developer/connect-iq/f/discussion/401977/glances-and-widgets-user-input
+            // and https://pastebin.com/ZZLcz2XC
+            return; // nothing special to do when launched from a glance
+        }
+    }
+
+    (:typecheck(disableGlanceCheck))
+    function onStartActual() as Void {
+        // simulator seems to crash if we put this in onstart (though real device seems fine?)
+        // so adding it when we get the initial view
+        System.println("onStartActual");
         if (Communications has :registerForPhoneAppMessages) {
             logT("registering for phone messages");
             Communications.registerForPhoneAppMessages(method(:onPhone));
