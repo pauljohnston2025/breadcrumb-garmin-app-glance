@@ -314,6 +314,54 @@ class BreadcrumbView extends WatchUi.View {
         showMyAlert(alert);
     }
 
+    function doTasks(info as Activity.Info) as Boolean {
+        try {
+            // store rotations and speed every time
+            var rescaleOccurred = _cachedValues.onActivityInfo(info);
+            if (rescaleOccurred) {
+                // rescaling is an expensive operation, if we have multiple large routes rescale and then try and recalculate off track alerts (or anything else expensive)
+                // we could hit watchdog errors. Best to not attempt anything else.
+                logD("rescale occurred");
+                doTasksSoon(); // tasks never got a chance to run because we rescaled, this might result in a tight loop rescaling constantly though, but very unlikely they are going fast then slow a the correct interval
+                return true;
+            }
+            // this is here due to stack overflow bug when requests trigger the next request
+            // only try 3 times, do not want to schedule heaps if they complete immediately, could hit watchdog
+            // this should be minimal work, it only starts the web request, it should never complete straight away with data
+            for (var i = 0; i < 3; ++i) {
+                if (!_breadcrumbContext.webRequestHandler.startNextIfWeCan()) {
+                    break;
+                }
+            }
+
+            if (_cachedValues.stepCacheCurrentMapArea()) {
+                // doTasksSoon(); // we are busy stepping, seed faster, though this could result in us waiting for web requests which ends up being a busy poll (skip for now, we will queue up tasks wen we load tiles)
+                return true;
+            }
+
+            // perf only seed tiles when we need to (zoom level changes or user moves)
+            // could possibly be moved into cached values when map data changes - though map data may not change but we nuked the pending web requests - safer here
+            // or we have to do multiple seeds if pending web requests is low
+            // needs to be before _computeCounter for when we load tiles from storage (we can only load 1 tile per second)
+            if (_breadcrumbContext.mapRenderer.seedTiles()) {
+                // doTasksSoon(); loading tiles from storage already does this, no need to queue up task again
+                // we loaded a tile from storage, which could be a significantly costly task,
+                // do not trip the watchdog, be safe and return
+                // if tile cacheSize is not large enough, this could result in no tracking, since all tiles could potentially be pulled from storage
+                // but black squares will appear on the screen, alerting the user that something is wrong
+                return true;
+            }
+
+            return false;
+        } catch (e) {
+            logE("failed tasks: " + e.getErrorMessage());
+            ++$.globalExceptionCounter;
+            return true;
+        }
+
+        return false;
+    }
+
     // see onUpdate explanation for when each is called
     function actualCompute(info as Activity.Info) as Void {
         var currentLocationAccuracy = info.currentLocationAccuracy;
@@ -333,41 +381,10 @@ class BreadcrumbView extends WatchUi.View {
         // }
 
         // make sure tile seed or anything else does not stop our computes completely
-        // block any tasks until we return from setting view (settings view adds more memory, so we ned to do the least memeory intensive tasks)
+        // block any tasks until we return from setting view (settings view adds more memory, so we ned to do the least memory intensive tasks)
         var weReallyNeedACompute = _computeCounter > 3 * settings.recalculateIntervalS;
         if (!weReallyNeedACompute && allowTaskComputes) {
-            // store rotations and speed every time
-            var rescaleOccurred = _cachedValues.onActivityInfo(info);
-            if (rescaleOccurred) {
-                // rescaling is an expensive operation, if we have multiple large routes rescale and then try and recalculate off track alerts (or anything else expensive)
-                // we could hit watchdog errors. Best to not attempt anything else.
-                logD("rescale occurred");
-                return;
-            }
-            // this is here due to stack overflow bug when requests trigger the next request
-            // only try 3 times, do not want to schedule heaps if they complete immediately, could hit watchdog
-            // this should be minimal work, it only starts the web request, it should never complete straight away with data
-            for (var i = 0; i < 3; ++i) {
-                if (!_breadcrumbContext.webRequestHandler.startNextIfWeCan()) {
-                    break;
-                }
-            }
-
-            if (_cachedValues.stepCacheCurrentMapArea()) {
-                return;
-            }
-
-            // perf only seed tiles when we need to (zoom level changes or user moves)
-            // could possibly be moved into cached values when map data changes - though map data may not change but we nuked the pending web requests - safer here
-            // or we have to do multiple seeds if pending web requests is low
-            // needs to be before _computeCounter for when we load tiles from storage (we can only load 1 tile per second)
-            if (_breadcrumbContext.mapRenderer.seedTiles()) {
-                // we loaded a tile from storage, which could be a significantly costly task,
-                // do not trip the watchdog, be safe and return
-                // if tile cacheSize is not large enough, this could result in no tracking, since all tiles could potentially be pulled from storage
-                // but black squares will appear on the screen, alerting the user that something is wrong
-                return;
-            }
+            doTasks(info);
         }
 
         // slow down the calls to onActivityInfo as its a heavy operation checking

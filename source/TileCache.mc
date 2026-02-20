@@ -171,6 +171,7 @@ class JsonWebTileRequestHandler {
                 _tileCache._storageTileCache.addErroredTile(_x, _y, _z, _tileKeyStr, responseCode);
             }
             if (_onlySeedStorage) {
+                doTasksSoon(); // tile made it to storage, keep seeding 
                 return;
             }
             handleErroredTile(responseCode);
@@ -207,6 +208,7 @@ class JsonWebTileRequestHandler {
                 }
             }
             if (_onlySeedStorage) {
+                doTasksSoon(); // tile made it to storage, keep seeding 
                 return;
             }
             _tileCache.addErroredTile(_tileKeyStr, _tileCacheVersion, "WD", false);
@@ -226,6 +228,7 @@ class JsonWebTileRequestHandler {
         }
 
         if (_onlySeedStorage) {
+            doTasksSoon(); // tile made it to storage, keep seeding 
             return;
         }
 
@@ -462,6 +465,7 @@ class ImageWebTileRequestHandler {
                 );
             }
             if (_onlySeedStorage) {
+                doTasksSoon(); // tile made it to storage, keep seeding 
                 return;
             }
             handleErroredTile(responseCode);
@@ -502,6 +506,7 @@ class ImageWebTileRequestHandler {
                 }
             }
             if (_onlySeedStorage) {
+                doTasksSoon(); // tile made it to storage, keep seeding 
                 return;
             }
             _tileCache.addErroredTile(_tileKeyStr, _tileCacheVersion, "WD", false);
@@ -522,6 +527,7 @@ class ImageWebTileRequestHandler {
                 }
             }
             if (_onlySeedStorage) {
+                doTasksSoon(); // tile made it to storage, keep seeding 
                 return;
             }
             _tileCache.addErroredTile(_tileKeyStr, _tileCacheVersion, "WD", false);
@@ -535,6 +541,7 @@ class ImageWebTileRequestHandler {
         }
 
         if (_onlySeedStorage) {
+            doTasksSoon(); // tile made it to storage, keep seeding 
             return;
         }
 
@@ -1431,6 +1438,7 @@ class TileCache {
 
     // puts a tile into the cache
     function addTile(tileKeyStr as String, tileCacheVersion as Number, tile as Tile) as Void {
+        doTasksSoon(); // we are adding a tile, this means a web request or storage tile loaded, queue up tasks to run 
         if (tileCacheVersion != _tileCacheVersion) {
             return;
         }
@@ -1450,6 +1458,7 @@ class TileCache {
         msg as String,
         isHttpResponseCode as Boolean
     ) as Void {
+        doTasksSoon(); // we are adding an errored tile, this means a web request or storage tile failed, queue up tasks to run 
         if (tileCacheVersion != _tileCacheVersion) {
             return;
         }
