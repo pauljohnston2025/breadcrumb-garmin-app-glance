@@ -284,6 +284,7 @@ class ConnectionListenerWrapper extends Communications.ConnectionListener {
 
         alreadyDecedWebHandler = true;
         webHandler._outstandingCount--;
+        doTasksSoon(); // we did some transmit task, we only allow one doTasksSoon to be queued up anyway, so its safe to try again
     }
 }
 
@@ -397,6 +398,7 @@ class WebRequestHandler {
     function decrementOutstanding(hash as String) as Void {
         --_outstandingCount;
         outstandingHashes.remove(hash);
+        doTasksSoon(); // we did some web request task, this may double up with successful/errored tiles, but we only allow one doTasksSoon to be queued up anyway, so its safe to try again
     }
 
     function start() as Void {

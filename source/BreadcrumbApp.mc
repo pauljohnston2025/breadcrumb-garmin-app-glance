@@ -91,6 +91,29 @@ class MyGlanceView extends WatchUi.GlanceView {
 var _breadcrumbContext as BreadcrumbContext? = null;
 var _view as BreadcrumbView? = null; // set in getInitialView so we do not get Circular dependency detected during initialization between '$' and '$.BreadcrumbDataFieldView'.
 var timer as Timer.Timer? = null;
+var taskSoonQueued as Boolean = false;
+
+function doTasksSoon() as Void {
+    if (taskSoonQueued) {
+        return;
+    }
+
+    try {
+        // only allow one to run at a time, otherwise we will run out of timer callbacks
+        taskSoonQueued = true;
+        // do we need to store this globally so we can cancel it?
+        var soonTimer = new Timer.Timer();
+        // start tasks in 50ms, we can go as low as 50ms (the default minimum)
+        // single shot (no repeat)
+        soonTimer.start(getApp().method(:taskSoonTimerCallback), 50, false);
+    } catch (e) {
+        // docs say: An error will occur if too many timers are set.
+        // is this a handleable exception? or is it a critical failure?
+        // we only allow one queued at a time, so we should be safe but protect anyway
+        logE("failed to queue tasks soon timer: " + e.getErrorMessage());
+        ++$.globalExceptionCounter;
+    }
+}
 
 // to get devices and their memory limits
 // cd <homedir>/AppData/Roaming/Garmin/ConnectIQ/Devices/
@@ -115,6 +138,18 @@ class BreadcrumbApp extends Application.AppBase {
         ($._breadcrumbContext as BreadcrumbContext).setup();
         $._view = new BreadcrumbView($._breadcrumbContext as BreadcrumbContext);
         onStartActual();
+    }
+
+    (:typecheck(disableGlanceCheck))
+    function taskSoonTimerCallback() as Void {
+        taskSoonQueued = false;
+        var activityInfo = Activity.getActivityInfo();
+        if (activityInfo != null) {
+            if ($._view != null) {
+                $._view.doTasks(activityInfo);
+            }
+        }
+        // no need to update, the timerCallback will run in 1s intervals and refresh the screen, we do not want to refresh too fast or it may chew battery
     }
 
     (:typecheck(disableGlanceCheck))
