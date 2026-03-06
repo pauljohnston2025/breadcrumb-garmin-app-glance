@@ -1320,8 +1320,8 @@ class Settings {
     (:settingsView)
     function saveDataFieldPages() as Void {
         validateDataFieldPages();
-        setValue("dataFieldPageTypes", encodeCSV(dataFieldPageTypes));
-        setValue("dataFieldPageCounts", encodeCSV(dataFieldPageCounts));
+        Application.Properties.setValue("dataFieldPageTypes", encodeCSV(dataFieldPageTypes));
+        Application.Properties.setValue("dataFieldPageCounts", encodeCSV(dataFieldPageCounts));
     }
 
     (:settingsView)
@@ -3074,7 +3074,7 @@ class Settings {
             dataFieldPageTypes,
             method(:defaultNumberParser)
         );
-        validateDataFieldPages();
+        saveDataFieldPages();
         mapEnabled = parseBool("mapEnabled", mapEnabled);
         setMapEnabledRaw(mapEnabled); // prompt for app to open if needed
         cacheTilesInStorage = parseBool("cacheTilesInStorage", cacheTilesInStorage);

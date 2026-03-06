@@ -217,7 +217,9 @@ class BreadcrumbRenderer {
                 y = i == 0 ? h * 0.25f : h * 0.75f;
             } else if (count == 3) {
                 x = w / 2.0f;
-                y = (h * (i + 1)) / 4.0f; // Adjusted for better centering in rows
+                // (i * 0.333f) gets you the start of the block
+                // 0.166f pushes you to the middle of that block
+                y = h * (i * 0.333f + 0.166f);
             } else {
                 if (i == 0) {
                     x = w / 2.0f;
@@ -271,9 +273,15 @@ class BreadcrumbRenderer {
         }
 
         var centeredTextOffset =
-            (direction *
-                dc.getTextDimensions("A", settings.dataFieldTextSize as Graphics.FontType)[1]) /
-            2;
+            settings.mode >= DATA_PAGE_BASE_ID
+                ? 0
+                : (direction *
+                      dc.getTextDimensions(
+                          "A",
+                          settings.dataFieldTextSize as Graphics.FontType
+                      )[1]) /
+                  2;
+
         y = y + centeredTextOffset;
 
         if (type == DATA_TYPE_ALTITUDE) {
