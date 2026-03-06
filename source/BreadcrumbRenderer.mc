@@ -181,6 +181,8 @@ class BreadcrumbRenderer {
         return [foundPixelWidth, foundDistanceKey, foundName];
     }
 
+    const DATAFIELD_PAGE_TEXT_SIZE = Graphics.FONT_LARGE;
+
     function renderDataFieldPage(dc as Dc, pageIndex as Number) as Void {
         var types = settings.getTypesForPage(pageIndex);
         var count = types.size();
@@ -189,7 +191,7 @@ class BreadcrumbRenderer {
         var h = _cachedValues.physicalScreenHeight;
 
         // 1. Draw Dividers based on count
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(2);
 
         if (count == 2) {
@@ -232,7 +234,25 @@ class BreadcrumbRenderer {
                     y = h * 0.5f;
                 }
             }
-            renderDataField(dc, types[i], x, y, 1);
+            // 1. Render the label first (Small, at the top of the field block)
+            var label = getDataTypeString(types[i]);
+            if (label instanceof ResourceId)
+            {
+                label = WatchUi.loadResource(label); // hmmmm this is expensive
+            }
+            dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
+            var heightOffset = (dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1]) / 2 + 10;
+            dc.drawText(
+                x, 
+                y - heightOffset, // Offset up slightly from center
+                Graphics.FONT_XTINY, 
+                label, 
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+            );
+
+            // 2. Call your existing raw renderer for the value
+            // We pass a modified y if needed, or let renderDataField handle it
+            renderDataField(dc, types[i], x, y + 8, 1); // Offset down slightly
         }
     }
 
@@ -312,7 +332,7 @@ class BreadcrumbRenderer {
     function renderTextMetric(dc as Dc, x as Float, y as Float, val as String) as Void {
         var textSize =
             settings.mode >= DATA_PAGE_BASE_ID
-                ? Graphics.FONT_LARGE
+                ? DATAFIELD_PAGE_TEXT_SIZE
                 : settings.dataFieldTextSize as Graphics.FontType;
         dc.drawText(
             x,

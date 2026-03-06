@@ -555,7 +555,6 @@ class SettingsMain extends WatchUi.Menu2 {
     }
 }
 
-(:settingsView)
 function getDataTypeString(type as Number) as ResourceId or String {
     switch (type) {
         case DATA_TYPE_NONE:
