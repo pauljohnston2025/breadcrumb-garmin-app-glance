@@ -359,7 +359,7 @@ class BreadcrumbView extends WatchUi.View {
             return true;
         }
 
-        return false;
+        /*return false;*/
     }
 
     // see onUpdate explanation for when each is called
@@ -661,7 +661,14 @@ class BreadcrumbView extends WatchUi.View {
 
         // mode should be stored here, but is needed for rendering the ui
         // should structure this way better, but oh well (renderer per mode etc.)
-        if (settings.mode == MODE_ELEVATION) {
+        if (settings.mode >= DATA_PAGE_BASE_ID) {
+            renderer.renderDataFieldPage(dc, settings.mode - DATA_PAGE_BASE_ID);
+            if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
+                renderer.renderUi(dc);
+            }
+            return;
+        }
+        else if (settings.mode == MODE_ELEVATION) {
             renderElevation(dc);
             if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
                 renderer.renderUi(dc);

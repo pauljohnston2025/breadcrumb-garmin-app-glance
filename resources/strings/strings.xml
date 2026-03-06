@@ -208,6 +208,8 @@
     <string id="dataTypeCurPace">Pace</string>
 
     <string id="dataFieldTextSizeTitle">Data Field Text Size</string>
+    <string id="dataFieldPageCountsTitle">Data Field Page Counts</string>
+    <string id="dataFieldPageTypesTitle">Data Field Page Types</string>
     <string id="fontXTiny">Extra Tiny</string>
     <string id="fontTiny">Tiny</string>
     <string id="fontSmall">Small</string>

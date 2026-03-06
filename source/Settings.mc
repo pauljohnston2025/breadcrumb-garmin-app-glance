@@ -35,19 +35,19 @@ enum /*TrackPointReductionMethod*/ {
 }
 
 enum /*DataType*/ {
-    DATA_TYPE_NONE,
-    DATA_TYPE_SCALE,
-    DATA_TYPE_ALTITUDE,
-    DATA_TYPE_AVERAGE_HEART_RATE,
-    DATA_TYPE_AVERAGE_SPEED,
-    DATA_TYPE_CURRENT_HEART_RATE,
-    DATA_TYPE_CURRENT_SPEED,
-    DATA_TYPE_ELAPSED_DISTANCE,
-    DATA_TYPE_ELAPSED_TIME,
-    DATA_TYPE_TOTAL_ASCENT,
-    DATA_TYPE_TOTAL_DESCENT,
-    DATA_TYPE_AVERAGE_PACE,
-    DATA_TYPE_CURRENT_PACE,
+    DATA_TYPE_NONE = 0,
+    DATA_TYPE_SCALE = 1,
+    DATA_TYPE_ALTITUDE = 2,
+    DATA_TYPE_AVERAGE_HEART_RATE = 3,
+    DATA_TYPE_AVERAGE_SPEED = 4,
+    DATA_TYPE_CURRENT_HEART_RATE = 5,
+    DATA_TYPE_CURRENT_SPEED = 6,
+    DATA_TYPE_ELAPSED_DISTANCE = 7,
+    DATA_TYPE_ELAPSED_TIME = 8,
+    DATA_TYPE_TOTAL_ASCENT = 9,
+    DATA_TYPE_TOTAL_DESCENT = 10,
+    DATA_TYPE_AVERAGE_PACE = 11,
+    DATA_TYPE_CURRENT_PACE = 12,
 
     // other metrics that might be good
     // most of these are inbuilt garmin ones (so could easily be added to a second data screen)
@@ -378,6 +378,8 @@ class TileUpdateHandler {
     }
 }
 
+const DATA_PAGE_BASE_ID = 1000;
+
 // we are getting dangerously close to the app settings limit
 // was getting "Unable to serialize app data" in the sim, but after a restart worked fine
 // see
@@ -520,6 +522,13 @@ class Settings {
     var topDataType as Number = DATA_TYPE_NONE;
     var bottomDataType as Number = DATA_TYPE_SCALE;
     var dataFieldTextSize as Number = Graphics.FONT_XTINY;
+    // dataFieldPageCounts is the number of pages on each screen
+    // eg. 1,2,1 is 3 pages 1 datafield on page 1, 2 datafields on page 2, etc.
+    // pages can have up to 4 dataqfields on them, the page count is not limited
+    var dataFieldPageCounts as Array<Number> = [];
+    // dataFieldPageTypes is the types of datafields on the pages eg.
+    // 0,1,1,0 to show DATA_TYPE_NONE, DATA_TYPE_SCALE, DATA_TYPE_ALTITUDE and DATA_TYPE_NONE the number of  dataFieldPageTypes needs to match the number of dataFieldPageCounts added together
+    var dataFieldPageTypes as Array<Number> = [];
     var minTrackPointDistanceM as Number = 5; // minimum distance between 2 track points
     var trackPointReductionMethod as Number = TRACK_POINT_REDUCTION_METHOD_DOWNSAMPLE;
     var uiMode as Number = UI_MODE_SHOW_ALL;
@@ -1125,6 +1134,181 @@ class Settings {
     function setDataFieldTextSize(value as Number) as Void {
         dataFieldTextSize = value;
         setValue("dataFieldTextSize", dataFieldTextSize);
+    }
+
+    (:settingsView)
+    function getOffsetForPage(pageIndex as Number) as Number {
+        var offset = 0;
+        for (var i = 0; i < pageIndex; i++) {
+            offset += dataFieldPageCounts[i];
+        }
+        return offset;
+    }
+
+    (:settingsView)
+    function setPageFieldType(
+        pageIndex as Number,
+        fieldIndex as Number,
+        newType as Number
+    ) as Void {
+        var offset = getOffsetForPage(pageIndex);
+        var targetIndex = offset + fieldIndex;
+
+        if (targetIndex < dataFieldPageTypes.size()) {
+            dataFieldPageTypes[targetIndex] = newType;
+        }
+
+        saveDataFieldPages();
+    }
+
+    (:settingsView)
+    function getFieldType(pageIndex as Number, fieldIndex as Number) as Number {
+        var offset = getOffsetForPage(pageIndex);
+        var targetIndex = offset + fieldIndex;
+
+        // Bounds check to ensure we don't crash
+        if (targetIndex < dataFieldPageTypes.size()) {
+            return dataFieldPageTypes[targetIndex];
+        }
+        return 0; // Default or error case
+    }
+
+    (:settingsView)
+    function getTypesForPage(pageIndex as Number) as Array<Number> {
+        var offset = getOffsetForPage(pageIndex);
+        var count = dataFieldPageCounts[pageIndex];
+        var pageTypes = [];
+
+        for (var i = 0; i < count; i++) {
+            pageTypes.add(dataFieldPageTypes[offset + i] as Number);
+        }
+        return pageTypes as Array<Number>;
+    }
+
+    (:settingsView)
+    function addNewPage() as Number {
+        dataFieldPageCounts.add(1);
+        dataFieldPageTypes.add(DATA_TYPE_NONE);
+        saveDataFieldPages();
+        var newPageIndex = dataFieldPageCounts.size() - 1;
+        var newModeId = DATA_PAGE_BASE_ID + newPageIndex;
+
+        // Now also add to the display order
+        if (modeDisplayOrder.indexOf(newModeId) == -1) {
+            modeDisplayOrder.add(newModeId);
+        }
+        setValue("modeDisplayOrder", encodeCSV(modeDisplayOrder));
+
+        return newPageIndex;
+    }
+
+    (:settingsView)
+    function removePage(pageIndex as Number) as Void {
+        if (pageIndex < 0 || pageIndex >= dataFieldPageCounts.size()) {
+            return;
+        }
+
+        // 1. Get info BEFORE we mutate the page counts array
+        var offset = getOffsetForPage(pageIndex);
+        var countToRemove = dataFieldPageCounts[pageIndex];
+
+        // 2. Remove fields from the flattened types array
+        // We slice the parts before and after the page's block of fields
+        var before = dataFieldPageTypes.slice(0, offset);
+        var after = dataFieldPageTypes.slice(offset + countToRemove, null);
+
+        // Concatenate to remove the target block
+        before.addAll(after);
+        dataFieldPageTypes = before;
+
+        // 3. REMOVE BY INDEX from dataFieldPageCounts
+        var beforeCounts = dataFieldPageCounts.slice(0, pageIndex);
+        var afterCounts = dataFieldPageCounts.slice(pageIndex + 1, null);
+        beforeCounts.addAll(afterCounts);
+        dataFieldPageCounts = beforeCounts;
+
+        // 4. Update modeDisplayOrder
+        var pageId = DATA_PAGE_BASE_ID + pageIndex;
+
+        // Remove the page ID from the display order
+        modeDisplayOrder.remove(pageId);
+
+        // 5. Re-index remaining page IDs in modeDisplayOrder
+        // Any DataPage ID greater than the removed one must be decremented
+        for (var i = 0; i < modeDisplayOrder.size(); i++) {
+            var currentId = modeDisplayOrder[i];
+            if (currentId > pageId) {
+                modeDisplayOrder[i] = currentId - 1;
+            }
+        }
+
+        saveDataFieldPages();
+        setValue("modeDisplayOrder", encodeCSV(modeDisplayOrder));
+    }
+
+    (:settingsView)
+    function addNewField(pageIndex as Number) as Void {
+        var offset = getOffsetForPage(pageIndex);
+        var count = dataFieldPageCounts[pageIndex];
+        var insertIndex = offset + count;
+
+        var before = dataFieldPageTypes.slice(0, insertIndex);
+        var after = dataFieldPageTypes.slice(insertIndex, null);
+
+        var newArray = before;
+        newArray.add(DATA_TYPE_NONE);
+        newArray.addAll(after);
+
+        dataFieldPageTypes = newArray;
+        dataFieldPageCounts[pageIndex] = count + 1;
+        saveDataFieldPages();
+    }
+
+    (:settingsView)
+    function validateDataFieldPages() as Void {
+        var expectedTotalFields = 0;
+        for (var i = 0; i < dataFieldPageCounts.size(); i++) {
+            expectedTotalFields += dataFieldPageCounts[i];
+        }
+
+        var actualTotalFields = dataFieldPageTypes.size();
+
+        if (actualTotalFields < expectedTotalFields) {
+            // We are missing fields; pad with NONE
+            var missingCount = expectedTotalFields - actualTotalFields;
+            for (var i = 0; i < missingCount; i++) {
+                dataFieldPageTypes.add(DATA_TYPE_NONE);
+            }
+        } else if (actualTotalFields > expectedTotalFields) {
+            // We have too many fields; slice them off
+            dataFieldPageTypes = dataFieldPageTypes.slice(0, expectedTotalFields);
+        }
+
+        // 1. Remove orphaned Data Page IDs from modeDisplayOrder
+        for (var i = modeDisplayOrder.size() - 1; i >= 0; i--) {
+            var val = modeDisplayOrder[i];
+            if (val >= DATA_PAGE_BASE_ID) {
+                var pageIndex = val - DATA_PAGE_BASE_ID;
+                if (pageIndex >= dataFieldPageCounts.size()) {
+                    modeDisplayOrder.remove(val);
+                }
+            }
+        }
+
+        // 2. Ensure every existing page has an entry
+        for (var i = 0; i < dataFieldPageCounts.size(); i++) {
+            var pageId = DATA_PAGE_BASE_ID + i;
+            if (modeDisplayOrder.indexOf(pageId) == -1) {
+                modeDisplayOrder.add(pageId);
+            }
+        }
+    }
+
+    (:settingsView)
+    function saveDataFieldPages() as Void {
+        validateDataFieldPages();
+        setValue("dataFieldPageTypes", encodeCSV(dataFieldPageTypes));
+        setValue("dataFieldPageCounts", encodeCSV(dataFieldPageCounts));
     }
 
     (:settingsView)
@@ -2086,7 +2270,7 @@ class Settings {
 
         var curentModeIndex = modeDisplayOrder.indexOf(mode);
         if (curentModeIndex == -1 || curentModeIndex == modeDisplayOrder.size() - 1) {
-            // not found, or we need to go back to the star of the array
+            // not found, or we need to go back to the start of the array
             return modeDisplayOrder[0];
         }
 
@@ -2100,7 +2284,12 @@ class Settings {
         // try 5 times to get a good mode, if we can't bail out, better than an infinite while loop
         // helps if users do something like 1,2,3,40,5,6 it will ship over the bad '40' mode
         for (var i = 0; i < 5; ++i) {
-            if (mode >= 0 && mode < MODE_MAX) {
+            if (
+                (mode >= 0 && mode < MODE_MAX) ||
+                (dataFieldPageCounts.size() > 0 &&
+                    mode >= DATA_PAGE_BASE_ID &&
+                    mode < DATA_PAGE_BASE_ID + dataFieldPageCounts.size())
+            ) {
                 // not the best validation check, but modes are continuous for now
                 // if we ever have gaps we will need to check for those too
                 break;
@@ -2645,6 +2834,8 @@ class Settings {
                 "turnAlertTimeS" => turnAlertTimeS,
                 "minTurnAlertDistanceM" => minTurnAlertDistanceM,
                 "modeDisplayOrder" => encodeCSV(modeDisplayOrder),
+                "dataFieldPageCounts" => encodeCSV(dataFieldPageCounts),
+                "dataFieldPageTypes" => encodeCSV(dataFieldPageTypes),
                 "maxTrackPoints" => maxTrackPoints,
                 "trackStyle" => trackStyle,
                 "trackWidth" => trackWidth,
@@ -2860,6 +3051,17 @@ class Settings {
             modeDisplayOrder,
             method(:defaultNumberParser)
         );
+        dataFieldPageCounts = parseCSVString(
+            "dataFieldPageCounts",
+            dataFieldPageCounts,
+            method(:defaultNumberParser)
+        );
+        dataFieldPageTypes = parseCSVString(
+            "dataFieldPageTypes",
+            dataFieldPageTypes,
+            method(:defaultNumberParser)
+        );
+        validateDataFieldPages();
         mapEnabled = parseBool("mapEnabled", mapEnabled);
         setMapEnabledRaw(mapEnabled); // prompt for app to open if needed
         cacheTilesInStorage = parseBool("cacheTilesInStorage", cacheTilesInStorage);

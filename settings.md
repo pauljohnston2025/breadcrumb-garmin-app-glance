@@ -78,6 +78,7 @@ eg.
 
 Numbers MUST not appear twice in the list also numbers that are not in the modes list below MUST not be included.
 
+Special modes for [Data Field Page Counts](#data-field-page-counts) are 1000 onwards. eg. page 0 = mode 1000, page 1 = mode 1001
 
 
 ### Display Mode
@@ -303,6 +304,46 @@ Same as [Top Data Field Type](#top-data-field-type) but at the bottom of the scr
 ### Data Field Text Size
 
 The text size for the top and bottom data fields.  
+
+
+### Data Field Page Counts
+
+Best edited through the watch menus or companion app, but if your feeling game the format is:  
+
+type: CSV integer list  
+
+Defines the number of data fields present on each page. The length of this array determines the total number of custom data pages.  
+
+Example: [1, 2, 4] creates 3 pages: Page 1 has 1 field, Page 2 has 2, and Page 3 has 4.  
+
+The [Mode Display Order](#mode-display-order) will automatically add the data field page to the list, the order can be configured. You should not attempt to remove the data field page from the [Mode Display Order](#mode-display-order), and should ensure it is always added.
+
+### Data Field Page Types
+
+Best edited through the watch menus or companion app, but if your feeling game the format is:  
+
+type: CSV integer list  
+
+A flattened, sequential array containing the DataType enum values for every field across all pages. eg. 0 = none  
+
+The values of these enums can be found here: https://github.com/pauljohnston2025/breadcrumb-garmin-app/blob/master/source/Settings.mc#L37  
+
+For example:
+
+dataFieldPageCounts: [1, 3]
+dataFieldPageTypes: [2, 5, 6, 8]
+
+Page Index: The logical page number (starts at 0).
+Field Index: The specific field slot within that page.
+Data Type Enum: The integer value stored in your flattened dataFieldPageTypes array.
+Resulting Metric: The actual sensor data displayed on the watch.
+
+| Page Index | Field Index | Data Type Enum | Resulting Metric             |
+|------------|-------------|----------------|------------------------------|
+| 0          | 0           | 2              | DATA_TYPE_ALTITUDE           |
+| 1          | 0           | 5              | DATA_TYPE_CURRENT_HEART_RATE |
+| 1          | 1           | 6              | DATA_TYPE_CURRENT_SPEED      |
+| 1          | 2           | 8              | DATA_TYPE_ELAPSED_TIME       |
 
 ---
 

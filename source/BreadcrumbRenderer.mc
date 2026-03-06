@@ -181,18 +181,68 @@ class BreadcrumbRenderer {
         return [foundPixelWidth, foundDistanceKey, foundName];
     }
 
+    function renderDataFieldPage(dc as Dc, pageIndex as Number) as Void {
+    var types = settings.getTypesForPage(pageIndex);
+    var count = types.size();
+
+    var w = _cachedValues.physicalScreenWidth;
+    var h = _cachedValues.physicalScreenHeight;
+
+    // 1. Draw Dividers based on count
+    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+    dc.setPenWidth(2);
+
+    if (count == 2) {
+        // Horizontal middle divider
+        dc.drawLine(0, h / 2.0f, w, h / 2.0f);
+    } else if (count == 3) {
+        // Two horizontal dividers
+        dc.drawLine(0, h / 3.0f, w, h / 3.0f);
+        dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
+    } else if (count == 4) {
+        // Horizontal dividers at 33% and 66%, and vertical in the middle row
+        dc.drawLine(0, h / 3.0f, w, h / 3.0f);
+        dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
+        dc.drawLine(w / 2.0f, h / 3.0f, w / 2.0f, (2.0f * h) / 3.0f);
+    }
+
+    // 2. Render Fields
+    for (var i = 0; i < count; i++) {
+        var x, y;
+        if (count == 1) {
+            x = w / 2.0f; y = h / 2.0f;
+        } else if (count == 2) {
+            x = w / 2.0f; y = (i == 0) ? h * 0.25f : h * 0.75f;
+        } else if (count == 3) {
+            x = w / 2.0f; y = h * (i + 1) / 4.0f; // Adjusted for better centering in rows
+        } else {
+            if (i == 0) { x = w / 2.0f; y = h * 0.16f; }
+            else if (i == 3) { x = w / 2.0f; y = h * 0.83f; }
+            else { x = (i == 1) ? w * 0.25f : w * 0.75f; y = h * 0.5f; }
+        }
+        renderDataField(dc, types[i], x, y, 1);
+    }
+}
+
     function renderDataFields(dc as Dc) as Void {
         var edgeOffset = 25f;
-        renderDataField(dc, settings.topDataType, edgeOffset, 1);
+        renderDataField(dc, settings.topDataType, _cachedValues.xHalfPhysical, edgeOffset, 1);
         renderDataField(
             dc,
             settings.bottomDataType,
+            _cachedValues.xHalfPhysical,
             _cachedValues.physicalScreenHeight - edgeOffset,
             -1
         );
     }
 
-    function renderDataField(dc as Dc, type as Number, y as Float, direction as Number) as Void {
+    function renderDataField(
+        dc as Dc,
+        type as Number,
+        x as Float,
+        y as Float,
+        direction as Number
+    ) as Void {
         dc.setColor(settings.normalModeColour, Graphics.COLOR_TRANSPARENT);
 
         if (type == DATA_TYPE_NONE) {
@@ -200,7 +250,7 @@ class BreadcrumbRenderer {
         }
 
         if (type == DATA_TYPE_SCALE) {
-            renderCurrentScale(dc, y, direction);
+            renderCurrentScale(dc, x, y, direction);
             return;
         }
 
@@ -217,52 +267,56 @@ class BreadcrumbRenderer {
         y = y + centeredTextOffset;
 
         if (type == DATA_TYPE_ALTITUDE) {
-            renderElevationMetric(dc, y, info.altitude);
+            renderElevationMetric(dc, x, y, info.altitude);
         } else if (type == DATA_TYPE_AVERAGE_HEART_RATE) {
-            renderHeartRateMetric(dc, y, info.averageHeartRate);
+            renderHeartRateMetric(dc, x, y, info.averageHeartRate);
         } else if (type == DATA_TYPE_CURRENT_HEART_RATE) {
-            renderHeartRateMetric(dc, y, info.currentHeartRate);
+            renderHeartRateMetric(dc, x, y, info.currentHeartRate);
         } else if (type == DATA_TYPE_AVERAGE_SPEED) {
-            renderSpeedMetric(dc, y, info.averageSpeed);
+            renderSpeedMetric(dc, x, y, info.averageSpeed);
         } else if (type == DATA_TYPE_CURRENT_SPEED) {
-            renderSpeedMetric(dc, y, info.currentSpeed);
+            renderSpeedMetric(dc, x, y, info.currentSpeed);
         } else if (type == DATA_TYPE_ELAPSED_DISTANCE) {
-            renderDistanceMetric(dc, y, info.elapsedDistance);
+            renderDistanceMetric(dc, x, y, info.elapsedDistance);
         } else if (type == DATA_TYPE_ELAPSED_TIME) {
-            renderTimeMetric(dc, y, info.elapsedTime);
+            renderTimeMetric(dc, x, y, info.elapsedTime);
         } else if (type == DATA_TYPE_TOTAL_ASCENT) {
-            renderElevationMetric(dc, y, info.totalAscent);
+            renderElevationMetric(dc, x, y, info.totalAscent);
         } else if (type == DATA_TYPE_TOTAL_DESCENT) {
-            renderElevationMetric(dc, y, info.totalDescent);
+            renderElevationMetric(dc, x, y, info.totalDescent);
         } else if (type == DATA_TYPE_AVERAGE_PACE) {
-            renderPaceMetric(dc, y, info.averageSpeed);
+            renderPaceMetric(dc, x, y, info.averageSpeed);
         } else if (type == DATA_TYPE_CURRENT_PACE) {
-            renderPaceMetric(dc, y, info.currentSpeed);
+            renderPaceMetric(dc, x, y, info.currentSpeed);
         }
     }
 
-    function renderTextMetric(dc as Dc, y as Float, val as String) as Void {
+    function renderTextMetric(dc as Dc, x as Float, y as Float, val as String) as Void {
+        var textSize =
+            settings.mode >= DATA_PAGE_BASE_ID
+                ? Graphics.FONT_LARGE
+                : settings.dataFieldTextSize as Graphics.FontType;
         dc.drawText(
-            _cachedValues.xHalfPhysical,
+            x,
             y,
-            settings.dataFieldTextSize as Graphics.FontType,
+            textSize,
             val,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
     }
 
-    function renderHeartRateMetric(dc as Dc, y as Float, hr as Number?) as Void {
+    function renderHeartRateMetric(dc as Dc, x as Float, y as Float, hr as Number?) as Void {
         if (hr == null) {
-            renderTextMetric(dc, y, "-");
+            renderTextMetric(dc, x, y, "-");
             return;
         }
         // e.g. "145bpm"
-        renderTextMetric(dc, y, hr.toString() + "bpm");
+        renderTextMetric(dc, x, y, hr.toString() + "bpm");
     }
 
-    function renderTimeMetric(dc as Dc, y as Float, timeMs as Number?) as Void {
+    function renderTimeMetric(dc as Dc, x as Float, y as Float, timeMs as Number?) as Void {
         if (timeMs == null) {
-            renderTextMetric(dc, y, "--:--");
+            renderTextMetric(dc, x, y, "--:--");
             return;
         }
 
@@ -281,12 +335,12 @@ class BreadcrumbRenderer {
         } else {
             timeStr = Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]);
         }
-        renderTextMetric(dc, y, timeStr);
+        renderTextMetric(dc, x, y, timeStr);
     }
 
-    function renderSpeedMetric(dc as Dc, y as Float, speedMps as Float?) as Void {
+    function renderSpeedMetric(dc as Dc, x as Float, y as Float, speedMps as Float?) as Void {
         if (speedMps == null) {
-            renderTextMetric(dc, y, "-.-");
+            renderTextMetric(dc, x, y, "-.-");
             return;
         }
 
@@ -301,12 +355,12 @@ class BreadcrumbRenderer {
         }
 
         // e.g. "12.5k/h"
-        renderTextMetric(dc, y, speedConverted.format("%.1f") + suffix);
+        renderTextMetric(dc, x, y, speedConverted.format("%.1f") + suffix);
     }
 
-    function renderPaceMetric(dc as Dc, y as Float, speedMps as Float?) as Void {
+    function renderPaceMetric(dc as Dc, x as Float, y as Float, speedMps as Float?) as Void {
         if (speedMps == null || speedMps < 0.2f) {
-            renderTextMetric(dc, y, "--:--");
+            renderTextMetric(dc, x, y, "--:--");
             return;
         }
 
@@ -324,20 +378,21 @@ class BreadcrumbRenderer {
         var seconds = secondsPerUnit.toNumber() % 60;
 
         if (minutes > 99) {
-            renderTextMetric(dc, y, "--:--");
+            renderTextMetric(dc, x, y, "--:--");
         } else {
             // e.g. "5:30/km"
             renderTextMetric(
                 dc,
+                x,
                 y,
                 Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]) + suffix
             );
         }
     }
 
-    function renderDistanceMetric(dc as Dc, y as Float, distMeters as Float?) as Void {
+    function renderDistanceMetric(dc as Dc, x as Float, y as Float, distMeters as Float?) as Void {
         if (distMeters == null) {
-            renderTextMetric(dc, y, "-.--");
+            renderTextMetric(dc, x, y, "-.--");
             return;
         }
 
@@ -352,16 +407,17 @@ class BreadcrumbRenderer {
         }
 
         // e.g. "5.23km"
-        renderTextMetric(dc, y, distConverted.format("%.2f") + suffix);
+        renderTextMetric(dc, x, y, distConverted.format("%.2f") + suffix);
     }
 
     function renderElevationMetric(
         dc as Dc,
+        x as Float,
         y as Float,
         elevationMeters as Float or Number or Null
     ) as Void {
         if (elevationMeters == null) {
-            renderTextMetric(dc, y, "-");
+            renderTextMetric(dc, x, y, "-");
             return;
         }
 
@@ -374,10 +430,10 @@ class BreadcrumbRenderer {
         }
 
         // e.g. "1250ft"
-        renderTextMetric(dc, y, elevationConverted.format("%.0f") + suffix);
+        renderTextMetric(dc, x, y, elevationConverted.format("%.0f") + suffix);
     }
 
-    function renderCurrentScale(dc as Dc, y as Float, direction as Number) as Void {
+    function renderCurrentScale(dc as Dc, x as Float, y as Float, direction as Number) as Void {
         var scaleKeys = settings.distanceImperialUnits ? SCALE_KEYS_IMPERIAL : SCALE_KEYS;
         var scaleValues = settings.distanceImperialUnits ? SCALE_VALUES_IMPERIAL : SCALE_VALUES;
         var scaleData = getScaleSizeGeneric(
@@ -394,14 +450,9 @@ class BreadcrumbRenderer {
         }
 
         dc.setPenWidth(4);
-        dc.drawLine(
-            _cachedValues.xHalfPhysical - pixelWidth / 2.0f,
-            y,
-            _cachedValues.xHalfPhysical + pixelWidth / 2.0f,
-            y
-        );
+        dc.drawLine(x - pixelWidth / 2.0f, y, x + pixelWidth / 2.0f, y);
         dc.drawText(
-            _cachedValues.xHalfPhysical,
+            x,
             y +
                 direction * 2 +
                 (direction *
@@ -2049,7 +2100,10 @@ class BreadcrumbRenderer {
     }
     function renderModeLetter(dc as Dc, x as Number or Float, y as Number or Float) as Void {
         // current mode displayed
-        var modeLetter = "T";
+        var modeLetter =
+            settings.mode >= DATA_PAGE_BASE_ID
+                ? (settings.mode - DATA_PAGE_BASE_ID).toString()
+                : "";
         switch (settings.mode) {
             case MODE_NORMAL:
                 modeLetter = "T";

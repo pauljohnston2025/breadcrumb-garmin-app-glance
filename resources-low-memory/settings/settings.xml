@@ -157,6 +157,14 @@
         </settingConfig>
     </setting>
 
+    <setting propertyKey="@Properties.dataFieldPageCounts" title="@Strings.dataFieldPageCountsTitle">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    
+    <setting propertyKey="@Properties.dataFieldPageTypes" title="@Strings.dataFieldPageTypesTitle">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+
     <setting propertyKey="@Properties.minTrackPointDistanceM" title="@Strings.minTrackPointDistanceMTitle">
         <settingConfig type="numeric" min="0"/>
     </setting>

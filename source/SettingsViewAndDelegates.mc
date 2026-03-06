@@ -916,6 +916,211 @@ class SettingsTrack extends WatchUi.Menu2 {
 }
 
 (:settingsView)
+class SettingsDataFieldPageList extends WatchUi.Menu2 {
+    function initialize() {
+        Menu2.initialize({ :title => "Data Pages" });
+        rerender();
+    }
+
+    function rerender() as Void {
+        while (self.deleteItem(0) != null) {
+            // Keep deleting the first item until nothing is left
+        }
+
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+        var pageCounts = settings.dataFieldPageCounts;
+
+        // Add items for existing pages
+        for (var i = 0; i < pageCounts.size(); i++) {
+            addItem(new WatchUi.MenuItem("Page " + i, "Fields: " + pageCounts[i], i, {}));
+        }
+        // Add a button to add a new page
+        addItem(new WatchUi.MenuItem("Add Page", null, :addPage, {}));
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageEditor extends WatchUi.Menu2 {
+    var pageIndex as Number;
+
+    function initialize(index as Number) {
+        Menu2.initialize({ :title => "Page " + (index + 1) });
+        pageIndex = index;
+        rerender();
+    }
+
+    function rerender() as Void {
+        while (self.deleteItem(0) != null) {
+            // Keep deleting the first item until nothing is left
+        }
+
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+
+        // Fetch the types corresponding to this page from the global array
+        // (You'll need a helper to calculate the offset in the flattened dataFieldPageTypes array)
+        var types = settings.getTypesForPage(pageIndex);
+
+        for (var i = 0; i < types.size(); i++) {
+            addItem(new WatchUi.MenuItem("Field " + (i + 1), getDataTypeString(types[i]), i, {}));
+        }
+        if (types.size() < 4) {
+            addItem(new WatchUi.MenuItem("Add Field", null, :addField, {}));
+        }
+        addItem(new WatchUi.MenuItem("Delete Page", null, :deletePage, {}));
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageListDelegate extends WatchUi.Menu2InputDelegate {
+    var view as SettingsDataFieldPageList;
+
+    function initialize(view as SettingsDataFieldPageList) {
+        WatchUi.Menu2InputDelegate.initialize();
+        me.view = view;
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var id = item.getId();
+
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+
+        if (id == :addPage) {
+            // Logic to update your dataFieldPageCounts array
+            var newPageIndex = settings.addNewPage();
+            view.rerender(); // make sure the menu updates, we just added a page to it
+            var pageView = new $.SettingsDataFieldPageEditor(newPageIndex);
+            WatchUi.pushView(
+                pageView,
+                new $.SettingsDataFieldPageEditorDelegate(newPageIndex, pageView, view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else {
+            // Push the editor for the selected page index
+            var pageIndex = id as Number;
+            var pageView = new $.SettingsDataFieldPageEditor(pageIndex);
+            WatchUi.pushView(
+                pageView,
+                new $.SettingsDataFieldPageEditorDelegate(pageIndex, pageView, view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        }
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageEditorDelegate extends WatchUi.Menu2InputDelegate {
+    var pageIndex as Number;
+    var fieldIndex as Number;
+    var view as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        pageIndex as Number,
+        view as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        WatchUi.Menu2InputDelegate.initialize();
+        me.pageIndex = pageIndex;
+        fieldIndex = 0;
+        me.view = view;
+        me.listView = listView;
+    }
+
+    // compiler complains it cannot find the global ones
+    // even $.method(:...) does not seem to work
+    public function getDataTypeStringL(value as Number) as ResourceId or String {
+        return getDataTypeString(value);
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+
+        var id = item.getId();
+        if (id == :addField) {
+            settings.addNewField(pageIndex);
+            view.rerender();
+        } else if (id == :deletePage) {
+            var dialog = new WatchUi.Confirmation("Delete page?");
+            WatchUi.pushView(
+                dialog,
+                new SettingsDataFieldPageRemoveDelegate(pageIndex, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else {
+            fieldIndex = id as Number;
+            WatchUi.pushView(
+                new $.EnumMenu(
+                    "Select Data",
+                    method(:getDataTypeStringL),
+                    settings.getFieldType(pageIndex, fieldIndex),
+                    DATA_TYPE_MAX
+                ),
+                new $.EnumDelegate(method(:setDataFieldPageType), view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        }
+    }
+
+    public function setDataFieldPageType(newType as Number) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+        settings.setPageFieldType(pageIndex, fieldIndex, newType);
+    }
+}
+
+class SettingsDataFieldPageRemoveDelegate extends WatchUi.ConfirmationDelegate {
+    private var pageIndex as Number;
+    private var view as SettingsDataFieldPageList;
+
+    function initialize(pageIndex as Number, view as SettingsDataFieldPageList) {
+        WatchUi.ConfirmationDelegate.initialize();
+        me.pageIndex = pageIndex;
+        me.view = view;
+    }
+
+    function onResponse(response as Confirm) as Boolean {
+        if (response == WatchUi.CONFIRM_YES) {
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal == null) {
+                breadcrumbContextWasNull();
+                return false;
+            }
+            var settings = _breadcrumbContextLocal.settings;
+            settings.removePage(pageIndex);
+            view.rerender(); // make sure the menu updates, we just removed a page from it
+            // Pop the editor view now that the data is gone
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+        }
+
+        return true; // we always handle it
+    }
+}
+
+(:settingsView)
 class SettingsDataField extends WatchUi.Menu2 {
     function initialize() {
         Menu2.initialize({ :title => Rez.Strings.dataFieldSettingsTitle });
@@ -943,6 +1148,7 @@ class SettingsDataField extends WatchUi.Menu2 {
                 {}
             )
         );
+        addItem(new WatchUi.MenuItem("Data Pages", null, :settingsDataFieldPages, {}));
         rerender();
     }
 
@@ -2573,6 +2779,13 @@ class SettingsDataFieldDelegate extends WatchUi.Menu2InputDelegate {
                     5
                 ),
                 new $.EnumDelegate(settings.method(:setDataFieldTextSize), view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (itemId == :settingsDataFieldPages) {
+            var view = new $.SettingsDataFieldPageList();
+            WatchUi.pushView(
+                view,
+                new $.SettingsDataFieldPageListDelegate(view),
                 WatchUi.SLIDE_IMMEDIATE
             );
         }
