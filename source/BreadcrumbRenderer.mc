@@ -2252,7 +2252,7 @@ class BreadcrumbRenderer {
             dc.fillCircle(centerX, centerY, 7);
         }
 
-        if (settings.displayLatLong) {
+        if (settings.displayLatLong && settings.mode < DATA_PAGE_BASE_ID) {
             var bottomDataFieldFromEdge =
                     dc.getTextDimensions(
                         "A",

@@ -1045,6 +1045,7 @@ class SettingsDataFieldPageEditorDelegate extends WatchUi.Menu2InputDelegate {
         var id = item.getId();
         if (id == :addField) {
             settings.addNewField(pageIndex);
+            listView.rerender();
             view.rerender();
         } else if (id == :deletePage) {
             var dialog = new WatchUi.Confirmation("Delete page?");
@@ -1073,7 +1074,7 @@ class FieldAction extends WatchUi.Menu2 {
     var fieldIndex as Number;
 
     function initialize(pageIndex as Number, fieldIndex as Number) {
-        Menu2.initialize({ :title => "Field " + fieldIndex});
+        Menu2.initialize({ :title => "Page " + pageIndex + " Field " + fieldIndex});
         me.pageIndex = pageIndex;
         me.fieldIndex = fieldIndex;
         addItem(new WatchUi.MenuItem("Type", null, :edit, {}));
