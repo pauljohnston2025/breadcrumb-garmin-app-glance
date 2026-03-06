@@ -1222,10 +1222,7 @@ class Settings {
         dataFieldPageTypes = before;
 
         // 3. REMOVE BY INDEX from dataFieldPageCounts
-        var beforeCounts = dataFieldPageCounts.slice(0, pageIndex);
-        var afterCounts = dataFieldPageCounts.slice(pageIndex + 1, null);
-        beforeCounts.addAll(afterCounts);
-        dataFieldPageCounts = beforeCounts;
+        dataFieldPageCounts = removeAtIndex(dataFieldPageCounts, pageIndex);
 
         // 4. Update modeDisplayOrder
         var pageId = DATA_PAGE_BASE_ID + pageIndex;
@@ -1261,6 +1258,22 @@ class Settings {
 
         dataFieldPageTypes = newArray;
         dataFieldPageCounts[pageIndex] = count + 1;
+        saveDataFieldPages();
+    }
+
+    (:settingsView)
+    function removeField(pageIndex as Number, fieldIndex as Number) as Void {
+        if (dataFieldPageCounts[pageIndex] <= 0) {
+            return; // dno how this happened, but try and prrevent it going negative
+        }
+
+        var offset = 0;
+        for (var i = 0; i < pageIndex; i++) {
+            offset += dataFieldPageCounts[i];
+        }
+
+        dataFieldPageTypes = removeAtIndex(dataFieldPageTypes, offset + fieldIndex);
+        dataFieldPageCounts[pageIndex] = dataFieldPageCounts[pageIndex] - 1;
         saveDataFieldPages();
     }
 

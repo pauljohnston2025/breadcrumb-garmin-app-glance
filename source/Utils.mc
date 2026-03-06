@@ -290,3 +290,10 @@ function breadcrumbContextWasNull() as Void {
     logE("breadcrumb context was null");
     throw new Exception();
 }
+
+function removeAtIndex(array as Array<Number>, index as Number) as Array<Number> {
+    var before = array.slice(0, index);
+    var after = array.slice(index + 1, null);
+    before.addAll(after);
+    return before;
+}

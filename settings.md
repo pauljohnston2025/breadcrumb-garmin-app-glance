@@ -308,7 +308,7 @@ The text size for the top and bottom data fields.
 
 ### Data Field Page Counts
 
-Best edited through the watch menus or companion app, but if your feeling game the format is:  
+Best edited through the watch menus or companion app (data fields -> data pages), but if your feeling game the format is:  
 
 type: CSV integer list  
 
@@ -320,7 +320,7 @@ The [Mode Display Order](#mode-display-order) will automatically add the data fi
 
 ### Data Field Page Types
 
-Best edited through the watch menus or companion app, but if your feeling game the format is:  
+Best edited through the watch menus or companion app (data fields -> data pages), but if your feeling game the format is:  
 
 type: CSV integer list  
 

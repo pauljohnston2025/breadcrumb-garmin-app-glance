@@ -182,47 +182,57 @@ class BreadcrumbRenderer {
     }
 
     function renderDataFieldPage(dc as Dc, pageIndex as Number) as Void {
-    var types = settings.getTypesForPage(pageIndex);
-    var count = types.size();
+        var types = settings.getTypesForPage(pageIndex);
+        var count = types.size();
 
-    var w = _cachedValues.physicalScreenWidth;
-    var h = _cachedValues.physicalScreenHeight;
+        var w = _cachedValues.physicalScreenWidth;
+        var h = _cachedValues.physicalScreenHeight;
 
-    // 1. Draw Dividers based on count
-    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-    dc.setPenWidth(2);
+        // 1. Draw Dividers based on count
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(2);
 
-    if (count == 2) {
-        // Horizontal middle divider
-        dc.drawLine(0, h / 2.0f, w, h / 2.0f);
-    } else if (count == 3) {
-        // Two horizontal dividers
-        dc.drawLine(0, h / 3.0f, w, h / 3.0f);
-        dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
-    } else if (count == 4) {
-        // Horizontal dividers at 33% and 66%, and vertical in the middle row
-        dc.drawLine(0, h / 3.0f, w, h / 3.0f);
-        dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
-        dc.drawLine(w / 2.0f, h / 3.0f, w / 2.0f, (2.0f * h) / 3.0f);
-    }
-
-    // 2. Render Fields
-    for (var i = 0; i < count; i++) {
-        var x, y;
-        if (count == 1) {
-            x = w / 2.0f; y = h / 2.0f;
-        } else if (count == 2) {
-            x = w / 2.0f; y = (i == 0) ? h * 0.25f : h * 0.75f;
+        if (count == 2) {
+            // Horizontal middle divider
+            dc.drawLine(0, h / 2.0f, w, h / 2.0f);
         } else if (count == 3) {
-            x = w / 2.0f; y = h * (i + 1) / 4.0f; // Adjusted for better centering in rows
-        } else {
-            if (i == 0) { x = w / 2.0f; y = h * 0.16f; }
-            else if (i == 3) { x = w / 2.0f; y = h * 0.83f; }
-            else { x = (i == 1) ? w * 0.25f : w * 0.75f; y = h * 0.5f; }
+            // Two horizontal dividers
+            dc.drawLine(0, h / 3.0f, w, h / 3.0f);
+            dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
+        } else if (count == 4) {
+            // Horizontal dividers at 33% and 66%, and vertical in the middle row
+            dc.drawLine(0, h / 3.0f, w, h / 3.0f);
+            dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
+            dc.drawLine(w / 2.0f, h / 3.0f, w / 2.0f, (2.0f * h) / 3.0f);
         }
-        renderDataField(dc, types[i], x, y, 1);
+
+        // 2. Render Fields
+        for (var i = 0; i < count; i++) {
+            var x, y;
+            if (count == 1) {
+                x = w / 2.0f;
+                y = h / 2.0f;
+            } else if (count == 2) {
+                x = w / 2.0f;
+                y = i == 0 ? h * 0.25f : h * 0.75f;
+            } else if (count == 3) {
+                x = w / 2.0f;
+                y = (h * (i + 1)) / 4.0f; // Adjusted for better centering in rows
+            } else {
+                if (i == 0) {
+                    x = w / 2.0f;
+                    y = h * 0.16f;
+                } else if (i == 3) {
+                    x = w / 2.0f;
+                    y = h * 0.83f;
+                } else {
+                    x = i == 1 ? w * 0.25f : w * 0.75f;
+                    y = h * 0.5f;
+                }
+            }
+            renderDataField(dc, types[i], x, y, 1);
+        }
     }
-}
 
     function renderDataFields(dc as Dc) as Void {
         var edgeOffset = 25f;
