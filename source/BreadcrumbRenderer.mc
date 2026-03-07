@@ -476,7 +476,7 @@ class BreadcrumbRenderer {
         var speedConverted = speedMps;
         var suffix = "k/h";
 
-        if (settings.distanceImperialUnits) {
+        if (settings.paceImperialUnits) {
             speedConverted = speedMps * 2.23694f;
             suffix = "m/h";
         } else {
@@ -496,7 +496,7 @@ class BreadcrumbRenderer {
         var secondsPerUnit;
         var suffix = "/km";
 
-        if (settings.distanceImperialUnits) {
+        if (settings.paceImperialUnits) {
             secondsPerUnit = 1609.34f / speedMps;
             suffix = "/mi";
         } else {
