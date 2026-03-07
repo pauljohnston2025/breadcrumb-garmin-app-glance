@@ -23,7 +23,10 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
         // it can be a bit finicky though, some users might still prefer the tapping interface (so ill leave both)
         if (
             _breadcrumbContext.settings.mode != MODE_MAP_MOVE &&
-            _breadcrumbContext.settings.mode != MODE_NORMAL
+            _breadcrumbContext.settings.mode != MODE_NORMAL  &&
+            _breadcrumbContext.settings.mode != MODE_MAP_MOVE_ZOOM &&
+    _breadcrumbContext.settings.mode != MODE_MAP_MOVE_UP_DOWN &&
+    _breadcrumbContext.settings.mode != MODE_MAP_MOVE_LEFT_RIGHT
         ) {
             return false;
         }
