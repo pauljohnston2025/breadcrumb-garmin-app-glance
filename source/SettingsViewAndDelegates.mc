@@ -683,6 +683,10 @@ function getUiModeString(mode as Number) as ResourceId or String {
             return Rez.Strings.uiModeHidden;
         case UI_MODE_NONE:
             return Rez.Strings.uiModeNone;
+        case UI_MODE_SHOW_TOUCH_ONLY:
+            return Rez.Strings.uiModeShowTouchOnly;
+        case UI_MODE_SHOW_BUTTONS_ONLY:
+            return Rez.Strings.uiModeShowButtonsOnly;
         default:
             return "";
     }

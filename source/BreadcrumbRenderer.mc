@@ -2097,9 +2097,13 @@ class BreadcrumbRenderer {
 
     function renderUi(dc as Dc) as Void {
         if (_cachedValues.isTouchScreen) {
-            renderTouchUi(dc);
+            if (settings.uiMode == UI_MODE_SHOW_ALL || settings.uiMode == UI_MODE_SHOW_TOUCH_ONLY) {
+                renderTouchUi(dc);
+            }
         }
-        renderButtonUi(dc);
+        if (settings.uiMode == UI_MODE_SHOW_ALL || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
+            renderButtonUi(dc);
+        }
     }
 
     function renderZoomAtPaceModeLetter(

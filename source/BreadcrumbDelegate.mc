@@ -16,7 +16,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     // onDrag is called when the user drags their finger across the screen
     // Handle map panning when the user drags their finger across the screen.
     function onDrag(dragEvent as WatchUi.DragEvent) as Lang.Boolean {
-        System.println("onDrag: " + dragEvent.getType());
+        // System.println("onDrag: " + dragEvent.getType());
         // Only handle drag events if we are in map move mode.
         // we also allow it on the normal track page, since we can handle drag events in apps unlike on datafields.
         // perhaps on touchscreen devices this should be the only way to move?
@@ -91,14 +91,14 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
 
     function onFlick(flickEvent as WatchUi.FlickEvent) as Lang.Boolean {
         var direction = flickEvent.getDirection();
-        System.println("Flick event deg: " + direction);
+        // System.println("Flick event deg: " + direction);
 
         return false; // let it propagate
     }
 
     function onSwipe(swipeEvent) {
         // prevent exit when we flick instead of drag
-        System.println("onSwipe: " + swipeEvent.getDirection());
+        // System.println("onSwipe: " + swipeEvent.getDirection());
         return true; // this has to be true to prevent the default onback handler (that quits the app)
     }
 

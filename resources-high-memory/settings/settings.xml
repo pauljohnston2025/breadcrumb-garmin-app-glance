@@ -177,6 +177,8 @@
             <listEntry value="0">@Strings.uiModeShowAll</listEntry>
             <listEntry value="1">@Strings.uiModeHidden</listEntry>
             <listEntry value="2">@Strings.uiModeNone</listEntry>
+            <listEntry value="3">@Strings.uiModeShowTouchOnly</listEntry>
+            <listEntry value="4">@Strings.uiModeShowButtonsOnly</listEntry>
         </settingConfig>
     </setting>
     

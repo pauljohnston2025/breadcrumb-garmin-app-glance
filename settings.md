@@ -119,7 +119,9 @@ Note: There is a limitation on garmin that datafields can only receive tap event
 
 Show On Top - Show the ui and the current state of everything its controlling  
 Hidden - Still responds to touch but does not display the current state  
-Disabled - No touch handling, no display of state
+Disabled - No tap handling, no display of state  
+Show Touch Only - Only show touch ui (buttons still work, they are just hidden)  
+Show Buttons Only - Only show button ui (touch still works, its just hidden)  
 
 The ui appears on most screens, but is limited to what that screen can do.
 

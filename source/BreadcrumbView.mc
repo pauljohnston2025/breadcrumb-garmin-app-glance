@@ -663,22 +663,16 @@ class BreadcrumbView extends WatchUi.View {
         // should structure this way better, but oh well (renderer per mode etc.)
         if (settings.mode >= DATA_PAGE_BASE_ID) {
             renderer.renderDataFieldPage(dc, settings.mode - DATA_PAGE_BASE_ID);
-            if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-                renderer.renderUi(dc);
-            }
+            renderer.renderUi(dc);
             return;
         }
         else if (settings.mode == MODE_ELEVATION) {
             renderElevation(dc);
-            if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-                renderer.renderUi(dc);
-            }
+            renderer.renderUi(dc);
             return;
         } else if (settings.mode == MODE_DEBUG) {
             renderDebug(dc);
-            if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-                renderer.renderUi(dc);
-            }
+            renderer.renderUi(dc);
             return;
         }
 
@@ -709,10 +703,7 @@ class BreadcrumbView extends WatchUi.View {
         }
 
         // move based on the last scale we drew
-        if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-            renderer.renderUi(dc);
-        }
-
+        renderer.renderUi(dc);
         renderer.renderDataFields(dc);
 
         var lastPoint = _breadcrumbContext.track.lastPoint();

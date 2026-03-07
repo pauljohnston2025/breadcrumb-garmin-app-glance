@@ -90,7 +90,9 @@ enum /*ZoomMode*/ {
 enum /*UiMode*/ {
     UI_MODE_SHOW_ALL, // show a heap of ui elements on screen always
     UI_MODE_HIDDEN, // ui still active, but is hidden
-    UI_MODE_NONE, // no accessible ui (touch events disabled)
+    UI_MODE_NONE, // no touch ui (tap events disabled)
+    UI_MODE_SHOW_TOUCH_ONLY, // only show touch ui (buttons still work, they are just hidden)
+    UI_MODE_SHOW_BUTTONS_ONLY, // only button ui (touch still works, its just hidden)
     UI_MODE_MAX,
 }
 

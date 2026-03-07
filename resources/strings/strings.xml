@@ -81,7 +81,9 @@
     <string id="uiModeTitle">UI Mode</string>
     <string id="uiModeShowAll">Show On Top</string>
     <string id="uiModeHidden">Hidden</string>
-    <string id="uiModeNone">Disabled</string>
+    <string id="uiModeNone">Tap Disabled</string>
+    <string id="uiModeShowTouchOnly">Show Touch Only</string>
+    <string id="uiModeShowButtonsOnly">Show Buttons Only</string>
     <string id="fixedLatitude">Fixed Longitude</string>
     <string id="fixedLatitudePrompt">0 - disabled, -90 to 90</string>
     <string id="fixedLongitude">Fixed Latitude</string>
