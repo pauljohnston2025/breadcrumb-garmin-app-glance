@@ -629,8 +629,7 @@ class Settings {
         System.getDeviceSettings().distanceUnits == System.UNIT_STATUTE;
     var elevationImperialUnits as Boolean =
         System.getDeviceSettings().elevationUnits == System.UNIT_STATUTE;
-    var paceImperialUnits as Boolean =
-        System.getDeviceSettings().paceUnits == System.UNIT_STATUTE;
+    var paceImperialUnits as Boolean = System.getDeviceSettings().paceUnits == System.UNIT_STATUTE;
     var is24Hour as Boolean = System.getDeviceSettings().is24Hour as Boolean;
     var trackTexture as Graphics.BitmapTexture or Number = -1; // -1 is to say use colour instead
     var routeTextures as Array<Graphics.BitmapTexture or Number> = []; // -1 is to say use colour instead
@@ -1117,7 +1116,7 @@ class Settings {
         autoLapDistanceM = value;
         setValue("autoLapDistanceM", autoLapDistanceM);
     }
-    
+
     (:settingsView)
     function setMinTrackPointDistanceM(value as Number) as Void {
         minTrackPointDistanceM = value;
@@ -1153,7 +1152,7 @@ class Settings {
     (:settingsView)
     function getOffsetForPage(pageIndex as Number) as Number {
         var offset = 0;
-        for (var i = 0; i < pageIndex; i++) {
+        for (var i = 0; i < pageIndex && i < dataFieldPageCounts.size(); i++) {
             offset += dataFieldPageCounts[i];
         }
         return offset;
@@ -1190,11 +1189,16 @@ class Settings {
     (:settingsView)
     function getTypesForPage(pageIndex as Number) as Array<Number> {
         var offset = getOffsetForPage(pageIndex);
-        var count = dataFieldPageCounts[pageIndex];
+        var count = pageIndex < dataFieldPageCounts.size() ? dataFieldPageCounts[pageIndex] : 0;
         var pageTypes = [];
 
         for (var i = 0; i < count; i++) {
-            pageTypes.add(dataFieldPageTypes[offset + i] as Number);
+            var index = offset + i;
+            if (index >= dataFieldPageTypes.size()) {
+                pageTypes.add(DATA_TYPE_NONE);
+            } else {
+                pageTypes.add(dataFieldPageTypes[index] as Number);
+            }
         }
         return pageTypes as Array<Number>;
     }

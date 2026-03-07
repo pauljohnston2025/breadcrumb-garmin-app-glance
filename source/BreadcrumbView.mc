@@ -248,7 +248,7 @@ class BreadcrumbView extends WatchUi.View {
     function onTimerStart() as Void {
         _breadcrumbContext.track.onStartResume();
     }
-    
+
     function onTimerStop() as Void {
         _breadcrumbContext.track.onTimerStop();
     }
@@ -661,12 +661,14 @@ class BreadcrumbView extends WatchUi.View {
 
         // mode should be stored here, but is needed for rendering the ui
         // should structure this way better, but oh well (renderer per mode etc.)
-        if (settings.mode >= DATA_PAGE_BASE_ID) {
+        if (
+            settings.mode >= DATA_PAGE_BASE_ID &&
+            settings.mode - DATA_PAGE_BASE_ID < settings.dataFieldPageCounts.size()
+        ) {
             renderer.renderDataFieldPage(dc, settings.mode - DATA_PAGE_BASE_ID);
             renderer.renderUi(dc);
             return;
-        }
-        else if (settings.mode == MODE_ELEVATION) {
+        } else if (settings.mode == MODE_ELEVATION) {
             renderElevation(dc);
             renderer.renderUi(dc);
             return;
@@ -1075,9 +1077,13 @@ class BreadcrumbView extends WatchUi.View {
 
         combined +=
             "  tiles: " +
-            _breadcrumbContext.tileCache._internalCache.size() + "/" +  settings.tileCacheSize + 
+            _breadcrumbContext.tileCache._internalCache.size() +
+            "/" +
+            settings.tileCacheSize +
             " s: " +
-            _breadcrumbContext.tileCache._storageTileCache._totalTileCount + "/" +  settings.storageTileCacheSize;
+            _breadcrumbContext.tileCache._storageTileCache._totalTileCount +
+            "/" +
+            settings.storageTileCacheSize;
 
         dc.drawText(x, y, Graphics.FONT_XTINY, combined, Graphics.TEXT_JUSTIFY_CENTER);
         y += spacing;
