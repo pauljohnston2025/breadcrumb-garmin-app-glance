@@ -25,6 +25,9 @@ class BreadcrumbRenderer {
     var settings as Settings;
     var _cachedValues as CachedValues;
     private var _distanceAccumulator as Float = 0.0f;
+    var _lastGradeAlt as Float = 0.0f;
+    var _lastGradeDist as Float = 0.0f;
+    var _lastGrade as Float = 0.0f;
 
     // units in mm (float/int)
     const SCALE_KEYS as Array<Number> = [
@@ -236,17 +239,16 @@ class BreadcrumbRenderer {
             }
             // 1. Render the label first (Small, at the top of the field block)
             var label = getDataTypeString(types[i]);
-            if (label instanceof ResourceId)
-            {
+            if (label instanceof ResourceId) {
                 label = WatchUi.loadResource(label); // hmmmm this is expensive
             }
             dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
-            var heightOffset = (dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1]) / 2 + 10;
+            var heightOffset = dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1] / 2 + 10;
             dc.drawText(
-                x, 
+                x,
                 y - heightOffset, // Offset up slightly from center
-                Graphics.FONT_XTINY, 
-                label, 
+                Graphics.FONT_XTINY,
+                label,
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
             );
 
@@ -326,6 +328,91 @@ class BreadcrumbRenderer {
             renderPaceMetric(dc, x, y, info.averageSpeed);
         } else if (type == DATA_TYPE_CURRENT_PACE) {
             renderPaceMetric(dc, x, y, info.currentSpeed);
+        } else if (type == DATA_TYPE_WALL_CLOCK) {
+            var clockTime = System.getClockTime();
+            var timeStr = Lang.format("$1$:$2$", [clockTime.hour, clockTime.min.format("%02d")]);
+            renderTextMetric(dc, x, y, timeStr);
+        } else if (type == DATA_TYPE_CURRENT_LAP_TIME) {
+            var lapTime =
+                (info.elapsedTime != null ? info.elapsedTime : 0) - _cachedValues._lapStartTime;
+            renderTimeMetric(dc, x, y, lapTime);
+        } else if (type == DATA_TYPE_CURRENT_LAP_PACE) {
+            if (info.elapsedTime != null && info.elapsedDistance != null) {
+                var lapTime = info.elapsedTime - _cachedValues._lapStartTime;
+                var lapDist = info.elapsedDistance - _cachedValues._lapStartDistance;
+
+                // Avoid division by zero and ensure enough data for a meaningful pace
+                if (lapDist > 1.0f) {
+                    var speedMps = lapDist / (lapTime / 1000.0f);
+                    renderPaceMetric(dc, x, y, speedMps);
+                } else {
+                    renderTextMetric(dc, x, y, "--:--");
+                }
+            }
+        } else if (type == DATA_TYPE_LAST_LAP_TIME) {
+            // Pass the duration to your existing render function
+            renderTimeMetric(dc, x, y, _cachedValues._lastLapDuration);
+        } else if (type == DATA_TYPE_LAST_LAP_PACE) {
+            if (_cachedValues._lastLapDistance > 0) {
+                // Calculate pace: (seconds) / (distance in km/mi)
+                // Note: convert ms to seconds
+                var pace =
+                    _cachedValues._lastLapDuration /
+                    1000.0f /
+                    (_cachedValues._lastLapDistance / 1000.0f); // this is seconds per km
+                // Actually, your renderPaceMetric expects speedMps (meters per second)
+                // So we use: _lastLapDistance / (_lastLapDuration / 1000.0f)
+                var speedMps =
+                    _cachedValues._lastLapDistance / (_cachedValues._lastLapDuration / 1000.0f);
+                renderPaceMetric(dc, x, y, speedMps);
+            } else {
+                renderTextMetric(dc, x, y, "--:--");
+            }
+        } else if (type == DATA_TYPE_GRADE) {
+            if (info.altitude != null && info.elapsedDistance != null) {
+                var currentAlt = info.altitude.toFloat();
+                var currentDist = info.elapsedDistance.toFloat();
+
+                // Only update the calculation if we have traveled 10 meters
+                // since the last calculation to smooth out noise
+                if (currentDist - _lastGradeDist > 10.0f) {
+                    var deltaAlt = currentAlt - _lastGradeAlt;
+                    var deltaDist = currentDist - _lastGradeDist;
+
+                    // Calculate grade as (rise / run) * 100
+                    _lastGrade = (deltaAlt / deltaDist) * 100.0f;
+
+                    // Update the markers for the next calculation
+                    _lastGradeAlt = currentAlt;
+                    _lastGradeDist = currentDist;
+                }
+
+                renderTextMetric(dc, x, y, _lastGrade.format("%.1f") + "%");
+                return;
+            }
+        } else if (type == DATA_TYPE_HEADING) {
+            if (info.currentHeading != null) {
+                var degrees = Math.toDegrees(info.currentHeading);
+                if (degrees < 0) {
+                    degrees += 360;
+                }
+                renderTextMetric(dc, x, y, degrees.format("%d") + "°");
+            } else {
+                renderTextMetric(dc, x, y, "---");
+            }
+        } else if (type == DATA_TYPE_GPS_ACCURACY) {
+            var accuracy = info.currentLocationAccuracy;
+            var label = "No GPS";
+            if (accuracy == Position.QUALITY_LAST_KNOWN) {
+                label = "Last Known";
+            } else if (accuracy == Position.QUALITY_POOR) {
+                label = "Poor";
+            } else if (accuracy == Position.QUALITY_USABLE) {
+                label = "Usable";
+            } else if (accuracy == Position.QUALITY_GOOD) {
+                label = "Good";
+            }
+            renderTextMetric(dc, x, y, label);
         }
     }
 

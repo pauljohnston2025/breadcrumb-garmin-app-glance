@@ -252,6 +252,10 @@ class BreadcrumbView extends WatchUi.View {
     function onTimerStart() as Void {
         _breadcrumbContext.track.onStartResume();
     }
+    
+    function onTimerLap() as Void {
+        _cachedValues.onTimerLap();
+    }
 
     function compute(info as Activity.Info) as Void {
         try {

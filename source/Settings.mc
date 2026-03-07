@@ -48,15 +48,18 @@ enum /*DataType*/ {
     DATA_TYPE_TOTAL_DESCENT = 10,
     DATA_TYPE_AVERAGE_PACE = 11,
     DATA_TYPE_CURRENT_PACE = 12,
+    DATA_TYPE_WALL_CLOCK = 13,
+    DATA_TYPE_CURRENT_LAP_TIME = 14,
+    DATA_TYPE_CURRENT_LAP_PACE = 15,
+    DATA_TYPE_LAST_LAP_TIME = 16,
+    DATA_TYPE_LAST_LAP_PACE = 17,
+    DATA_TYPE_GRADE = 18,
+    DATA_TYPE_HEADING = 19,
+    DATA_TYPE_GPS_ACCURACY = 20,
 
     // other metrics that might be good
     // most of these are inbuilt garmin ones (so could easily be added to a second data screen)
     // Ill add them if users ask, but currently only have requests for pace https://github.com/pauljohnston2025/breadcrumb-garmin/issues/8
-    // anything to do with laps I will need to store timestamps when onTimerLap() is called, and probably store all the activity info? or maybe just store distance/and timestamp?
-    // time of day - wall clock
-    // last lap time
-    // current lap time
-
     DATA_TYPE_MAX,
 }
 
