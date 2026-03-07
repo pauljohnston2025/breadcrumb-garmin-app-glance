@@ -330,7 +330,20 @@ class BreadcrumbRenderer {
             renderPaceMetric(dc, x, y, info.currentSpeed);
         } else if (type == DATA_TYPE_WALL_CLOCK) {
             var clockTime = System.getClockTime();
-            var timeStr = Lang.format("$1$:$2$", [clockTime.hour, clockTime.min.format("%02d")]);
+            var hour = clockTime.hour;
+            var timeStr = "";
+            if (settings.is24Hour) {
+                // 24-hour format: 0-23
+                timeStr = Lang.format("$1$:$2$", [
+                    hour.format("%02d"),
+                    clockTime.min.format("%02d"),
+                ]);
+            } else {
+                // 12-hour format: 1-12
+                hour = hour % 12;
+                hour = hour == 0 ? 12 : hour; // Convert 0 to 12
+                timeStr = Lang.format("$1$:$2$", [hour, clockTime.min.format("%02d")]);
+            }
             renderTextMetric(dc, x, y, timeStr);
         } else if (type == DATA_TYPE_CURRENT_LAP_TIME) {
             if (info.elapsedTime != null) {
@@ -388,15 +401,35 @@ class BreadcrumbRenderer {
                 renderTextMetric(dc, x, y, "---");
             }
         } else if (type == DATA_TYPE_HEADING) {
-            if (info.currentHeading != null) {
-                var degrees = Math.toDegrees(info.currentHeading as Float);
-                if (degrees < 0) {
-                    degrees += 360;
-                }
-                renderTextMetric(dc, x, y, degrees.format("%d") + "°");
-            } else {
-                renderTextMetric(dc, x, y, "---");
+            var degrees = Math.toDegrees(_cachedValues.rotationRad as Float);
+            if (degrees < 0) {
+                degrees += 360;
             }
+
+            var directions = [
+                "N",
+                "NNE",
+                "NE",
+                "ENE",
+                "E",
+                "ESE",
+                "SE",
+                "SSE",
+                "S",
+                "SSW",
+                "SW",
+                "WSW",
+                "W",
+                "WNW",
+                "NW",
+                "NNW",
+            ];
+
+            // We add 0.5 to handle the rounding offset for "North" correctly
+            var index = (degrees / 22.5 + 0.5).toNumber() % 16;
+            var cardinal = directions[index];
+
+            renderTextMetric(dc, x, y, degrees.format("%d") + "° | " + cardinal);
         } else if (type == DATA_TYPE_GPS_ACCURACY) {
             var accuracy = info.currentLocationAccuracy;
             var label = "No GPS";
@@ -2710,7 +2743,10 @@ class BreadcrumbRenderer {
             return false; // something else is running, do not handle touch events
         }
 
-        if (!settings.mapEnabled || (!settings.storageMapTilesOnly && !settings.cacheTilesInStorage)) {
+        if (
+            !settings.mapEnabled ||
+            (!settings.storageMapTilesOnly && !settings.cacheTilesInStorage)
+        ) {
             // we do not allow storage tiles, and the "G" is hidden
             _startCacheTilesProgress = 0;
             return false; // maps are not enabled, we hide the start symbol in this case
