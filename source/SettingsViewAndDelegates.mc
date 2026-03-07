@@ -1192,7 +1192,12 @@ class FieldRemoveDelegate extends WatchUi.ConfirmationDelegate {
     var view as SettingsDataFieldPageEditor;
     var listView as SettingsDataFieldPageList;
 
-    function initialize(pIdx as Number, fIdx as Number, v as SettingsDataFieldPageEditor, listView as SettingsDataFieldPageList) {
+    function initialize(
+        pIdx as Number,
+        fIdx as Number,
+        v as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
         WatchUi.ConfirmationDelegate.initialize();
         pageIndex = pIdx;
         fieldIndex = fIdx;
@@ -1303,7 +1308,7 @@ class SettingsDataField extends WatchUi.Menu2 {
         safeSetSubLabel(
             me,
             :settingsDataFieldAutoLapDistanceM,
-            settings.autoLapDistanceM.toString()
+            settings.autoLapDistanceM <= 0 ? "N/A" : settings.autoLapDistanceM.toString() + "m"
         );
         safeSetSubLabel(
             me,

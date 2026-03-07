@@ -5,6 +5,7 @@ import Toybox.Time;
 import Toybox.Math;
 import Toybox.Application;
 import Toybox.WatchUi;
+import Toybox.Attention;
 
 const FLOAT_MIN = -340282346638528859811704183484516925440.0;
 const FLOAT_MAX = 340282346638528859811704183484516925440.0;
@@ -123,10 +124,10 @@ function drawScaledBitmapHelper(
     bitmap as BitmapType
 ) as Void {
     var _breadcrumbContextLocal = $._breadcrumbContext;
-        if (_breadcrumbContextLocal == null) {
-            breadcrumbContextWasNull();
-            return;
-        }
+    if (_breadcrumbContextLocal == null) {
+        breadcrumbContextWasNull();
+        return;
+    }
 
     // is there any reason not to move this into main code and just use AffineTransform every time - even for devices that support drawScaledBitmap?
     // I assume one has a performance benifit over the other?
@@ -282,9 +283,8 @@ function mustUpdate() as Void {
 }
 
 (:release)
-function breadcrumbContextWasNull() as Void {
-}
-    
+function breadcrumbContextWasNull() as Void {}
+
 (:debug)
 function breadcrumbContextWasNull() as Void {
     logE("breadcrumb context was null");
@@ -298,8 +298,56 @@ function removeAtIndex(array as Array<Number>, index as Number) as Array<Number>
     return before;
 }
 
-function showLapMessage()
-{
-    // todo maybe add some useful info like distance or time
-    WatchUi.showToast("Lap added", null);
+function showLapMessage(
+    cachedValues as CachedValues,
+    settings as Settings,
+    vibrate as Boolean
+) as Void {
+    var dStr = formatDistance(cachedValues._lastLapDistance, settings.distanceImperialUnits);
+    var tStr = formatDuration(cachedValues._lastLapDuration);
+
+    if (vibrate) {
+        if (Attention has :vibrate) {
+            try {
+                var vibeProfile = [
+                    new Attention.VibeProfile(100, 250), // 100% intensity for 250ms
+                    new Attention.VibeProfile(0, 100), // Pause for 100ms
+                    new Attention.VibeProfile(100, 250), // 100% intensity for 250ms
+                ];
+                // this is not documented that it throws, but got bit by the backlight, so protecting it too in order to always show our alerts
+                Attention.vibrate(vibeProfile);
+            } catch (e) {
+                logE("failed to vibrate: " + e.getErrorMessage());
+            }
+        }
+    }
+
+    WatchUi.showToast("Lap: " + tStr + " (" + dStr + ")", null);
+}
+
+function formatDistance(distMeters as Float, isImperial as Boolean) as String {
+    var distConverted;
+    var suffix = "km";
+
+    if (isImperial) {
+        distConverted = distMeters / 1609.34f;
+        suffix = "mi";
+    } else {
+        distConverted = distMeters / 1000.0f;
+    }
+
+    return distConverted.format("%.2f") + suffix;
+}
+
+function formatDuration(timeMs as Number) as String {
+    var secondsTotal = timeMs / 1000;
+    var hours = secondsTotal / 3600;
+    var minutes = (secondsTotal % 3600) / 60;
+    var seconds = secondsTotal % 60;
+
+    if (hours > 0) {
+        return Lang.format("$1$:$2$:$3$", [hours, minutes.format("%02d"), seconds.format("%02d")]);
+    } else {
+        return Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]);
+    }
 }

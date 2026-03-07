@@ -482,21 +482,7 @@ class BreadcrumbRenderer {
             return;
         }
 
-        var secondsTotal = timeMs / 1000;
-        var hours = secondsTotal / 3600;
-        var minutes = (secondsTotal % 3600) / 60;
-        var seconds = secondsTotal % 60;
-
-        var timeStr;
-        if (hours > 0) {
-            timeStr = Lang.format("$1$:$2$:$3$", [
-                hours,
-                minutes.format("%02d"),
-                seconds.format("%02d"),
-            ]);
-        } else {
-            timeStr = Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]);
-        }
+        var timeStr = formatDuration(timeMs);
         renderTextMetric(dc, x, y, timeStr);
     }
 
@@ -558,18 +544,8 @@ class BreadcrumbRenderer {
             return;
         }
 
-        var distConverted;
-        var suffix = "km";
-
-        if (settings.distanceImperialUnits) {
-            distConverted = distMeters / 1609.34f;
-            suffix = "mi";
-        } else {
-            distConverted = distMeters / 1000.0f;
-        }
-
-        // e.g. "5.23km"
-        renderTextMetric(dc, x, y, distConverted.format("%.2f") + suffix);
+        var text = formatDistance(distMeters, settings.distanceImperialUnits);
+        renderTextMetric(dc, x, y, text);
     }
 
     function renderElevationMetric(

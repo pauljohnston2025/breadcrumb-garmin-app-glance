@@ -539,8 +539,8 @@ class CachedValues {
                 _settings.autoLapDistanceM > 0 &&
                 _elapsedDistance - _lapStartDistance >= _settings.autoLapDistanceM
             ) {
-                showLapMessage();
                 onTimerLapInner(activityInfo);
+                showLapMessage(me, _settings, true);
             }
         }
 
@@ -548,7 +548,7 @@ class CachedValues {
         // if we are moving at some pace check the mode we are in to determine if we
         // zoom in or out
         // or we are not at speed, so invert logic (this allows us to zoom in when
-        // stopped, and zoom out when running) mostly useful for cheking close route
+        // stopped, and zoom out when running) mostly useful for checking close route
         // whilst stopped but also allows quick zoom in before setting manual zoom
         // (rather than having to manually zoom in from the outer level) once zoomed
         // in we lock onto the user position anyway

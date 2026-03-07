@@ -441,9 +441,9 @@ class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
             WatchUi.pushView(confirmationView, delegate, WatchUi.SLIDE_IMMEDIATE);
             return;
         } else if (itemId == :lap) {
-            showLapMessage();
-            _breadcrumbContext.cachedValues.onTimerLap();
             _breadcrumbContext.startSession();
+            _breadcrumbContext.cachedValues.onTimerLap();
+            showLapMessage(_breadcrumbContext.cachedValues, _breadcrumbContext.settings, false /*starting the session sees to already vibrate, plus its  a manual user interaction regardless*/);
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
             return;
         }
