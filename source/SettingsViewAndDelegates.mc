@@ -1082,7 +1082,7 @@ class SettingsDataFieldPageEditorDelegate extends WatchUi.Menu2InputDelegate {
             var fieldActions = new FieldAction(pageIndex, fieldIndex);
             WatchUi.pushView(
                 fieldActions,
-                new FieldActionDelegate(pageIndex, fieldIndex, view, fieldActions),
+                new FieldActionDelegate(pageIndex, fieldIndex, view, listView, fieldActions),
                 WatchUi.SLIDE_IMMEDIATE
             );
         }
@@ -1120,18 +1120,21 @@ class FieldActionDelegate extends WatchUi.Menu2InputDelegate {
     var pageIndex as Number;
     var fieldIndex as Number;
     var view as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
     var fieldActions as FieldAction;
 
     function initialize(
         pIdx as Number,
         fIdx as Number,
         v as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList,
         fieldActions as FieldAction
     ) {
         WatchUi.Menu2InputDelegate.initialize();
         pageIndex = pIdx;
         fieldIndex = fIdx;
         view = v;
+        me.listView = listView;
         me.fieldActions = fieldActions;
     }
 
@@ -1164,7 +1167,7 @@ class FieldActionDelegate extends WatchUi.Menu2InputDelegate {
             var dialog = new WatchUi.Confirmation("Remove field?");
             WatchUi.pushView(
                 dialog,
-                new FieldRemoveDelegate(pageIndex, fieldIndex, view),
+                new FieldRemoveDelegate(pageIndex, fieldIndex, view, listView),
                 WatchUi.SLIDE_IMMEDIATE
             );
         }
@@ -1187,12 +1190,14 @@ class FieldRemoveDelegate extends WatchUi.ConfirmationDelegate {
     var pageIndex as Number;
     var fieldIndex as Number;
     var view as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
 
-    function initialize(pIdx as Number, fIdx as Number, v as SettingsDataFieldPageEditor) {
+    function initialize(pIdx as Number, fIdx as Number, v as SettingsDataFieldPageEditor, listView as SettingsDataFieldPageList) {
         WatchUi.ConfirmationDelegate.initialize();
         pageIndex = pIdx;
         fieldIndex = fIdx;
         view = v;
+        me.listView = listView;
     }
 
     function onResponse(response as Confirm) as Boolean {
@@ -1204,6 +1209,7 @@ class FieldRemoveDelegate extends WatchUi.ConfirmationDelegate {
             }
             var settings = _breadcrumbContextLocal.settings;
             settings.removeField(pageIndex, fieldIndex);
+            listView.rerender();
             view.rerender();
             // Pop the action menu and the confirmation dialog
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
