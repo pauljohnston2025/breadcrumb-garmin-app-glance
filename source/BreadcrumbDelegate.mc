@@ -150,8 +150,9 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             if (y < hitboxSize) {
                 // top of screen
                 cachedValues.cancelCacheCurrentMapArea();
+                return true;
             }
-            return true;
+            return false;
         }
 
         if (renderer.handleStartCacheRoute(x, y)) {
@@ -273,7 +274,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             }
             // handled by handleStartCacheRoute
             // cachedValues.startCacheCurrentMapArea();
-            return true;
+            return false;
         } else if (x < hitboxSize) {
             // left of screen
             if (settings.mode == MODE_MAP_MOVE) {
