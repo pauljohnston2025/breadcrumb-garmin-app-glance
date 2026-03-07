@@ -385,7 +385,7 @@ class TileUpdateHandler {
     }
 }
 
-const DATA_PAGE_BASE_ID = 1000;
+const DATA_PAGE_BASE_ID = 100;
 
 // we are getting dangerously close to the app settings limit
 // was getting "Unable to serialize app data" in the sim, but after a restart worked fine

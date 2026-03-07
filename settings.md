@@ -78,7 +78,7 @@ eg.
 
 Numbers MUST not appear twice in the list also numbers that are not in the modes list below MUST not be included.
 
-Special modes for [Data Field Page Counts](#data-field-page-counts) are 1000 onwards. eg. page 0 = mode 1000, page 1 = mode 1001
+Special modes for [Data Field Page Counts](#data-field-page-counts) are 100 onwards. eg. page 0 = mode 100, page 1 = mode 101
 
 
 ### Display Mode

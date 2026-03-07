@@ -687,9 +687,13 @@ function getModeString(mode as Number) as ResourceId or String {
             return Rez.Strings.mapMoveUD;
         case MODE_MAP_MOVE_LEFT_RIGHT:
             return Rez.Strings.mapMoveLR;
-        default:
-            return "";
     }
+
+    if (mode >= DATA_PAGE_BASE_ID) {
+        return "(" + mode + ") Data Page " + (mode - DATA_PAGE_BASE_ID);
+    }
+
+    return "";
 }
 
 (:settingsView)
@@ -2710,13 +2714,23 @@ class SettingsGeneralDelegate extends WatchUi.Menu2InputDelegate {
                 )
             );
         } else if (itemId == :settingsGeneralMode) {
+            var enumView = new EnumMenu(
+                Rez.Strings.modeTitle,
+                method(:getModeStringL),
+                settings.mode,
+                MODE_MAX
+            );
+
+            // Add items to the end of the list, maybe we should make this generic?
+            for (var i = 0; i < settings.dataFieldPageCounts.size(); i++) {
+                var modeId = DATA_PAGE_BASE_ID + i;
+                var isSelected = modeId == settings.mode;
+                enumView.addItem(
+                    new MenuItem(getModeStringL(modeId), isSelected ? "Selected" : "", modeId, {})
+                );
+            }
             WatchUi.pushView(
-                new EnumMenu(
-                    Rez.Strings.modeTitle,
-                    method(:getModeStringL),
-                    settings.mode,
-                    MODE_MAX
-                ),
+                enumView,
                 new $.EnumDelegate(settings.method(:setMode), view),
                 WatchUi.SLIDE_IMMEDIATE
             );
