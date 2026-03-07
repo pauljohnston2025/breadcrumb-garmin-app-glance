@@ -199,7 +199,7 @@ class WebRequestHandleWrapper {
 
             if (
                 responseCode != 200 &&
-                webHandler._settings.tileUrl.equals(COMPANION_APP_TILE_URL) &&
+                webHandler._settings.tileUrl.find(COMPANION_APP_TILE_URL_MATCH) != null &&
                 !_breadcrumbContextLocal.settings.storageMapTilesOnly
             ) {
                 // todo only send this on certain errors, and only probably only after some limit?

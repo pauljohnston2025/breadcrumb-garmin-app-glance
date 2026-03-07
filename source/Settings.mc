@@ -140,6 +140,7 @@ enum /*AuthTokenType*/ {
 }
 
 const COMPANION_APP_TILE_URL = "http://127.0.0.1:8080";
+const COMPANION_APP_TILE_URL_MATCH = "127.0.0.1"; // any localhost url should be the companion app, but maybe they changed the port on the companion app
 
 (:imageTiles)
 class TileServerInfo {
@@ -799,7 +800,7 @@ class Settings {
 
     (:noCompanionTiles)
     function mapChoiceValid() as Boolean {
-        if (tileUrl.equals(COMPANION_APP_TILE_URL)) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) != null) {
             return false;
         }
 
@@ -879,17 +880,14 @@ class Settings {
     // this is just to ry and limit it for users when they ar simply selecting a new map choice
     (:highMemory)
     function maxTileCacheSizeGuess() as Number {
-        var ROUTE_SIZE_BYTES = 7000; // a large route loaded onto the device
-        // var MAX_CACHE_SIZE_USER_PROTECT_BYTES = 80 /*tiles*/ *64*64 /*tile size*/ * BYTES_PER_PIXEL;
-        var availableMemBytes = System.getSystemStats().totalMemory - 116000; // magic number we saw in testing with 0 routes loaded
-        availableMemBytes -= ROUTE_SIZE_BYTES * routeMax();
-        var OVERHEAD_PER_BITMAP_BYTES = 650; // larger image tiles seem to work better (we want smaller tiles to be effected by this more)
-        // I pretty much want perfectSize to be ~20 for large image tiles (192*192) and ~90 for small buffered bitmap tiles (64*64)
-        // so adjust OVERHEAD_PER_BITMAP_BYTES accordingly
-        // all calcs done on venu2s, smaller memory watches will be smaller
-        var perfectSize =
-            availableMemBytes / (tileSize * tileSize * BYTES_PER_PIXEL + OVERHEAD_PER_BITMAP_BYTES);
-        return maxN(1, Math.floor(perfectSize * 0.85).toNumber()); // give ourselves a bit of a buffer
+        // this guess is off for large memeory devices, because the graphics memory pool is the limitation, and it has no relation to the standard app memory pool
+        // so hard coding guess instead
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) != null) {
+            // companion app is normally 64*64, thats the largest tile they can have without OOM, so cap at a reasonable value
+            return 64;
+        }
+
+        return 10;
     }
 
     function maxStorageTileCacheSizeGuess() as Number {
@@ -910,7 +908,7 @@ class Settings {
         // these values will be updated by companion app when tile server changes, or the query below
         setTileLayerMaxWithoutSideEffect(8);
         setTileLayerMinWithoutSideEffect(0);
-        if (!tileUrl.equals(COMPANION_APP_TILE_URL)) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) == null) {
             setTileUrlWithoutSideEffect(COMPANION_APP_TILE_URL);
         }
         if (fullTileSize != defaultSettings.fullTileSize) {
@@ -1063,7 +1061,7 @@ class Settings {
         updateRequiresAuth();
 
         // prompts user to open the app
-        if (tileUrl.equals(COMPANION_APP_TILE_URL) && !storageMapTilesOnly) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) != null && !storageMapTilesOnly) {
             // we could also send a toast, but the transmit allows us to open the app easier on the phone
             // even though the phone side is a bit of a hack (ConnectIQMessageReceiver cannot parse the data), it's still better than having to manualy open the app.
             transmit([PROTOCOL_SEND_OPEN_APP], {}, new CommStatus());
@@ -1360,7 +1358,7 @@ class Settings {
     }
     function setTileSizeWithoutSideEffect(value as Number) as Void {
         tileSize = value;
-        if (!tileUrl.equals(COMPANION_APP_TILE_URL)) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) == null) {
             tileSize = scaledTileSize;
         }
         Application.Properties.setValue("tileSize", tileSize);
@@ -1475,7 +1473,7 @@ class Settings {
             scaledTileSize = fullTileSize;
         }
         Application.Properties.setValue("scaledTileSize", scaledTileSize);
-        if (!tileUrl.equals(COMPANION_APP_TILE_URL)) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) == null) {
             setTileSizeWithoutSideEffect(scaledTileSize);
         }
         tileServerPropChanged();
@@ -1716,7 +1714,7 @@ class Settings {
         }
 
         // prompts user to open the app
-        if (tileUrl.equals(COMPANION_APP_TILE_URL) && !storageMapTilesOnly) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) != null && !storageMapTilesOnly) {
             // we could also send a toast, but the transmit allows us to open the app easier on the phone
             // even though the phone side is a bit of a hack (ConnectIQMessageReceiver cannot parse the data), it's still better than having to manualy open the app.
             transmit([PROTOCOL_SEND_OPEN_APP], {}, new CommStatus());
@@ -3034,7 +3032,7 @@ class Settings {
         }
         tileUrl = parseString("tileUrl", tileUrl);
         tileSize = parseNumber("tileSize", tileSize);
-        if (!tileUrl.equals(COMPANION_APP_TILE_URL)) {
+        if (tileUrl.find(COMPANION_APP_TILE_URL_MATCH) == null) {
             tileSize = scaledTileSize;
         }
         tileLayerMax = parseNumber("tileLayerMax", tileLayerMax);

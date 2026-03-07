@@ -1075,9 +1075,9 @@ class BreadcrumbView extends WatchUi.View {
 
         combined +=
             "  tiles: " +
-            _breadcrumbContext.tileCache._internalCache.size() +
+            _breadcrumbContext.tileCache._internalCache.size() + "/" +  settings.tileCacheSize + 
             " s: " +
-            _breadcrumbContext.tileCache._storageTileCache._totalTileCount;
+            _breadcrumbContext.tileCache._storageTileCache._totalTileCount + "/" +  settings.storageTileCacheSize;
 
         dc.drawText(x, y, Graphics.FONT_XTINY, combined, Graphics.TEXT_JUSTIFY_CENTER);
         y += spacing;
