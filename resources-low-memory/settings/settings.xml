@@ -385,6 +385,14 @@
             <settingConfig type="alphaNumeric"/>
         </setting>
         
+        <setting propertyKey="@Properties.dataFieldPageColour" title="@Strings.dataFieldPageColour" prompt="@Strings.colourPrompt">
+            <settingConfig type="alphaNumeric"/>
+        </setting>
+        
+        <setting propertyKey="@Properties.dataFieldPageColour2" title="@Strings.dataFieldPageColour2" prompt="@Strings.colourPrompt">
+            <settingConfig type="alphaNumeric"/>
+        </setting>
+        
         <setting propertyKey="@Properties.debugColour" title="@Strings.debugColour" prompt="@Strings.colourPrompt">
             <settingConfig type="alphaNumeric"/>
         </setting>

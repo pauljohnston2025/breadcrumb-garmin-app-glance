@@ -1985,6 +1985,24 @@ class SettingsColours extends WatchUi.Menu2 {
         );
         addItem(
             new WatchUi.IconMenuItem(
+                Rez.Strings.dataFieldPageColour,
+                null,
+                :settingsColoursDataFieldPageColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.dataFieldPageColour2,
+                null,
+                :settingsColoursDataFieldPageColour2,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
                 Rez.Strings.debugColour,
                 null,
                 :settingsColoursDebugColour,
@@ -2017,6 +2035,16 @@ class SettingsColours extends WatchUi.Menu2 {
             new ColourIcon(settings.normalModeColour)
         );
         safeSetIcon(me, :settingsColoursUiColour, new ColourIcon(settings.uiColour));
+        safeSetIcon(
+            me,
+            :settingsColoursDataFieldPageColour,
+            new ColourIcon(settings.dataFieldPageColour)
+        );
+        safeSetIcon(
+            me,
+            :settingsColoursDataFieldPageColour2,
+            new ColourIcon(settings.dataFieldPageColour2)
+        );
         safeSetIcon(me, :settingsColoursDebugColour, new ColourIcon(settings.debugColour));
     }
 }
@@ -3659,6 +3687,24 @@ class SettingsColoursDelegate extends WatchUi.Menu2InputDelegate {
                 new SettingsColourPickerTransparency(
                     settings.method(:setUiColour),
                     settings.uiColour,
+                    view,
+                    false
+                )
+            );
+        } else if (itemId == :settingsColoursDataFieldPageColour) {
+            startPicker(
+                new SettingsColourPickerTransparency(
+                    settings.method(:setDataFieldPageColour),
+                    settings.dataFieldPageColour,
+                    view,
+                    false
+                )
+            );
+        } else if (itemId == :settingsColoursDataFieldPageColour2) {
+            startPicker(
+                new SettingsColourPickerTransparency(
+                    settings.method(:setDataFieldPageColour2),
+                    settings.dataFieldPageColour2,
                     view,
                     false
                 )

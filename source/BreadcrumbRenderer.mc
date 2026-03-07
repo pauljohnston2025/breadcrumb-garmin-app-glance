@@ -194,7 +194,7 @@ class BreadcrumbRenderer {
         var h = _cachedValues.physicalScreenHeight;
 
         // 1. Draw Dividers based on count
-        dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(settings.dataFieldPageColour2, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(2);
 
         if (count == 2) {
@@ -242,7 +242,7 @@ class BreadcrumbRenderer {
             if (label instanceof ResourceId) {
                 label = WatchUi.loadResource(label); // hmmmm this is expensive
             }
-            dc.setColor(settings.uiColour, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(settings.dataFieldPageColour2, Graphics.COLOR_TRANSPARENT);
             var heightOffset = dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1] / 2 + 10;
             dc.drawText(
                 x,
@@ -277,7 +277,11 @@ class BreadcrumbRenderer {
         y as Float,
         direction as Number
     ) as Void {
-        dc.setColor(settings.normalModeColour, Graphics.COLOR_TRANSPARENT);
+        if (settings.mode >= DATA_PAGE_BASE_ID) {
+            dc.setColor(settings.dataFieldPageColour, Graphics.COLOR_TRANSPARENT);
+        } else {
+            dc.setColor(settings.normalModeColour, Graphics.COLOR_TRANSPARENT);
+        }
 
         if (type == DATA_TYPE_NONE) {
             return;

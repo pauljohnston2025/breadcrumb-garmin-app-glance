@@ -570,6 +570,10 @@ class Settings {
     var uiColour as Number = Graphics.COLOR_WHITE;
     (:blackAndWhite)
     var debugColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var dataFieldPageColour as Number = Graphics.COLOR_WHITE;
+    (:blackAndWhite)
+    var dataFieldPageColour2 as Number = Graphics.COLOR_WHITE;
 
     (:fullColours)
     var normalModeColour as Number = Graphics.COLOR_BLUE;
@@ -577,6 +581,10 @@ class Settings {
     var uiColour as Number = Graphics.COLOR_DK_GRAY;
     (:fullColours)
     var debugColour as Number = Graphics.COLOR_WHITE;
+    (:fullColours)
+    var dataFieldPageColour as Number = Graphics.COLOR_DK_GRAY;
+    (:fullColours)
+    var dataFieldPageColour2 as Number = Graphics.COLOR_DK_GRAY;
     // I did get up to 4 large routes working with off track alerts, but any more than that and watchdog catches us out, 3 is a safer limit.
     // currently we still load disabled routes into memory, so its also not great having this large and a heap of disabled routes
     private var _routeMax as Number = 3;
@@ -2165,6 +2173,18 @@ class Settings {
     }
 
     (:settingsView)
+    function setDataFieldPageColour(value as Number) as Void {
+        dataFieldPageColour = value;
+        setValue("dataFieldPageColour", dataFieldPageColour.format("%X"));
+    }
+
+    (:settingsView)
+    function setDataFieldPageColour2(value as Number) as Void {
+        dataFieldPageColour2 = value;
+        setValue("dataFieldPageColour2", dataFieldPageColour2.format("%X"));
+    }
+
+    (:settingsView)
     function setUiColour(value as Number) as Void {
         uiColour = value;
         setValue("uiColour", uiColour.format("%X"));
@@ -2941,6 +2961,8 @@ class Settings {
                 "routeMax" => _routeMax,
                 "uiColour" => uiColour.format("%X"),
                 "debugColour" => debugColour.format("%X"),
+                "dataFieldPageColour" => dataFieldPageColour.format("%X"),
+                "dataFieldPageColour2" => dataFieldPageColour2.format("%X"),
                 "resetDefaults" => false,
             }) as Dictionary<String, PropertyValueType>
         );
@@ -3128,6 +3150,8 @@ class Settings {
         _routeMax = parseColour("routeMax", _routeMax);
         uiColour = parseColour("uiColour", uiColour);
         debugColour = parseColour("debugColour", debugColour);
+        dataFieldPageColour = parseColour("dataFieldPageColour", dataFieldPageColour);
+        dataFieldPageColour2 = parseColour("dataFieldPageColour2", dataFieldPageColour2);
         maxPendingWebRequests = parseNumber("maxPendingWebRequests", maxPendingWebRequests);
         metersAroundUser = parseNumber("metersAroundUser", metersAroundUser);
         zoomAtPaceMode = parseNumber("zoomAtPaceMode", zoomAtPaceMode);

@@ -41,6 +41,8 @@
     <string id="debugColour">Debug Colour</string>
     <string id="uiColour">UI Colour</string>
     <string id="normalModeColour">Normal Mode Colour</string>
+    <string id="dataFieldPageColour">Data Field Page Colour</string>
+    <string id="dataFieldPageColour2">Data Field Page Colour 2</string>
     <string id="displayRouteNamesTitle">Display Route Names</string>
     <string id="offTrackAlertsDistanceMTitle">Off Track Alert Distance (m)</string>
     <string id="offTrackAlertsMaxReportIntervalSTitle">Max AlertReport Interval (s)</string>

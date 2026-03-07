@@ -727,16 +727,18 @@ How often, in seconds, an alert should fire. Alerts will continue firing until y
 
 ### Colours
 
-Should be set to a valid hex code RRGGBB not all are required eg. FF00 will render as green
+Should be set to a valid hex code RRGGBB not all are required eg. FF00 will render as green  
 
 Track Colour - The colour of the in progress track  
 Track Colour 2 - The secondary colour of the in progress track (only used in some track styles)  
-Default Route Colour - The default colour of newly loaded routes
+Default Route Colour - The default colour of newly loaded routes  
 Elevation Colour - The colour of the scale/numbers on the elevation page  
 User Colour - The colour of the user triangle (current user position)  
 Normal Mode Colour - The colour of scale/numbers on the track/routes page  
 UI Colour - The colour of the on screen ui  
-Debug Colour - The colour of the debug page
+Data Field Page Colour - The colour of the data field values on data pages  
+Data Field Page Colour 2 - The colour of the lines and headings on data pages  
+Debug Colour - The colour of the debug page  
 
 ---
 
