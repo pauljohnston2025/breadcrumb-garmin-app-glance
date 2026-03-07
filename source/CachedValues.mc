@@ -205,10 +205,10 @@ class CachedValues {
 
     function onTimerLapInner(info as Activity.Info) as Void {
         if (info.elapsedTime != null && info.elapsedDistance != null) {
-            _lastLapDuration = info.elapsedTime - _lapStartTime;
-            _lastLapDistance = info.elapsedDistance - _lapStartDistance;
-            _lapStartTime = info.elapsedTime;
-            _lapStartDistance = info.elapsedDistance;
+            _lastLapDuration = (info.elapsedTime as Number) - _lapStartTime;
+            _lastLapDistance = (info.elapsedDistance as Float) - _lapStartDistance;
+            _lapStartTime = info.elapsedTime as Number;
+            _lapStartDistance = info.elapsedDistance as Float;
         }
     }
 
