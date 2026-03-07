@@ -314,6 +314,9 @@ Same as [Top Data Field Type](#top-data-field-type) but at the bottom of the scr
 
 The text size for the top and bottom data fields.  
 
+### Auto Lap Distance (m)
+
+How far, in meters, to trigger an auto lap (-1) to disable.
 
 ### Data Field Page Counts
 

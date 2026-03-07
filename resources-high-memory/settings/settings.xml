@@ -315,6 +315,10 @@
         </settingConfig>
     </setting>
 
+    <setting propertyKey="@Properties.autoLapDistanceM" title="@Strings.autoLapDistanceMTitle">
+        <settingConfig type="numeric" min="-1"/>
+    </setting>
+
     <setting propertyKey="@Properties.dataFieldPageCounts" title="@Strings.dataFieldPageCountsTitle">
         <settingConfig type="alphaNumeric"/>
     </setting>

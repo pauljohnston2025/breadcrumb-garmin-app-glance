@@ -4,6 +4,7 @@
 
     <string id="activityPaused">Activity Paused</string>
     <string id="resume">Resume</string>
+    <string id="lap">Lap</string>
     <string id="saveAndExit">Save And Exit</string>
     <string id="exitWithoutSaving">Exit Without Saving</string>
 
@@ -14,6 +15,7 @@
     <string id="useTrackAsHeadingSpeedMPSTitle">Use Track As Heading Speed (m/s)</string>
     <string id="topDataTypeTitle">Top Data Field</string>
     <string id="bottomDataTypeTitle">Bottom Data Field</string>
+    <string id="autoLapDistanceMTitle">Auto Lap Distance (m)</string>
     <string id="tileLayerMaxTitle">Tile Layer Max</string>
     <string id="tileLayerMaxPrompt">15</string>
     <string id="tileLayerMinTitle">Tile Layer Min</string>

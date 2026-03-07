@@ -534,6 +534,7 @@ class Settings {
     // dataFieldPageTypes is the types of datafields on the pages eg.
     // 0,1,1,0 to show DATA_TYPE_NONE, DATA_TYPE_SCALE, DATA_TYPE_ALTITUDE and DATA_TYPE_NONE the number of  dataFieldPageTypes needs to match the number of dataFieldPageCounts added together
     var dataFieldPageTypes as Array<Number> = [];
+    var autoLapDistanceM as Number = -1;
     var minTrackPointDistanceM as Number = 5; // minimum distance between 2 track points
     var trackPointReductionMethod as Number = TRACK_POINT_REDUCTION_METHOD_DOWNSAMPLE;
     var uiMode as Number = UI_MODE_SHOW_ALL;
@@ -1109,6 +1110,12 @@ class Settings {
         setValue("bottomDataType", bottomDataType);
     }
 
+    (:settingsView)
+    function setAutoLapDistanceM(value as Number) as Void {
+        autoLapDistanceM = value;
+        setValue("autoLapDistanceM", autoLapDistanceM);
+    }
+    
     (:settingsView)
     function setMinTrackPointDistanceM(value as Number) as Void {
         minTrackPointDistanceM = value;
@@ -2901,6 +2908,7 @@ class Settings {
                 "useTrackAsHeadingSpeedMPS" => useTrackAsHeadingSpeedMPS,
                 "topDataType" => topDataType,
                 "bottomDataType" => bottomDataType,
+                "autoLapDistanceM" => autoLapDistanceM,
                 "minTrackPointDistanceM" => minTrackPointDistanceM,
                 "trackPointReductionMethod" => trackPointReductionMethod,
                 "dataFieldTextSize" => dataFieldTextSize,
@@ -3124,6 +3132,7 @@ class Settings {
         );
         topDataType = parseNumber("topDataType", topDataType);
         bottomDataType = parseNumber("bottomDataType", bottomDataType);
+        autoLapDistanceM = parseNumber("autoLapDistanceM", autoLapDistanceM);
         minTrackPointDistanceM = parseNumber("minTrackPointDistanceM", minTrackPointDistanceM);
         trackPointReductionMethod = parseNumber(
             "trackPointReductionMethod",

@@ -81,6 +81,7 @@
 	<property id="dataFieldTextSize" type="number">0</property>
 	<property id="dataFieldPageCounts" type="string"></property>
 	<property id="dataFieldPageTypes" type="string"></property>
+	<property id="autoLapDistanceM" type="number">-1</property>
 	<property id="minTrackPointDistanceM" type="number">5</property>
 	<property id="trackPointReductionMethod" type="number">0</property>
 

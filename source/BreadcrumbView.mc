@@ -245,16 +245,8 @@ class BreadcrumbView extends WatchUi.View {
         updateScratchPadBitmap();
     }
 
-    function onWorkoutStarted() as Void {
-        _breadcrumbContext.track.onStart();
-    }
-
     function onTimerStart() as Void {
         _breadcrumbContext.track.onStartResume();
-    }
-    
-    function onTimerLap() as Void {
-        _cachedValues.onTimerLap();
     }
 
     function compute(info as Activity.Info) as Void {

@@ -1093,7 +1093,7 @@ class FieldAction extends WatchUi.Menu2 {
     var fieldIndex as Number;
 
     function initialize(pageIndex as Number, fieldIndex as Number) {
-        Menu2.initialize({ :title => "Page " + pageIndex + " Field " + fieldIndex});
+        Menu2.initialize({ :title => "Page " + pageIndex + " Field " + fieldIndex });
         me.pageIndex = pageIndex;
         me.fieldIndex = fieldIndex;
         addItem(new WatchUi.MenuItem("Type", null, :edit, {}));
@@ -1120,7 +1120,12 @@ class FieldActionDelegate extends WatchUi.Menu2InputDelegate {
     var view as SettingsDataFieldPageEditor;
     var fieldActions as FieldAction;
 
-    function initialize(pIdx as Number, fIdx as Number, v as SettingsDataFieldPageEditor, fieldActions as FieldAction) {
+    function initialize(
+        pIdx as Number,
+        fIdx as Number,
+        v as SettingsDataFieldPageEditor,
+        fieldActions as FieldAction
+    ) {
         WatchUi.Menu2InputDelegate.initialize();
         pageIndex = pIdx;
         fieldIndex = fIdx;
@@ -1262,6 +1267,14 @@ class SettingsDataField extends WatchUi.Menu2 {
                 {}
             )
         );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.autoLapDistanceMTitle,
+                null,
+                :settingsDataFieldAutoLapDistanceM,
+                {}
+            )
+        );
         addItem(new WatchUi.MenuItem("Data Pages", null, :settingsDataFieldPages, {}));
         rerender();
     }
@@ -1278,6 +1291,11 @@ class SettingsDataField extends WatchUi.Menu2 {
             me,
             :settingsDataFieldTextSize,
             getFontSizeString(settings.dataFieldTextSize)
+        );
+        safeSetSubLabel(
+            me,
+            :settingsDataFieldAutoLapDistanceM,
+            settings.autoLapDistanceM.toString()
         );
         safeSetSubLabel(
             me,
@@ -2894,6 +2912,14 @@ class SettingsDataFieldDelegate extends WatchUi.Menu2InputDelegate {
                 ),
                 new $.EnumDelegate(settings.method(:setDataFieldTextSize), view),
                 WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (itemId == :settingsDataFieldAutoLapDistanceM) {
+            startPicker(
+                new SettingsNumberPicker(
+                    settings.method(:setAutoLapDistanceM),
+                    settings.autoLapDistanceM,
+                    view
+                )
             );
         } else if (itemId == :settingsDataFieldPages) {
             var view = new $.SettingsDataFieldPageList();
