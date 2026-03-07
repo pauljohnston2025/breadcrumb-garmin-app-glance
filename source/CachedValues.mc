@@ -539,6 +539,7 @@ class CachedValues {
                 _settings.autoLapDistanceM > 0 &&
                 _elapsedDistance - _lapStartDistance >= _settings.autoLapDistanceM
             ) {
+                showLapMessage();
                 onTimerLapInner(activityInfo);
             }
         }

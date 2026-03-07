@@ -436,9 +436,10 @@ class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
             WatchUi.pushView(confirmationView, delegate, WatchUi.SLIDE_IMMEDIATE);
             return;
         } else if (itemId == :lap) {
-            WatchUi.showToast("Lap added", null);
+            showLapMessage();
             _breadcrumbContext.cachedValues.onTimerLap();
-            resume();
+            _breadcrumbContext.startSession();
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
             return;
         }
 

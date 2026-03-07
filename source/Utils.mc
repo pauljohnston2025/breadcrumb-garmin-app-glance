@@ -297,3 +297,9 @@ function removeAtIndex(array as Array<Number>, index as Number) as Array<Number>
     before.addAll(after);
     return before;
 }
+
+function showLapMessage()
+{
+    // todo maybe add some useful info like distance or time
+    WatchUi.showToast("Lap added", null);
+}
