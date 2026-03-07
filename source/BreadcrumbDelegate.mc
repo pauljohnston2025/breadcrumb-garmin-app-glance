@@ -388,6 +388,10 @@ function pauseAndConfirmExit(breadcrumbContext as BreadcrumbContext) as Void {
     var sessionLocal = breadcrumbContext.session;
     if (sessionLocal != null) {
         sessionLocal.stop();
+        var _viewLocal = $._view;
+        if (_viewLocal != null) {
+            _viewLocal.onTimerStop(); // the activity is paused, block track points being added and alerts from firing
+        }
     }
     var menuView = new Rez.Menus.Exit();
     var delegate = new ExitMenuDelegate(breadcrumbContext);
