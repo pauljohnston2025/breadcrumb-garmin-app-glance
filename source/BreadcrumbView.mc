@@ -1076,7 +1076,7 @@ class BreadcrumbView extends WatchUi.View {
             Graphics.TEXT_JUSTIFY_CENTER
         );
         y += spacing;
-        var combined = "lastWebRes: " + _breadcrumbContext.webRequestHandler._lastResult;
+        var combined = "";
 
         if (settings.storageMapTilesOnly) {
             combined = "<storage only>";
@@ -1197,10 +1197,12 @@ class BreadcrumbView extends WatchUi.View {
             x,
             y,
             Graphics.FONT_XTINY,
-            "webErr: " +
+            "web err: " +
                 _breadcrumbContext.webRequestHandler._errorCount +
-                " webOk: " +
-                _breadcrumbContext.webRequestHandler._successCount,
+                " ok: " +
+                _breadcrumbContext.webRequestHandler._successCount +
+                " res: " +
+                _breadcrumbContext.webRequestHandler._lastResult,
             Graphics.TEXT_JUSTIFY_CENTER
         );
         y += spacing;

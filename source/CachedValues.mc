@@ -1083,7 +1083,11 @@ class CachedValues {
         return new RectangularPoint(0f, 0f, 0f); // highly unlikely code path
     }
 
-    function returnToUser() as Void {
+    function returnToUser() as Boolean {
+        if (fixedPosition == null && scale == null) {
+            return false; // nothing to do
+        }
+        
         // set fixed position recalculates all on us
         _settings.setFixedPosition(null, null, true);
         setScale(null);
@@ -1091,6 +1095,7 @@ class CachedValues {
         if (_viewLocal != null) {
             _viewLocal.updateScratchPadBitmap();
         }
+        return true;
     }
 
     function setScale(_scale as Float?) as Void {
