@@ -1592,10 +1592,6 @@ class BreadcrumbRenderer {
         dc.setColor(settings.uiColour, Graphics.COLOR_BLACK);
         dc.clear();
 
-        var lineLength = 20;
-        var halfLineLength = lineLength / 2;
-        var lineFromEdge = 10;
-
         var seedingProgress = _cachedValues.seedingProgress();
         var overallProgress = seedingProgress[1];
         // --- Draw Circular Progress Bar ---
@@ -1656,23 +1652,19 @@ class BreadcrumbRenderer {
         );
 
         // cross at the top of the screen to cancel download
-        // could just do this with an X? but that looks a bit weird
         dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(8);
-        dc.drawLine(
-            xHalfPhysical - halfLineLength,
-            lineFromEdge,
-            xHalfPhysical + halfLineLength,
-            lineFromEdge + lineLength
-        );
-        dc.drawLine(
-            xHalfPhysical - halfLineLength,
-            lineFromEdge + lineLength,
-            xHalfPhysical + halfLineLength,
-            lineFromEdge
-        );
-
+        renderCross(dc, xHalfPhysical, 20);
+        renderButtonUi(dc);
         return true;
+    }
+
+    function renderCross(dc as Dc, x as Number or Float, y as Number or Float) as Void {
+        var lineLength = 20;
+        var half = lineLength / 2;
+
+        dc.drawLine(x - half, y - half, x + half, y + half);
+        dc.drawLine(x - half, y + half, x + half, y - half);
     }
 
     function renderMapEnable(dc as Dc) as Boolean {
@@ -1922,6 +1914,12 @@ class BreadcrumbRenderer {
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
+        if (_cachedValues.seeding()) {
+            var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+            renderCross(dc, exitCoords[0], exitCoords[1]);
+            return;
+        }
+
         var startButtonCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
         var modeLetterCoords = startButtonCoords;
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
@@ -2138,6 +2136,12 @@ class BreadcrumbRenderer {
         // var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+
+        if (_cachedValues.seeding()) {
+            var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+            renderCross(dc, exitCoords[0], exitCoords[1]);
+            return;
+        }
 
         var startButtonCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
         var modeLetterCoords = startButtonCoords;

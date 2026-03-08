@@ -23,10 +23,10 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
         // it can be a bit finicky though, some users might still prefer the tapping interface (so ill leave both)
         if (
             _breadcrumbContext.settings.mode != MODE_MAP_MOVE &&
-            _breadcrumbContext.settings.mode != MODE_NORMAL  &&
+            _breadcrumbContext.settings.mode != MODE_NORMAL &&
             _breadcrumbContext.settings.mode != MODE_MAP_MOVE_ZOOM &&
-    _breadcrumbContext.settings.mode != MODE_MAP_MOVE_UP_DOWN &&
-    _breadcrumbContext.settings.mode != MODE_MAP_MOVE_LEFT_RIGHT
+            _breadcrumbContext.settings.mode != MODE_MAP_MOVE_UP_DOWN &&
+            _breadcrumbContext.settings.mode != MODE_MAP_MOVE_LEFT_RIGHT
         ) {
             return false;
         }
@@ -305,6 +305,18 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     function onKey(keyEvent as WatchUi.KeyEvent) as Boolean {
         var key = keyEvent.getKey();
         logT("got key event: " + key);
+
+        var cachedValues = _breadcrumbContext.cachedValues;
+
+        if (cachedValues.seeding()) {
+            if (key == WatchUi.KEY_ESC) {
+                cachedValues.cancelCacheCurrentMapArea();
+                return true;
+            }
+
+            return false;
+        }
+
         var sessionLocal = _breadcrumbContext.session;
         if ((sessionLocal == null || !sessionLocal.isRecording()) && key == WatchUi.KEY_ENTER) {
             // If we are NOT recording, start the session.
@@ -314,7 +326,6 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             return true;
         }
 
-        var cachedValues = _breadcrumbContext.cachedValues;
         var settings = _breadcrumbContext.settings;
         var renderer = _breadcrumbContext.breadcrumbRenderer;
 
@@ -328,17 +339,16 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             (key == WatchUi.KEY_ESC && !_breadcrumbContext.settings.useStartForStop) ||
             (key == WatchUi.KEY_ENTER && _breadcrumbContext.settings.useStartForStop)
         ) {
-            if (cachedValues.seeding()) {
-                cachedValues.cancelCacheCurrentMapArea();
-                return true;
-            }
-
             if (sessionLocal != null && sessionLocal.isRecording()) {
                 pauseAndConfirmExit(_breadcrumbContext);
                 return true;
             }
 
-            return false;
+            // the activity was never started, or is somehow stopped even though we did not tell it to be?
+            // just incase, force a discard, maybe it got stopped through some other means?
+            _breadcrumbContext.discardSession();
+            System.exit(); // force garmin to run cleanup logic, maybe this will fix issues with battery drain when app is closed?
+            return true;
         } else if (key == WatchUi.KEY_UP_LEFT || key == WatchUi.KEY_UP) {
             if (settings.mode == MODE_MAP_MOVE_ZOOM) {
                 renderer.incScale();
@@ -446,7 +456,11 @@ class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
         } else if (itemId == :lap) {
             _breadcrumbContext.startSession();
             _breadcrumbContext.cachedValues.onTimerLap();
-            showLapMessage(_breadcrumbContext.cachedValues, _breadcrumbContext.settings, false /*starting the session sees to already vibrate, plus its  a manual user interaction regardless*/);
+            showLapMessage(
+                _breadcrumbContext.cachedValues,
+                _breadcrumbContext.settings,
+                false /*starting the session sees to already vibrate, plus its  a manual user interaction regardless*/
+            );
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
             return;
         }

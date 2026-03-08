@@ -685,7 +685,6 @@ class BreadcrumbView extends WatchUi.View {
         }
 
         var routes = _breadcrumbContext.routes;
-
         if (settings.displayRouteNames) {
             for (var i = 0; i < routes.size(); ++i) {
                 var route = routes[i];

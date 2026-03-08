@@ -214,7 +214,7 @@ class BreadcrumbApp extends Application.AppBase {
     // onStop() is called when your application is exiting
     (:typecheck(disableGlanceCheck))
     function onStop(state as Dictionary?) as Void {
-        System.println("onStop");
+        System.println("" + Time.now().value() + " onStop");
         // https://forums.garmin.com/developer/connect-iq/f/discussion/872/battery-drain-when-connectiq-app-is-not-running/2006348
         // https://forums.garmin.com/developer/connect-iq/i/bug-reports/bug-battery-drain-after-app-exit-caused-by-activityrecording-api
         var timerLocal = timer;
