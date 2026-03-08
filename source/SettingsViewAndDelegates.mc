@@ -3940,6 +3940,25 @@ class SettingsActivityMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function setCategory(catId as Number) as Void {
+        // this is a fun one, the act of changing the activity launches a prompt for the user to decide what they want to do
+        // but our enumpicker menu when it closed closed the menu that got opened
+        // so we have to launch open it again
+        //
+        // ### what would happen
+        // on view stack: EnumMenu
+        // option picked when setSportAndSubSport called, on view stack: EnumMenu, promptChangeActivity
+        // enum menu thinks its done and pops the promptChangeActivity, leaving view stack: EnumMenu
+        // so we need to push another view, but pop ourselves out of the way too
+        // so instead we do
+        //
+        // ### what we do
+        // on view stack: EnumMenu
+        // pop the enum view on view stack: <nothing>
+        // call setSportAndSubSport which pushes promptChangeActivity on view stack: promptChangeActivity
+        // push dummy view, on view stack: promptChangeActivity, dummyView
+        // enum menu thinks its done and pops the dummyView, on view stack: promptChangeActivity
+        // when we are done with it it gets poped too
+
         // category changed, pick the first sport
         var _breadcrumbContextLocal = $._breadcrumbContext;
         if (_breadcrumbContextLocal == null) {
@@ -3947,7 +3966,10 @@ class SettingsActivityMenuDelegate extends WatchUi.Menu2InputDelegate {
             return;
         }
         var settings = _breadcrumbContextLocal.settings;
+
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
         settings.setSportAndSubSport(getSubSportList(catId)[0]);
+        WatchUi.pushView(new DummyView(), null, WatchUi.SLIDE_IMMEDIATE); // push dummy view for the enum menu to pop
     }
 }
 
@@ -4215,9 +4237,10 @@ class SettingsActivityTypeDelegate extends WatchUi.Menu2InputDelegate {
             return;
         }
         var settings = _breadcrumbContextLocal.settings;
+        // see setCategory for the craziness of all this
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE); // pop our view first, a new promptChangeActivity will be pushed when we call setSportAndSubSport
         settings.setSportAndSubSport(item.getId() as Number);
         _parent.rerender();
-        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
     }
 }
 

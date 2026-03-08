@@ -585,7 +585,7 @@ class BreadcrumbView extends WatchUi.View {
         try {
             actualOnUpdate(dc);
 
-            var qualityMsg = null;
+            var qualityMsg = "";
             if (quality == Position.QUALITY_NOT_AVAILABLE) {
                 qualityMsg = "NO GPS";
             } else if (quality == Position.QUALITY_LAST_KNOWN) {
@@ -593,7 +593,15 @@ class BreadcrumbView extends WatchUi.View {
                 qualityMsg = "~GPS~";
             }
 
-            if (qualityMsg != null) {
+            var sessionLocal = _breadcrumbContext.session;
+            if (sessionLocal == null || !sessionLocal.isRecording()) {
+                if (qualityMsg.length() > 0) {
+                    qualityMsg += "\n";
+                }
+                qualityMsg += "Start Activity";
+            }
+
+            if (qualityMsg.length() > 0) {
                 var width = dc.getWidth();
                 var dims = dc.getTextDimensions(qualityMsg, Graphics.FONT_XTINY);
                 // var bannerWidth = dims[0] + 5;

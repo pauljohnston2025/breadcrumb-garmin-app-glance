@@ -3013,16 +3013,16 @@ class Settings {
 
     function saveSportAndSubSport() as Void {
         setValue("activityType", activityType());
-        sessionChanged();
+        activityTypeChanged();
     }
 
-    function sessionChanged() as Void {
+    function activityTypeChanged() as Void {
         var _breadcrumbContextLocal = $._breadcrumbContext;
         if (_breadcrumbContextLocal == null) {
             breadcrumbContextWasNull();
             return;
         }
-        _breadcrumbContextLocal.sessionChanged();
+        _breadcrumbContextLocal.activityTypeChanged();
     }
 
     // todo split this off into setSport and setSubsport (then we can dynamically make the list for the menus and make them be able to pick a category then a sport in that category)
@@ -3347,7 +3347,7 @@ class Settings {
         }
 
         if (oldSport != sport || oldSubSport != subSport) {
-            sessionChanged();
+            activityTypeChanged();
         }
 
         if (oldRouteMax > _routeMax) {

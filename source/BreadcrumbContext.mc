@@ -38,16 +38,15 @@ class BreadcrumbContext {
             // todo if type is pool, provide :poolLength setting
         });
     }
-    function sessionChanged() as Void {
+    function activityTypeChanged() as Void {
         var sessionLocal = session;
         if (sessionLocal != null) {
             if (sessionLocal.isRecording()) {
-                // we can't do much. Maybe we stop and start it? but then we get 2 activities.
-                return;
+                promptChangeActivity(me);
             }
         }
 
-        discardSession();
+        // no session to discard
     }
 
     function startSession() as Void {
@@ -70,6 +69,12 @@ class BreadcrumbContext {
         var sessionLocal = session;
         if (sessionLocal != null) {
             sessionLocal.stop();
+            var _viewLocal = $._view;
+            if (_viewLocal != null) {
+                _viewLocal.onTimerStop(); // the activity is paused, block track points being added and alerts from firing
+                // should we also clear the track here? user has saved the old activity, but they are probably on the next leg of the multisport event
+                // probably something that needs a setting for 'clearTrackWhenActivityChanged' or something like that
+            }
             sessionLocal.save();
         }
 
@@ -82,6 +87,12 @@ class BreadcrumbContext {
         var sessionLocal = session;
         if (sessionLocal != null) {
             sessionLocal.stop();
+            var _viewLocal = $._view;
+            if (_viewLocal != null) {
+                _viewLocal.onTimerStop(); // the activity is paused, block track points being added and alerts from firing
+                // should we also clear the track here? user has discarded the old activity, they likely did not want it
+                // probably something that needs a setting for 'clearTrackWhenActivityChanged' or something like that
+            }
             sessionLocal.discard();
         }
 

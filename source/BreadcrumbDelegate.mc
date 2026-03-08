@@ -469,6 +469,61 @@ class ExitMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
+function promptChangeActivity(context as BreadcrumbContext) as Void {
+    var menu = new WatchUi.Menu2({:title=>"Current Activity"});
+    menu.addItem(new WatchUi.MenuItem("Save", null, :saveNew, null));
+    menu.addItem(new WatchUi.MenuItem("Discard", null, :discardNew, null));
+    
+    WatchUi.pushView(menu, new ChangeActivityDelegate(context), WatchUi.SLIDE_UP);
+}
+
+class ChangeActivityDelegate extends WatchUi.Menu2InputDelegate {
+    private var _context as BreadcrumbContext;
+
+    function initialize(context as BreadcrumbContext) {
+        Menu2InputDelegate.initialize();
+        _context = context;
+    }
+
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        var id = item.getId();
+        
+        if (id == :saveNew) {
+            _context.stopAndSaveSession();
+            WatchUi.showToast("Saved", null);
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+        } else if (id == :discardNew) {
+            var confirmView = new WatchUi.Confirmation("Discard current?");
+            var confirmDelegate = new ChangeActivityDiscardConfirmDelegate(_context);
+            WatchUi.pushView(confirmView, confirmDelegate, WatchUi.SLIDE_IMMEDIATE);
+        }
+    }
+
+    public function onBack() as Boolean {
+        return true; // prevent them going back, they must make a choice
+    }
+}
+
+class ChangeActivityDiscardConfirmDelegate extends WatchUi.ConfirmationDelegate {
+    private var _context as BreadcrumbContext;
+
+    function initialize(context as BreadcrumbContext) {
+        ConfirmationDelegate.initialize();
+        _context = context;
+    }
+
+    function onResponse(response as WatchUi.Confirm) as Boolean {
+        if (response == WatchUi.CONFIRM_YES) {
+            _context.discardSession();
+            WatchUi.showToast("Discarded", null);
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE); // pop the main view that prompted for this in the first place
+        }
+
+        // If NO, the system pops the confirmation and returns to the menu that prompted us
+        return true; 
+    }
+}
+
 // A delegate to handle the response from a confirmation dialog.
 class DiscardConfirmationDelegate extends WatchUi.ConfirmationDelegate {
     var _breadcrumbContext as BreadcrumbContext;

@@ -4,28 +4,12 @@ If enabling map tiles or trying to send routes to the watch app you will require
 If you just wish to use the breadcrumb track feature (a trail of your current track), it can be used without any phone connection.  
 Map support can be enabled without the companion app, but the [garmin connect app](https://play.google.com/store/apps/details?id=com.garmin.android.apps.connectmobile&hl=en_AU) must still be installed, and an active bluetooth connection maintained.
 
-This is a datafield, not a full fledged app, it runs in the context of native activity.  
-The datafield is expected to be used to cover the full available area of a round watchface.  
-It will still work with non-round devices or partial layouts, but the full feature set of the ui will not be possible due to the limited space.
-
-To add datafield to a native app:
-
-1. Open the app (eg. running), you do not have to start the activity, just open it.
-1. Long press to open settings (or use the touchscreen to press settings)
-1. Navigate to Data Screens
-1. Select screen
-1. Choose layout - recommended full screen layout
-1. Edit data fields - choose the 'BreadCrumbDataField' from the 'ConnectIQ Fields' menu
-
-Some helpful guides on adding data fields:
-
-- [For the venu range](https://support.garmin.com/en-AU/?faq=gyywAozBuAAGlvfzvR9VZ8&identifier=707572&searchQuery=data%20field&tab=topics)
-- [A more thorough explanation for a different app](https://support.garmin.com/en-AU/?faq=3HkHX1wT6U7TeNB7YHfiT7&identifier=707572&searchQuery=data%20field&tab=topics)
+If launched from a glance view the app will not remain running unless an activity is started, or the user continuously interacts with the app. Please note this is a garmin limitation that I cannot control https://forums.garmin.com/developer/connect-iq/f/discussion/402551/app-exits-when-started-with-glance-view.
 
 ---
 
 The main differences between the app and the datafield are that i can support button presses and touch input on apps.    
-Please note: If the app crashes from memory or cpu the app will close, adn may or may not save the activity that it was recording. Some users may prefer a datafields so they do not loose their activity progress, and can complete the activity in one session.
+Please note: If the app crashes from memory or cpu the app will close, adn may or may not save the activity that it was recording. Some users may prefer a datafield so they do not loose their activity progress, and can complete the activity in one session.
 
 The on screen ui is currently.
 
@@ -54,9 +38,15 @@ The connectiq store does not work for all settings (namely route configuration),
 
 # Garmin Settings (Connect Iq Store)
 
-Please note: The nested garmin settings have a strange behaviour of the app is not running when the setttings are saved. Please ensure the datafields in running in the foreground to have the best experience when editing the settings through garmin connect iq see detailed note at: https://github.com/pauljohnston2025/breadcrumb-garmin/issues/6#issuecomment-3315417515
+Please note: The nested garmin settings have a strange behaviour of the app is not running when the settings are saved. Please ensure the datafields in running in the foreground to have the best experience when editing the settings through garmin connect iq see detailed note at: https://github.com/pauljohnston2025/breadcrumb-garmin/issues/6#issuecomment-3315417515
 
 ---
+
+# Activity Type
+
+On watch and companion ap this is split into categories, but garmin settings do not allow this level of control, so you get one giant list.
+
+The activity type of the app can be changed whilst the activity session is running, this lets users switch between multisport type activities. You can also discard the previous activity if it was started in error. You need to manually start the new activity once the new type is picked, this is so users can lock in the category and type before starting the new activity session. The same thing will happen if the activity type is changed from garmin settings or companion app, you will be prompted what to do with old activity session.
 
 # General
 
