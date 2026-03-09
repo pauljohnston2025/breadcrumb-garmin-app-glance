@@ -367,7 +367,7 @@ page 2 becomes 1
 
 This can be slightly confusing, as all the ids change. But it allows us to pop pages/fields out of the middle rather than just from the end.
 
-On the watch there are 2 ways to configure whats shown on datafields pages, as a ui view or from the menus directly. To use the ui view.  
+On the watch there are 2 ways to configure whats shown on datafield pages, as a ui view or from the menus directly.
 
 Layout: press/swipe up/down to change the number of fields
 
