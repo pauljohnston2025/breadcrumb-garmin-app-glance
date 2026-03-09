@@ -93,7 +93,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onFlick(flickEvent as WatchUi.FlickEvent) as Lang.Boolean {
-        var direction = flickEvent.getDirection();
+        // var direction = flickEvent.getDirection();
         // System.println("Flick event deg: " + direction);
 
         return false; // let it propagate
@@ -347,7 +347,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             // just incase, force a discard, maybe it got stopped through some other means?
             _breadcrumbContext.discardSession();
             System.exit(); // force garmin to run cleanup logic, maybe this will fix issues with battery drain when app is closed?
-            return true;
+            // return true;
         } else if (key == WatchUi.KEY_UP_LEFT || key == WatchUi.KEY_UP) {
             if (settings.mode == MODE_MAP_MOVE_ZOOM) {
                 renderer.incScale();
@@ -498,8 +498,8 @@ class ChangeActivityDelegate extends WatchUi.Menu2InputDelegate {
         }
     }
 
-    public function onBack() as Boolean {
-        return true; // prevent them going back, they must make a choice
+    public function onBack() as Void {
+        // return true; // prevent them going back, they must make a choice
     }
 }
 

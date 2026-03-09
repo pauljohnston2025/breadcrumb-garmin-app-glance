@@ -347,6 +347,27 @@ Resulting Metric: The actual sensor data displayed on the watch.
 | 1          | 1           | 6              | DATA_TYPE_CURRENT_SPEED      |
 | 1          | 2           | 8              | DATA_TYPE_ELAPSED_TIME       |
 
+### Data Pages
+
+To change the colours refer to [Data Field Page Colour / Data Field Page Colour 2](#colours)  
+
+You can configure the datafield pages on the companion app and on watch settings. They are aliases for the 2 settings show in garmin connect [Data Field Page Counts](#data-field-page-types) and [Data Field Page Types](#data-field-page-types).  
+
+If you remove a field or page that is not at the end of the list, all pages/fields will be moved forwards.  
+
+eg. If we have 3 pages 0, 1, 2 and page 1 is removed what happens is:
+
+page 0 stays as 0  
+page 2 becomes 1 
+
+This can be slightly confusing, as all the ids change. But it allows us to pop pages/fields out of the middle rather than just from the end.
+
+On the watch there are 2 ways to configure whats shown on datafields pages, as a ui view or from the menus directly. To use the ui view.  
+
+Layout: press/swipe up/down to change the number of fields
+
+Edit: Press up/down to navigate around, the orange circle shows the selected field. Then select key to edit the type of datafield. On touch devices you can just tap the field that you wish to edit. The back/esc button saves the datafield page as shown in its current state.
+
 ---
 
 # Zoom At Pace

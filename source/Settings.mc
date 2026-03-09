@@ -1304,6 +1304,28 @@ class Settings {
     }
 
     (:settingsView)
+    function setPageFields(pageIndex as Number, newFieldTypes as Array<Number>) as Void {
+        if (pageIndex < 0 || pageIndex >= dataFieldPageCounts.size()) {
+            return;
+        }
+
+        var offset = getOffsetForPage(pageIndex);
+        var currentCount = dataFieldPageCounts[pageIndex];
+
+        var before = dataFieldPageTypes.slice(0, offset);
+        var after = dataFieldPageTypes.slice(offset + currentCount, null);
+
+        var combined = before;
+        combined.addAll(newFieldTypes);
+        combined.addAll(after);
+
+        dataFieldPageTypes = combined;
+        dataFieldPageCounts[pageIndex] = newFieldTypes.size();
+
+        saveDataFieldPages();
+    }
+
+    (:settingsView)
     function validateDataFieldPages() as Void {
         var expectedTotalFields = 0;
         for (var i = 0; i < dataFieldPageCounts.size(); i++) {

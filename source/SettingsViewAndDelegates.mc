@@ -969,6 +969,324 @@ class SettingsDataFieldPageList extends WatchUi.Menu2 {
     }
 }
 
+const DATAFIELD_MAX_FIELD_SIZE = 4;
+
+(:settingsView)
+class VisualDataFieldPageEditorView extends WatchUi.View {
+    var pageIndex as Number;
+    var selectedIndex as Number = 0;
+    var fieldTypes as Array<Number>;
+    var renderer as BreadcrumbRenderer;
+    var settings as Settings;
+
+    function initialize(pageIndex as Number, breadcrumbContext as BreadcrumbContext) {
+        View.initialize();
+        me.pageIndex = pageIndex;
+        // Clone the current field types into our temporary buffer
+        settings = breadcrumbContext.settings;
+        fieldTypes = settings.getTypesForPage(pageIndex);
+        renderer = breadcrumbContext.breadcrumbRenderer;
+    }
+
+    function onUpdate(dc as Dc) as Void {
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+        dc.clear();
+        renderer.renderDataFieldPageFields(dc, fieldTypes, selectedIndex);
+    }
+
+    // Method to update the field type from the delegate
+    function updateSelectedField(newType as Number) as Void {
+        fieldTypes[selectedIndex] = newType;
+        WatchUi.requestUpdate();
+    }
+
+    function setSelectedIndex(i as Number) as Void {
+        selectedIndex = i;
+        WatchUi.requestUpdate();
+    }
+
+    function rerender() as Void {
+        WatchUi.requestUpdate();
+    }
+}
+
+(:settingsView)
+class VisualDataFieldPageEditorDelegate extends WatchUi.BehaviorDelegate {
+    private var view as VisualDataFieldPageEditorView;
+    var pageView as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        view as VisualDataFieldPageEditorView,
+        pageView as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        BehaviorDelegate.initialize();
+        me.view = view;
+        me.pageView = pageView;
+        me.listView = listView;
+    }
+
+    function onNextPage() as Boolean {
+        var idx = view.selectedIndex;
+        var count = view.fieldTypes.size();
+        view.setSelectedIndex((idx + 1) % count);
+        return true;
+    }
+
+    function onPreviousPage() {
+        var idx = view.selectedIndex;
+        var count = view.fieldTypes.size();
+        view.setSelectedIndex(idx == 0 ? count - 1 : idx - 1);
+        return true;
+    }
+
+    function onTap(clickEvent) {
+        var xy = clickEvent.getCoordinates();
+        var count = view.fieldTypes.size();
+
+        // Logical check: which field did they tap?
+        for (var i = 0; i < count; i++) {
+            System.println("checking: " + i);
+            if (isInsideField(xy[0], xy[1], i, count)) {
+                System.println("found: " + i);
+                view.setSelectedIndex(i);
+                openTypePicker();
+                return true;
+            }
+        }
+        return true;
+    }
+
+    (:settingsView)
+    function isInsideField(
+        tx as Number,
+        ty as Number,
+        index as Number,
+        count as Number
+    ) as Boolean {
+        var w = System.getDeviceSettings().screenWidth;
+        var h = System.getDeviceSettings().screenHeight;
+
+        if (count == 1) {
+            return true; // Single field occupies the whole screen
+        } else if (count == 2) {
+            // Top half vs Bottom half
+            if (index == 0) {
+                return ty < h / 2.0f;
+            }
+            if (index == 1) {
+                return ty >= h / 2.0f;
+            }
+        } else if (count == 3) {
+            // Vertical thirds
+            var third = h / 3.0f;
+            if (index == 0) {
+                return ty < third;
+            }
+            if (index == 1) {
+                return ty >= third && ty < 2.0f * third;
+            }
+            if (index == 2) {
+                return ty >= 2.0f * third;
+            }
+        } else if (count == 4) {
+            var third = h / 3.0f;
+            if (index == 0) {
+                // Top row
+                return ty < third;
+            } else if (index == 3) {
+                // Bottom row
+                return ty >= 2.0f * third;
+            } else {
+                // Middle row (Split vertically)
+                if (ty >= third && ty < 2.0f * third) {
+                    if (index == 1) {
+                        return tx < w / 2.0f;
+                    } // Middle Left
+                    if (index == 2) {
+                        return tx >= w / 2.0f;
+                    } // Middle Right
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function onKey(keyEvent as WatchUi.KeyEvent) as Boolean {
+        var key = keyEvent.getKey();
+        logT("got key event: " + key);
+
+        if (key == WatchUi.KEY_ENTER) {
+            openTypePicker();
+            return true;
+        }
+
+        return false;
+    }
+
+    // for touch devices this is touching a section on the screen (we want to handle the onTap instead)
+    // for non touch its the 'confirm' button
+    // function onSelect() as Boolean {
+    // }
+
+    function openTypePicker() as Void {
+        var currentType = view.fieldTypes[view.selectedIndex];
+        WatchUi.pushView(
+            new $.EnumMenu("Select Data", method(:getDataTypeStringL), currentType, DATA_TYPE_MAX),
+            new $.EnumDelegate(method(:onTypeSelected), view),
+            WatchUi.SLIDE_IMMEDIATE
+        );
+    }
+
+    // compiler complains it cannot find the global ones
+    // even $.method(:...) does not seem to work
+    public function getDataTypeStringL(value as Number) as ResourceId or String {
+        return getDataTypeString(value);
+    }
+
+    function onTypeSelected(newType as Number) as Void {
+        view.updateSelectedField(newType);
+    }
+
+    function onBack() as Boolean {
+        // This is where you save the "Buffer" back to global settings
+        view.settings.setPageFields(view.pageIndex, view.fieldTypes);
+        pageView.rerender();
+        listView.rerender();
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
+(:settingsView)
+class VisualDataFieldPageLayoutView extends WatchUi.View {
+    var pageIndex as Number;
+    var fieldTypes as Array<Number>;
+    var renderer as BreadcrumbRenderer;
+    var settings as Settings;
+    var activeCount as Number; // Track how many are actually visible
+
+    function initialize(pageIndex as Number, breadcrumbContext as BreadcrumbContext) {
+        View.initialize();
+        me.pageIndex = pageIndex;
+        settings = breadcrumbContext.settings;
+        renderer = breadcrumbContext.breadcrumbRenderer;
+
+        // Get existing fields
+        var existing = settings.getTypesForPage(pageIndex);
+        activeCount = existing.size();
+
+        // Pad to DATAFIELD_MAX_FIELD_SIZE (4)
+        fieldTypes = new [DATAFIELD_MAX_FIELD_SIZE] as Array<Number>;
+        for (var i = 0; i < DATAFIELD_MAX_FIELD_SIZE; i++) {
+            if (i < activeCount) {
+                fieldTypes[i] = existing[i];
+            } else {
+                fieldTypes[i] = DATA_TYPE_NONE;
+            }
+        }
+    }
+
+    function onUpdate(dc as Dc) as Void {
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+        dc.clear();
+
+        // 1. Render Preview
+        var currentTypes = fieldTypes.slice(0, activeCount);
+        renderer.renderDataFieldPageFields(dc, currentTypes, null);
+
+        // 2. Draw Scroll Gauge on the Left
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var r = w / 2 - 5; // Slightly inside the edge
+        var penWidth = 4;
+        dc.setPenWidth(penWidth);
+
+        // Total span of the arc (e.g., 60 degrees total, centered at 180)
+        var totalSpan = 60;
+        var startAngle = 180 + totalSpan / 2; // 210°
+        var endAngle = 180 - totalSpan / 2; // 150°
+
+        // Draw Background (Grey Arc)
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawArc(w / 2, h / 2, r, Graphics.ARC_CLOCKWISE, startAngle, endAngle);
+
+        // Draw Indicator (Blue Arc)
+        // We split the totalSpan into 4 segments
+        var segmentSize = totalSpan / DATAFIELD_MAX_FIELD_SIZE;
+        // Calculate position: activeCount 1 is top, 4 is bottom
+        var indicatorStart =
+            startAngle - (DATAFIELD_MAX_FIELD_SIZE - activeCount) * segmentSize;
+        var indicatorEnd = indicatorStart - segmentSize;
+
+        dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+        dc.drawArc(w / 2, h / 2, r, Graphics.ARC_CLOCKWISE, indicatorStart, indicatorEnd);
+    }
+
+    function updateLayout(newCount as Number) as Void {
+        activeCount = newCount;
+        WatchUi.requestUpdate();
+    }
+}
+
+(:settingsView)
+class VisualDataFieldPageLayoutDelegate extends WatchUi.BehaviorDelegate {
+    private var view as VisualDataFieldPageLayoutView;
+    var pageView as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        view as VisualDataFieldPageLayoutView,
+        pageView as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        BehaviorDelegate.initialize();
+        me.view = view;
+        me.pageView = pageView;
+        me.listView = listView;
+    }
+
+    function onNextPage() as Boolean {
+        var currentCount = view.activeCount;
+        var nextCount = currentCount + 1;
+
+        if (nextCount > DATAFIELD_MAX_FIELD_SIZE) {
+            nextCount = DATAFIELD_MAX_FIELD_SIZE;
+        }
+
+        view.updateLayout(nextCount);
+        return true;
+    }
+
+    function onPreviousPage() as Boolean {
+        var currentCount = view.activeCount;
+        var nextCount = currentCount - 1;
+
+        if (nextCount < 1) {
+            nextCount = 1;
+        }
+
+        view.updateLayout(nextCount);
+        return true;
+    }
+
+    function onSelect() as Boolean {
+        return onBack(); // Save and exit
+    }
+
+    function onBack() as Boolean {
+        var finalFields = view.fieldTypes.slice(0, view.activeCount);
+        view.settings.setPageFields(view.pageIndex, finalFields);
+        pageView.rerender();
+        listView.rerender();
+
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
 (:settingsView)
 class SettingsDataFieldPageEditor extends WatchUi.Menu2 {
     var pageIndex as Number;
@@ -995,10 +1313,12 @@ class SettingsDataFieldPageEditor extends WatchUi.Menu2 {
         // (You'll need a helper to calculate the offset in the flattened dataFieldPageTypes array)
         var types = settings.getTypesForPage(pageIndex);
 
+        addItem(new WatchUi.MenuItem("Layout", null, :layout, {}));
+        addItem(new WatchUi.MenuItem("Edit", null, :edit, {}));
         for (var i = 0; i < types.size(); i++) {
             addItem(new WatchUi.MenuItem("Field " + i, getDataTypeString(types[i]), i, {}));
         }
-        if (types.size() < 4) {
+        if (types.size() < DATAFIELD_MAX_FIELD_SIZE) {
             addItem(new WatchUi.MenuItem("Add Field", null, :addField, {}));
         }
         addItem(new WatchUi.MenuItem("Delete Page", null, :deletePage, {}));
@@ -1072,6 +1392,20 @@ class SettingsDataFieldPageEditorDelegate extends WatchUi.Menu2InputDelegate {
             settings.addNewField(pageIndex);
             listView.rerender();
             view.rerender();
+        } else if (id == :layout) {
+            var layoutView = new VisualDataFieldPageLayoutView(pageIndex, _breadcrumbContextLocal);
+            WatchUi.pushView(
+                layoutView,
+                new VisualDataFieldPageLayoutDelegate(layoutView, view, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (id == :edit) {
+            var editView = new VisualDataFieldPageEditorView(pageIndex, _breadcrumbContextLocal);
+            WatchUi.pushView(
+                editView,
+                new VisualDataFieldPageEditorDelegate(editView, view, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
         } else if (id == :deletePage) {
             var dialog = new WatchUi.Confirmation("Delete page?");
             WatchUi.pushView(

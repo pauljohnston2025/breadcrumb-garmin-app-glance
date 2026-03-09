@@ -188,6 +188,14 @@ class BreadcrumbRenderer {
 
     function renderDataFieldPage(dc as Dc, pageIndex as Number) as Void {
         var types = settings.getTypesForPage(pageIndex);
+        renderDataFieldPageFields(dc, types, null);
+    }
+
+    function renderDataFieldPageFields(
+        dc as Dc,
+        types as Array<Number>,
+        highlight as Number?
+    ) as Void {
         var count = types.size();
 
         var w = _cachedValues.physicalScreenWidth;
@@ -237,10 +245,17 @@ class BreadcrumbRenderer {
                     y = h * 0.5f;
                 }
             }
+
+            if (highlight != null && i == highlight) {
+                dc.setColor(Graphics.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
+                dc.setPenWidth(3);
+                dc.drawCircle(x, y, 50);
+            }
+
             // 1. Render the label first (Small, at the top of the field block)
             var label = getDataTypeString(types[i]);
             if (label instanceof ResourceId) {
-                label = WatchUi.loadResource(label); // hmmmm this is expensive
+                label = WatchUi.loadResource(label); // hmmmm this is expensive loading every call
             }
             dc.setColor(settings.dataFieldPageColour2, Graphics.COLOR_TRANSPARENT);
             var heightOffset = dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1] / 2 + 10;
@@ -254,19 +269,27 @@ class BreadcrumbRenderer {
 
             // 2. Call your existing raw renderer for the value
             // We pass a modified y if needed, or let renderDataField handle it
-            renderDataField(dc, types[i], x, y + 8, 1); // Offset down slightly
+            renderDataField(dc, types[i], x, y + 8, 1, settings.dataFieldPageColour); // Offset down slightly
         }
     }
 
     function renderDataFields(dc as Dc) as Void {
         var edgeOffset = 25f;
-        renderDataField(dc, settings.topDataType, _cachedValues.xHalfPhysical, edgeOffset, 1);
+        renderDataField(
+            dc,
+            settings.topDataType,
+            _cachedValues.xHalfPhysical,
+            edgeOffset,
+            1,
+            settings.normalModeColour
+        );
         renderDataField(
             dc,
             settings.bottomDataType,
             _cachedValues.xHalfPhysical,
             _cachedValues.physicalScreenHeight - edgeOffset,
-            -1
+            -1,
+            settings.normalModeColour
         );
     }
 
@@ -275,13 +298,10 @@ class BreadcrumbRenderer {
         type as Number,
         x as Float,
         y as Float,
-        direction as Number
+        direction as Number,
+        colour as Number
     ) as Void {
-        if (settings.mode >= DATA_PAGE_BASE_ID) {
-            dc.setColor(settings.dataFieldPageColour, Graphics.COLOR_TRANSPARENT);
-        } else {
-            dc.setColor(settings.normalModeColour, Graphics.COLOR_TRANSPARENT);
-        }
+        dc.setColor(colour, Graphics.COLOR_TRANSPARENT);
 
         if (type == DATA_TYPE_NONE) {
             return;
