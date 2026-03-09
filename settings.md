@@ -349,9 +349,14 @@ Resulting Metric: The actual sensor data displayed on the watch.
 
 ### Data Pages
 
+![](images/settings/data-pages-1.png)
+![](images/settings/data-pages-2.png)
+![](images/settings/data-pages-3.png)
+![](images/settings/data-pages-4.png)
+
 To change the colours refer to [Data Field Page Colour / Data Field Page Colour 2](#colours)  
 
-You can configure the datafield pages on the companion app and on watch settings. They are aliases for the 2 settings show in garmin connect [Data Field Page Counts](#data-field-page-types) and [Data Field Page Types](#data-field-page-types).  
+You can configure the datafield pages on the companion app and on watch settings. The editors are change the 2 backing properties found in the garmin connect settings [Data Field Page Counts](#data-field-page-types) and [Data Field Page Types](#data-field-page-types).  
 
 If you remove a field or page that is not at the end of the list, all pages/fields will be moved forwards.  
 
@@ -366,7 +371,15 @@ On the watch there are 2 ways to configure whats shown on datafields pages, as a
 
 Layout: press/swipe up/down to change the number of fields
 
+![](images/settings/data-pages-layout.png)
+![](images/settings/data-pages-layout-4.png)
+
 Edit: Press up/down to navigate around, the orange circle shows the selected field. Then select key to edit the type of datafield. On touch devices you can just tap the field that you wish to edit. The back/esc button saves the datafield page as shown in its current state.
+
+![](images/settings/data-pages-edit-1.png)
+![](images/settings/data-pages-edit-2.png)
+![](images/settings/data-pages-edit-3.png)
+![](images/settings/data-pages-edit-4.png)
 
 ---
 
