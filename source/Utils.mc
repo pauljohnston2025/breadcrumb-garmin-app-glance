@@ -307,6 +307,19 @@ function showLapMessage(
     var tStr = formatDuration(cachedValues._lastLapDuration);
 
     if (vibrate) {
+        try {
+            if (Attention has :backlight) {
+                // turn the screen on so we can see the alert, it does not always respond to us gesturing to see the alert (think gesture controls are suppressed during vibration)
+                // apparently this can throw an exception BacklightOnTooLongException
+                // even if the backlight is already on this exception seems to be thrown on my venu2s
+                // and if its off, well it can still throw, not catching this exception meant alerts would not show.
+                // Possibly a new firmware update has changed this behaviour, though i should have been try/catching anyway.
+                // Prefer to turn backlight on first so its ready for our alert.
+                Attention.backlight(true);
+            }
+        } catch (e) {
+            logE("failed to turn on backlight: " + e.getErrorMessage());
+        }
         if (Attention has :vibrate) {
             try {
                 var vibeProfile = [
