@@ -1675,7 +1675,9 @@ class BreadcrumbRenderer {
         dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(8);
         renderCross(dc, xHalfPhysical, 20);
-        renderButtonUi(dc);
+        if (settings.uiMode == UI_MODE_SHOW_ALL || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
+            renderButtonUi(dc);
+        }
         return true;
     }
 
@@ -1975,7 +1977,7 @@ class BreadcrumbRenderer {
             var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
 
             // note on touchscreens this is already rendered, we should probably skip
-            if (!_cachedValues.isTouchScreen) {
+            if (!_cachedValues.isTouchScreen || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
                 // --- Draw LEFT Arrow (Centered on middleLeft) ---
                 var lx = middleLeft[0];
                 var ly = middleLeft[1];
@@ -2073,7 +2075,7 @@ class BreadcrumbRenderer {
         if (settings.mode == MODE_NORMAL) {
             var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
             // note on touchscreens this is already rendered, we should probably skip
-            if (!_cachedValues.isTouchScreen) {
+            if (!_cachedValues.isTouchScreen || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
                 renderZoomAtPaceModeLetter(dc, middleLeft[0], middleLeft[1]);
             }
         }
