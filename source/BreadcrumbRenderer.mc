@@ -191,6 +191,10 @@ class BreadcrumbRenderer {
         renderDataFieldPageFields(dc, types, null);
     }
 
+    // index is field index, set _dataFieldPagesResourceIds to the current resource loaded by _dataFieldPagesCachedStrings
+    private var _dataFieldPagesResourceIds as Array<ResourceId?> = new [DATAFIELD_MAX_FIELD_SIZE] as Array<ResourceId?>;
+    private var _dataFieldPagesCachedStrings as Array<String?> = new [DATAFIELD_MAX_FIELD_SIZE] as Array<String?>;
+
     function renderDataFieldPageFields(
         dc as Dc,
         types as Array<Number>,
@@ -255,7 +259,22 @@ class BreadcrumbRenderer {
             // 1. Render the label first (Small, at the top of the field block)
             var label = getDataTypeString(types[i]);
             if (label instanceof ResourceId) {
-                label = WatchUi.loadResource(label); // hmmmm this is expensive loading every call
+                var resourceId = label;
+                if (i < DATAFIELD_MAX_FIELD_SIZE) {
+                    var cachedResourceId = _dataFieldPagesResourceIds[i];
+                    if (cachedResourceId != null && cachedResourceId == resourceId) {
+                        label = _dataFieldPagesCachedStrings[i] as String; // pull from the cache
+                    } else {
+                        // update cache with the value
+                        label = WatchUi.loadResource(resourceId) as String;
+                        _dataFieldPagesResourceIds[i] = resourceId;
+                        _dataFieldPagesCachedStrings[i] = label;
+                    }
+                } else {
+                    // they have more than we can cache, they should only ever have the max size of DATAFIELD_MAX_FIELD_SIZE
+                    // load it every time
+                    label = WatchUi.loadResource(resourceId) as String;
+                }
             }
             dc.setColor(settings.dataFieldPageColour2, Graphics.COLOR_TRANSPARENT);
             var heightOffset = dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1] / 2 + 10;
@@ -474,8 +493,8 @@ class BreadcrumbRenderer {
             } else {
                 renderDistanceMetric(dc, x, y, null);
             }
-         } else {
-            renderTextMetric(dc, y, "INVALID");
+        } else {
+            renderTextMetric(dc, x, y, "INVALID");
         }
     }
 
