@@ -5,6 +5,7 @@ import Toybox.Time;
 import Toybox.Math;
 import Toybox.Application;
 import Toybox.WatchUi;
+import Toybox.Attention;
 
 const FLOAT_MIN = -340282346638528859811704183484516925440.0;
 const FLOAT_MAX = 340282346638528859811704183484516925440.0;
@@ -123,10 +124,10 @@ function drawScaledBitmapHelper(
     bitmap as BitmapType
 ) as Void {
     var _breadcrumbContextLocal = $._breadcrumbContext;
-        if (_breadcrumbContextLocal == null) {
-            breadcrumbContextWasNull();
-            return;
-        }
+    if (_breadcrumbContextLocal == null) {
+        breadcrumbContextWasNull();
+        return;
+    }
 
     // is there any reason not to move this into main code and just use AffineTransform every time - even for devices that support drawScaledBitmap?
     // I assume one has a performance benifit over the other?
@@ -282,11 +283,84 @@ function mustUpdate() as Void {
 }
 
 (:release)
-function breadcrumbContextWasNull() as Void {
-}
-    
+function breadcrumbContextWasNull() as Void {}
+
 (:debug)
 function breadcrumbContextWasNull() as Void {
     logE("breadcrumb context was null");
     throw new Exception();
+}
+
+function removeAtIndex(array as Array<Number>, index as Number) as Array<Number> {
+    var before = array.slice(0, index);
+    var after = array.slice(index + 1, null);
+    before.addAll(after);
+    return before;
+}
+
+function showLapMessage(
+    cachedValues as CachedValues,
+    settings as Settings,
+    vibrate as Boolean
+) as Void {
+    var dStr = formatDistance(cachedValues._lastLapDistance, settings.distanceImperialUnits);
+    var tStr = formatDuration(cachedValues._lastLapDuration);
+
+    if (vibrate) {
+        try {
+            if (Attention has :backlight) {
+                // turn the screen on so we can see the alert, it does not always respond to us gesturing to see the alert (think gesture controls are suppressed during vibration)
+                // apparently this can throw an exception BacklightOnTooLongException
+                // even if the backlight is already on this exception seems to be thrown on my venu2s
+                // and if its off, well it can still throw, not catching this exception meant alerts would not show.
+                // Possibly a new firmware update has changed this behaviour, though i should have been try/catching anyway.
+                // Prefer to turn backlight on first so its ready for our alert.
+                Attention.backlight(true);
+            }
+        } catch (e) {
+            logE("failed to turn on backlight: " + e.getErrorMessage());
+        }
+        if (Attention has :vibrate) {
+            try {
+                var vibeProfile = [
+                    new Attention.VibeProfile(100, 250), // 100% intensity for 250ms
+                    new Attention.VibeProfile(0, 100), // Pause for 100ms
+                    new Attention.VibeProfile(100, 250), // 100% intensity for 250ms
+                ];
+                // this is not documented that it throws, but got bit by the backlight, so protecting it too in order to always show our alerts
+                Attention.vibrate(vibeProfile);
+            } catch (e) {
+                logE("failed to vibrate: " + e.getErrorMessage());
+            }
+        }
+    }
+
+    WatchUi.showToast("Lap: " + tStr + " (" + dStr + ")", null);
+}
+
+function formatDistance(distMeters as Float, isImperial as Boolean) as String {
+    var distConverted;
+    var suffix = "km";
+
+    if (isImperial) {
+        distConverted = distMeters / 1609.34f;
+        suffix = "mi";
+    } else {
+        distConverted = distMeters / 1000.0f;
+    }
+
+    return distConverted.format("%.2f") + suffix;
+}
+
+function formatDuration(timeMs as Number) as String {
+    var secondsTotal = timeMs / 1000;
+    var hours = secondsTotal / 3600;
+    var minutes = (secondsTotal % 3600) / 60;
+    var seconds = secondsTotal % 60;
+
+    if (hours > 0) {
+        return Lang.format("$1$:$2$:$3$", [hours, minutes.format("%02d"), seconds.format("%02d")]);
+    } else {
+        return Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]);
+    }
 }

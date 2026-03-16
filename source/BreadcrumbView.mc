@@ -245,12 +245,12 @@ class BreadcrumbView extends WatchUi.View {
         updateScratchPadBitmap();
     }
 
-    function onWorkoutStarted() as Void {
-        _breadcrumbContext.track.onStart();
-    }
-
     function onTimerStart() as Void {
         _breadcrumbContext.track.onStartResume();
+    }
+
+    function onTimerStop() as Void {
+        _breadcrumbContext.track.onTimerStop();
     }
 
     function compute(info as Activity.Info) as Void {
@@ -359,7 +359,7 @@ class BreadcrumbView extends WatchUi.View {
             return true;
         }
 
-        return false;
+        /*return false;*/
     }
 
     // see onUpdate explanation for when each is called
@@ -585,7 +585,7 @@ class BreadcrumbView extends WatchUi.View {
         try {
             actualOnUpdate(dc);
 
-            var qualityMsg = null;
+            var qualityMsg = "";
             if (quality == Position.QUALITY_NOT_AVAILABLE) {
                 qualityMsg = "NO GPS";
             } else if (quality == Position.QUALITY_LAST_KNOWN) {
@@ -593,7 +593,15 @@ class BreadcrumbView extends WatchUi.View {
                 qualityMsg = "~GPS~";
             }
 
-            if (qualityMsg != null) {
+            var sessionLocal = _breadcrumbContext.session;
+            if (sessionLocal == null || !sessionLocal.isRecording()) {
+                if (qualityMsg.length() > 0) {
+                    qualityMsg += "\n";
+                }
+                qualityMsg += "Start Activity";
+            }
+
+            if (qualityMsg.length() > 0) {
                 var width = dc.getWidth();
                 var dims = dc.getTextDimensions(qualityMsg, Graphics.FONT_XTINY);
                 // var bannerWidth = dims[0] + 5;
@@ -661,17 +669,20 @@ class BreadcrumbView extends WatchUi.View {
 
         // mode should be stored here, but is needed for rendering the ui
         // should structure this way better, but oh well (renderer per mode etc.)
-        if (settings.mode == MODE_ELEVATION) {
+        if (
+            settings.mode >= DATA_PAGE_BASE_ID &&
+            settings.mode - DATA_PAGE_BASE_ID < settings.dataFieldPageCounts.size()
+        ) {
+            renderer.renderDataFieldPage(dc, settings.mode - DATA_PAGE_BASE_ID);
+            renderer.renderUi(dc);
+            return;
+        } else if (settings.mode == MODE_ELEVATION) {
             renderElevation(dc);
-            if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-                renderer.renderUi(dc);
-            }
+            renderer.renderUi(dc);
             return;
         } else if (settings.mode == MODE_DEBUG) {
             renderDebug(dc);
-            if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-                renderer.renderUi(dc);
-            }
+            renderer.renderUi(dc);
             return;
         }
 
@@ -682,7 +693,6 @@ class BreadcrumbView extends WatchUi.View {
         }
 
         var routes = _breadcrumbContext.routes;
-
         if (settings.displayRouteNames) {
             for (var i = 0; i < routes.size(); ++i) {
                 var route = routes[i];
@@ -702,10 +712,7 @@ class BreadcrumbView extends WatchUi.View {
         }
 
         // move based on the last scale we drew
-        if (_breadcrumbContext.settings.uiMode == UI_MODE_SHOW_ALL) {
-            renderer.renderUi(dc);
-        }
-
+        renderer.renderUi(dc);
         renderer.renderDataFields(dc);
 
         var lastPoint = _breadcrumbContext.track.lastPoint();
@@ -1069,7 +1076,7 @@ class BreadcrumbView extends WatchUi.View {
             Graphics.TEXT_JUSTIFY_CENTER
         );
         y += spacing;
-        var combined = "lastWebRes: " + _breadcrumbContext.webRequestHandler._lastResult;
+        var combined = "";
 
         if (settings.storageMapTilesOnly) {
             combined = "<storage only>";
@@ -1078,8 +1085,12 @@ class BreadcrumbView extends WatchUi.View {
         combined +=
             "  tiles: " +
             _breadcrumbContext.tileCache._internalCache.size() +
+            "/" +
+            settings.tileCacheSize +
             " s: " +
-            _breadcrumbContext.tileCache._storageTileCache._totalTileCount;
+            _breadcrumbContext.tileCache._storageTileCache._totalTileCount +
+            "/" +
+            settings.storageTileCacheSize;
 
         dc.drawText(x, y, Graphics.FONT_XTINY, combined, Graphics.TEXT_JUSTIFY_CENTER);
         y += spacing;
@@ -1186,10 +1197,12 @@ class BreadcrumbView extends WatchUi.View {
             x,
             y,
             Graphics.FONT_XTINY,
-            "webErr: " +
+            "web err: " +
                 _breadcrumbContext.webRequestHandler._errorCount +
-                " webOk: " +
-                _breadcrumbContext.webRequestHandler._successCount,
+                " ok: " +
+                _breadcrumbContext.webRequestHandler._successCount +
+                " res: " +
+                _breadcrumbContext.webRequestHandler._lastResult,
             Graphics.TEXT_JUSTIFY_CENTER
         );
         y += spacing;

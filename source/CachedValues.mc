@@ -191,6 +191,27 @@ class CachedValues {
     (:storage)
     var seedingLastTileY as Number = 0;
 
+    var _lapStartTime as Number = 0;
+    var _lapStartDistance as Float = 0f;
+    var _lastLapDuration as Number = 0;
+    var _lastLapDistance as Float = 0f;
+
+    function onTimerLap() as Void {
+        var info = Activity.getActivityInfo();
+        if (info != null) {
+            onTimerLapInner(info);
+        }
+    }
+
+    function onTimerLapInner(info as Activity.Info) as Void {
+        if (info.elapsedTime != null && info.elapsedDistance != null) {
+            _lastLapDuration = (info.elapsedTime as Number) - _lapStartTime;
+            _lastLapDistance = (info.elapsedDistance as Float) - _lapStartDistance;
+            _lapStartTime = info.elapsedTime as Number;
+            _lapStartDistance = info.elapsedDistance as Float;
+        }
+    }
+
     function atMinTileLayer() as Boolean {
         return tileZ == _settings.tileLayerMin;
     }
@@ -511,13 +532,23 @@ class CachedValues {
         var _elapsedDistance = activityInfo.elapsedDistance;
         if (_elapsedDistance != null) {
             elapsedDistanceM = _elapsedDistance;
+
+            // Auto-lap logic: Check if current distance since last lap exceeds threshold
+            // Replace 'AUTO_LAP_THRESHOLD_METERS' with your setting (e.g., 1000f for 1km)
+            if (
+                _settings.autoLapDistanceM > 0 &&
+                _elapsedDistance - _lapStartDistance >= _settings.autoLapDistanceM
+            ) {
+                onTimerLapInner(activityInfo);
+                showLapMessage(me, _settings, true);
+            }
         }
 
         // we are either in 2 cases
         // if we are moving at some pace check the mode we are in to determine if we
         // zoom in or out
         // or we are not at speed, so invert logic (this allows us to zoom in when
-        // stopped, and zoom out when running) mostly useful for cheking close route
+        // stopped, and zoom out when running) mostly useful for checking close route
         // whilst stopped but also allows quick zoom in before setting manual zoom
         // (rather than having to manually zoom in from the outer level) once zoomed
         // in we lock onto the user position anyway
@@ -1052,7 +1083,11 @@ class CachedValues {
         return new RectangularPoint(0f, 0f, 0f); // highly unlikely code path
     }
 
-    function returnToUser() as Void {
+    function returnToUser() as Boolean {
+        if (fixedPosition == null && scale == null) {
+            return false; // nothing to do
+        }
+        
         // set fixed position recalculates all on us
         _settings.setFixedPosition(null, null, true);
         setScale(null);
@@ -1060,6 +1095,7 @@ class CachedValues {
         if (_viewLocal != null) {
             _viewLocal.updateScratchPadBitmap();
         }
+        return true;
     }
 
     function setScale(_scale as Float?) as Void {

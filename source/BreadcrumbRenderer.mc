@@ -25,6 +25,9 @@ class BreadcrumbRenderer {
     var settings as Settings;
     var _cachedValues as CachedValues;
     private var _distanceAccumulator as Float = 0.0f;
+    var _lastGradeAlt as Float = 0.0f;
+    var _lastGradeDist as Float = 0.0f;
+    var _lastGrade as Float = 0.0f;
 
     // units in mm (float/int)
     const SCALE_KEYS as Array<Number> = [
@@ -181,26 +184,150 @@ class BreadcrumbRenderer {
         return [foundPixelWidth, foundDistanceKey, foundName];
     }
 
+    const DATAFIELD_PAGE_TEXT_SIZE = Graphics.FONT_LARGE;
+
+    function renderDataFieldPage(dc as Dc, pageIndex as Number) as Void {
+        var types = settings.getTypesForPage(pageIndex);
+        renderDataFieldPageFields(dc, types, null);
+    }
+
+    // index is field index, set _dataFieldPagesResourceIds to the current resource loaded by _dataFieldPagesCachedStrings
+    private var _dataFieldPagesResourceIds as Array<ResourceId?> = new [DATAFIELD_MAX_FIELD_SIZE] as Array<ResourceId?>;
+    private var _dataFieldPagesCachedStrings as Array<String?> = new [DATAFIELD_MAX_FIELD_SIZE] as Array<String?>;
+
+    function renderDataFieldPageFields(
+        dc as Dc,
+        types as Array<Number>,
+        highlight as Number?
+    ) as Void {
+        var count = types.size();
+
+        var w = _cachedValues.physicalScreenWidth;
+        var h = _cachedValues.physicalScreenHeight;
+
+        // 1. Draw Dividers based on count
+        dc.setColor(settings.dataFieldPageColour2, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(2);
+
+        if (count == 2) {
+            // Horizontal middle divider
+            dc.drawLine(0, h / 2.0f, w, h / 2.0f);
+        } else if (count == 3) {
+            // Two horizontal dividers
+            dc.drawLine(0, h / 3.0f, w, h / 3.0f);
+            dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
+        } else if (count == 4) {
+            // Horizontal dividers at 33% and 66%, and vertical in the middle row
+            dc.drawLine(0, h / 3.0f, w, h / 3.0f);
+            dc.drawLine(0, (2.0f * h) / 3.0f, w, (2.0f * h) / 3.0f);
+            dc.drawLine(w / 2.0f, h / 3.0f, w / 2.0f, (2.0f * h) / 3.0f);
+        }
+
+        // 2. Render Fields
+        for (var i = 0; i < count; i++) {
+            var x, y;
+            if (count == 1) {
+                x = w / 2.0f;
+                y = h / 2.0f;
+            } else if (count == 2) {
+                x = w / 2.0f;
+                y = i == 0 ? h * 0.25f : h * 0.75f;
+            } else if (count == 3) {
+                x = w / 2.0f;
+                // (i * 0.333f) gets you the start of the block
+                // 0.166f pushes you to the middle of that block
+                y = h * (i * 0.333f + 0.166f);
+            } else {
+                if (i == 0) {
+                    x = w / 2.0f;
+                    y = h * 0.16f;
+                } else if (i == 3) {
+                    x = w / 2.0f;
+                    y = h * 0.83f;
+                } else {
+                    x = i == 1 ? w * 0.25f : w * 0.75f;
+                    y = h * 0.5f;
+                }
+            }
+
+            if (highlight != null && i == highlight) {
+                dc.setColor(Graphics.COLOR_ORANGE, Graphics.COLOR_TRANSPARENT);
+                dc.setPenWidth(3);
+                dc.drawCircle(x, y, 50);
+            }
+
+            // 1. Render the label first (Small, at the top of the field block)
+            var label = getDataTypeString(types[i]);
+            if (label instanceof ResourceId) {
+                var resourceId = label;
+                if (i < DATAFIELD_MAX_FIELD_SIZE) {
+                    var cachedResourceId = _dataFieldPagesResourceIds[i];
+                    if (cachedResourceId != null && cachedResourceId == resourceId) {
+                        label = _dataFieldPagesCachedStrings[i] as String; // pull from the cache
+                    } else {
+                        // update cache with the value
+                        label = WatchUi.loadResource(resourceId) as String;
+                        _dataFieldPagesResourceIds[i] = resourceId;
+                        _dataFieldPagesCachedStrings[i] = label;
+                    }
+                } else {
+                    // they have more than we can cache, they should only ever have the max size of DATAFIELD_MAX_FIELD_SIZE
+                    // load it every time
+                    label = WatchUi.loadResource(resourceId) as String;
+                }
+            }
+            dc.setColor(settings.dataFieldPageColour2, Graphics.COLOR_TRANSPARENT);
+            var heightOffset = dc.getTextDimensions("A", DATAFIELD_PAGE_TEXT_SIZE)[1] / 2 + 10;
+            dc.drawText(
+                x,
+                y - heightOffset, // Offset up slightly from center
+                Graphics.FONT_XTINY,
+                label,
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+            );
+
+            // 2. Call your existing raw renderer for the value
+            // We pass a modified y if needed, or let renderDataField handle it
+            renderDataField(dc, types[i], x, y + 8, 1, settings.dataFieldPageColour); // Offset down slightly
+        }
+    }
+
     function renderDataFields(dc as Dc) as Void {
         var edgeOffset = 25f;
-        renderDataField(dc, settings.topDataType, edgeOffset, 1);
+        renderDataField(
+            dc,
+            settings.topDataType,
+            _cachedValues.xHalfPhysical,
+            edgeOffset,
+            1,
+            settings.normalModeColour
+        );
         renderDataField(
             dc,
             settings.bottomDataType,
+            _cachedValues.xHalfPhysical,
             _cachedValues.physicalScreenHeight - edgeOffset,
-            -1
+            -1,
+            settings.normalModeColour
         );
     }
 
-    function renderDataField(dc as Dc, type as Number, y as Float, direction as Number) as Void {
-        dc.setColor(settings.normalModeColour, Graphics.COLOR_TRANSPARENT);
+    function renderDataField(
+        dc as Dc,
+        type as Number,
+        x as Float,
+        y as Float,
+        direction as Number,
+        colour as Number
+    ) as Void {
+        dc.setColor(colour, Graphics.COLOR_TRANSPARENT);
 
         if (type == DATA_TYPE_NONE) {
             return;
         }
 
         if (type == DATA_TYPE_SCALE) {
-            renderCurrentScale(dc, y, direction);
+            renderCurrentScale(dc, x, y, direction);
             return;
         }
 
@@ -211,89 +338,209 @@ class BreadcrumbRenderer {
         }
 
         var centeredTextOffset =
-            (direction *
-                dc.getTextDimensions("A", settings.dataFieldTextSize as Graphics.FontType)[1]) /
-            2;
+            settings.mode >= DATA_PAGE_BASE_ID
+                ? 0
+                : (direction *
+                      dc.getTextDimensions(
+                          "A",
+                          settings.dataFieldTextSize as Graphics.FontType
+                      )[1]) /
+                  2;
+
         y = y + centeredTextOffset;
 
         if (type == DATA_TYPE_ALTITUDE) {
-            renderElevationMetric(dc, y, info.altitude);
+            renderElevationMetric(dc, x, y, info.altitude);
         } else if (type == DATA_TYPE_AVERAGE_HEART_RATE) {
-            renderHeartRateMetric(dc, y, info.averageHeartRate);
+            renderHeartRateMetric(dc, x, y, info.averageHeartRate);
         } else if (type == DATA_TYPE_CURRENT_HEART_RATE) {
-            renderHeartRateMetric(dc, y, info.currentHeartRate);
+            renderHeartRateMetric(dc, x, y, info.currentHeartRate);
         } else if (type == DATA_TYPE_AVERAGE_SPEED) {
-            renderSpeedMetric(dc, y, info.averageSpeed);
+            renderSpeedMetric(dc, x, y, info.averageSpeed);
         } else if (type == DATA_TYPE_CURRENT_SPEED) {
-            renderSpeedMetric(dc, y, info.currentSpeed);
+            renderSpeedMetric(dc, x, y, info.currentSpeed);
         } else if (type == DATA_TYPE_ELAPSED_DISTANCE) {
-            renderDistanceMetric(dc, y, info.elapsedDistance);
+            renderDistanceMetric(dc, x, y, info.elapsedDistance);
         } else if (type == DATA_TYPE_ELAPSED_TIME) {
-            renderTimeMetric(dc, y, info.elapsedTime);
+            renderTimeMetric(dc, x, y, info.elapsedTime);
         } else if (type == DATA_TYPE_TOTAL_ASCENT) {
-            renderElevationMetric(dc, y, info.totalAscent);
+            renderElevationMetric(dc, x, y, info.totalAscent);
         } else if (type == DATA_TYPE_TOTAL_DESCENT) {
-            renderElevationMetric(dc, y, info.totalDescent);
+            renderElevationMetric(dc, x, y, info.totalDescent);
         } else if (type == DATA_TYPE_AVERAGE_PACE) {
-            renderPaceMetric(dc, y, info.averageSpeed);
+            renderPaceMetric(dc, x, y, info.averageSpeed);
         } else if (type == DATA_TYPE_CURRENT_PACE) {
-            renderPaceMetric(dc, y, info.currentSpeed);
+            renderPaceMetric(dc, x, y, info.currentSpeed);
+        } else if (type == DATA_TYPE_WALL_CLOCK) {
+            var clockTime = System.getClockTime();
+            var hour = clockTime.hour;
+            var timeStr = "";
+            if (settings.is24Hour) {
+                // 24-hour format: 0-23
+                timeStr = Lang.format("$1$:$2$", [
+                    hour.format("%02d"),
+                    clockTime.min.format("%02d"),
+                ]);
+            } else {
+                // 12-hour format: 1-12
+                hour = hour % 12;
+                hour = hour == 0 ? 12 : hour; // Convert 0 to 12
+                timeStr = Lang.format("$1$:$2$", [hour, clockTime.min.format("%02d")]);
+            }
+            renderTextMetric(dc, x, y, timeStr);
+        } else if (type == DATA_TYPE_CURRENT_LAP_TIME) {
+            if (info.elapsedTime != null) {
+                var lapTime = (info.elapsedTime as Number) - _cachedValues._lapStartTime;
+                renderTimeMetric(dc, x, y, lapTime);
+            } else {
+                renderTimeMetric(dc, x, y, null);
+            }
+        } else if (type == DATA_TYPE_CURRENT_LAP_PACE) {
+            if (info.elapsedTime != null && info.elapsedDistance != null) {
+                var lapTime = (info.elapsedTime as Number) - _cachedValues._lapStartTime;
+                var lapDist = (info.elapsedDistance as Float) - _cachedValues._lapStartDistance;
+
+                // Avoid division by zero and ensure enough data for a meaningful pace
+                if (lapDist > 1.0f) {
+                    var speedMps = lapDist / (lapTime / 1000.0f);
+                    renderPaceMetric(dc, x, y, speedMps);
+                } else {
+                    renderPaceMetric(dc, x, y, null);
+                }
+            } else {
+                renderPaceMetric(dc, x, y, null);
+            }
+        } else if (type == DATA_TYPE_LAST_LAP_TIME) {
+            // Pass the duration to your existing render function
+            renderTimeMetric(dc, x, y, _cachedValues._lastLapDuration);
+        } else if (type == DATA_TYPE_LAST_LAP_PACE) {
+            if (_cachedValues._lastLapDistance > 0) {
+                var speedMps =
+                    _cachedValues._lastLapDistance / (_cachedValues._lastLapDuration / 1000.0f);
+                renderPaceMetric(dc, x, y, speedMps);
+            } else {
+                renderPaceMetric(dc, x, y, null);
+            }
+        } else if (type == DATA_TYPE_GRADE) {
+            if (info.altitude != null && info.elapsedDistance != null) {
+                var currentAlt = info.altitude as Float;
+                var currentDist = info.elapsedDistance as Float;
+
+                // Only update the calculation if we have traveled 10 meters
+                // since the last calculation to smooth out noise
+                if (currentDist - _lastGradeDist > 10.0f) {
+                    var deltaAlt = currentAlt - _lastGradeAlt;
+                    var deltaDist = currentDist - _lastGradeDist;
+
+                    // Calculate grade as (rise / run) * 100
+                    _lastGrade = (deltaAlt / deltaDist) * 100.0f;
+
+                    // Update the markers for the next calculation
+                    _lastGradeAlt = currentAlt;
+                    _lastGradeDist = currentDist;
+                }
+                renderTextMetric(dc, x, y, _lastGrade.format("%.1f") + "%");
+            } else {
+                renderTextMetric(dc, x, y, "---");
+            }
+        } else if (type == DATA_TYPE_HEADING) {
+            var degrees = Math.toDegrees(_cachedValues.rotationRad as Float);
+            if (degrees < 0) {
+                degrees += 360;
+            }
+
+            var directions = [
+                "N",
+                "NNE",
+                "NE",
+                "ENE",
+                "E",
+                "ESE",
+                "SE",
+                "SSE",
+                "S",
+                "SSW",
+                "SW",
+                "WSW",
+                "W",
+                "WNW",
+                "NW",
+                "NNW",
+            ];
+
+            // We add 0.5 to handle the rounding offset for "North" correctly
+            var index = (degrees / 22.5 + 0.5).toNumber() % 16;
+            var cardinal = directions[index];
+
+            renderTextMetric(dc, x, y, degrees.format("%d") + "° | " + cardinal);
+        } else if (type == DATA_TYPE_GPS_ACCURACY) {
+            var accuracy = info.currentLocationAccuracy;
+            var label = "No GPS";
+            if (accuracy == Position.QUALITY_LAST_KNOWN) {
+                label = "Last Known";
+            } else if (accuracy == Position.QUALITY_POOR) {
+                label = "Poor";
+            } else if (accuracy == Position.QUALITY_USABLE) {
+                label = "Usable";
+            } else if (accuracy == Position.QUALITY_GOOD) {
+                label = "Good";
+            }
+            renderTextMetric(dc, x, y, label);
+        } else if (type == DATA_TYPE_CURRENT_LAP_DISTANCE) {
+            if (info.elapsedDistance != null) {
+                var lapDist = (info.elapsedDistance as Float) - _cachedValues._lapStartDistance;
+                renderDistanceMetric(dc, x, y, lapDist);
+            } else {
+                renderDistanceMetric(dc, x, y, null);
+            }
+        } else {
+            renderTextMetric(dc, x, y, "INVALID");
         }
     }
 
-    function renderTextMetric(dc as Dc, y as Float, val as String) as Void {
+    function renderTextMetric(dc as Dc, x as Float, y as Float, val as String) as Void {
+        var textSize =
+            settings.mode >= DATA_PAGE_BASE_ID
+                ? DATAFIELD_PAGE_TEXT_SIZE
+                : settings.dataFieldTextSize as Graphics.FontType;
         dc.drawText(
-            _cachedValues.xHalfPhysical,
+            x,
             y,
-            settings.dataFieldTextSize as Graphics.FontType,
+            textSize,
             val,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
     }
 
-    function renderHeartRateMetric(dc as Dc, y as Float, hr as Number?) as Void {
+    function renderHeartRateMetric(dc as Dc, x as Float, y as Float, hr as Number?) as Void {
         if (hr == null) {
-            renderTextMetric(dc, y, "-");
+            renderTextMetric(dc, x, y, "-");
             return;
         }
         // e.g. "145bpm"
-        renderTextMetric(dc, y, hr.toString() + "bpm");
+        renderTextMetric(dc, x, y, hr.toString() + "bpm");
     }
 
-    function renderTimeMetric(dc as Dc, y as Float, timeMs as Number?) as Void {
+    function renderTimeMetric(dc as Dc, x as Float, y as Float, timeMs as Number?) as Void {
         if (timeMs == null) {
-            renderTextMetric(dc, y, "--:--");
+            renderTextMetric(dc, x, y, "--:--");
             return;
         }
 
-        var secondsTotal = timeMs / 1000;
-        var hours = secondsTotal / 3600;
-        var minutes = (secondsTotal % 3600) / 60;
-        var seconds = secondsTotal % 60;
-
-        var timeStr;
-        if (hours > 0) {
-            timeStr = Lang.format("$1$:$2$:$3$", [
-                hours,
-                minutes.format("%02d"),
-                seconds.format("%02d"),
-            ]);
-        } else {
-            timeStr = Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]);
-        }
-        renderTextMetric(dc, y, timeStr);
+        var timeStr = formatDuration(timeMs);
+        renderTextMetric(dc, x, y, timeStr);
     }
 
-    function renderSpeedMetric(dc as Dc, y as Float, speedMps as Float?) as Void {
+    function renderSpeedMetric(dc as Dc, x as Float, y as Float, speedMps as Float?) as Void {
         if (speedMps == null) {
-            renderTextMetric(dc, y, "-.-");
+            renderTextMetric(dc, x, y, "-.-");
             return;
         }
 
         var speedConverted = speedMps;
         var suffix = "k/h";
 
-        if (settings.distanceImperialUnits) {
+        if (settings.paceImperialUnits) {
             speedConverted = speedMps * 2.23694f;
             suffix = "m/h";
         } else {
@@ -301,19 +548,19 @@ class BreadcrumbRenderer {
         }
 
         // e.g. "12.5k/h"
-        renderTextMetric(dc, y, speedConverted.format("%.1f") + suffix);
+        renderTextMetric(dc, x, y, speedConverted.format("%.1f") + suffix);
     }
 
-    function renderPaceMetric(dc as Dc, y as Float, speedMps as Float?) as Void {
+    function renderPaceMetric(dc as Dc, x as Float, y as Float, speedMps as Float?) as Void {
         if (speedMps == null || speedMps < 0.2f) {
-            renderTextMetric(dc, y, "--:--");
+            renderTextMetric(dc, x, y, "--:--");
             return;
         }
 
         var secondsPerUnit;
         var suffix = "/km";
 
-        if (settings.distanceImperialUnits) {
+        if (settings.paceImperialUnits) {
             secondsPerUnit = 1609.34f / speedMps;
             suffix = "/mi";
         } else {
@@ -324,44 +571,36 @@ class BreadcrumbRenderer {
         var seconds = secondsPerUnit.toNumber() % 60;
 
         if (minutes > 99) {
-            renderTextMetric(dc, y, "--:--");
+            renderTextMetric(dc, x, y, "--:--");
         } else {
             // e.g. "5:30/km"
             renderTextMetric(
                 dc,
+                x,
                 y,
                 Lang.format("$1$:$2$", [minutes, seconds.format("%02d")]) + suffix
             );
         }
     }
 
-    function renderDistanceMetric(dc as Dc, y as Float, distMeters as Float?) as Void {
+    function renderDistanceMetric(dc as Dc, x as Float, y as Float, distMeters as Float?) as Void {
         if (distMeters == null) {
-            renderTextMetric(dc, y, "-.--");
+            renderTextMetric(dc, x, y, "-.--");
             return;
         }
 
-        var distConverted;
-        var suffix = "km";
-
-        if (settings.distanceImperialUnits) {
-            distConverted = distMeters / 1609.34f;
-            suffix = "mi";
-        } else {
-            distConverted = distMeters / 1000.0f;
-        }
-
-        // e.g. "5.23km"
-        renderTextMetric(dc, y, distConverted.format("%.2f") + suffix);
+        var text = formatDistance(distMeters, settings.distanceImperialUnits);
+        renderTextMetric(dc, x, y, text);
     }
 
     function renderElevationMetric(
         dc as Dc,
+        x as Float,
         y as Float,
         elevationMeters as Float or Number or Null
     ) as Void {
         if (elevationMeters == null) {
-            renderTextMetric(dc, y, "-");
+            renderTextMetric(dc, x, y, "-");
             return;
         }
 
@@ -374,10 +613,10 @@ class BreadcrumbRenderer {
         }
 
         // e.g. "1250ft"
-        renderTextMetric(dc, y, elevationConverted.format("%.0f") + suffix);
+        renderTextMetric(dc, x, y, elevationConverted.format("%.0f") + suffix);
     }
 
-    function renderCurrentScale(dc as Dc, y as Float, direction as Number) as Void {
+    function renderCurrentScale(dc as Dc, x as Float, y as Float, direction as Number) as Void {
         var scaleKeys = settings.distanceImperialUnits ? SCALE_KEYS_IMPERIAL : SCALE_KEYS;
         var scaleValues = settings.distanceImperialUnits ? SCALE_VALUES_IMPERIAL : SCALE_VALUES;
         var scaleData = getScaleSizeGeneric(
@@ -394,14 +633,9 @@ class BreadcrumbRenderer {
         }
 
         dc.setPenWidth(4);
-        dc.drawLine(
-            _cachedValues.xHalfPhysical - pixelWidth / 2.0f,
-            y,
-            _cachedValues.xHalfPhysical + pixelWidth / 2.0f,
-            y
-        );
+        dc.drawLine(x - pixelWidth / 2.0f, y, x + pixelWidth / 2.0f, y);
         dc.drawText(
-            _cachedValues.xHalfPhysical,
+            x,
             y +
                 direction * 2 +
                 (direction *
@@ -1399,10 +1633,6 @@ class BreadcrumbRenderer {
         dc.setColor(settings.uiColour, Graphics.COLOR_BLACK);
         dc.clear();
 
-        var lineLength = 20;
-        var halfLineLength = lineLength / 2;
-        var lineFromEdge = 10;
-
         var seedingProgress = _cachedValues.seedingProgress();
         var overallProgress = seedingProgress[1];
         // --- Draw Circular Progress Bar ---
@@ -1463,23 +1693,21 @@ class BreadcrumbRenderer {
         );
 
         // cross at the top of the screen to cancel download
-        // could just do this with an X? but that looks a bit weird
         dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(8);
-        dc.drawLine(
-            xHalfPhysical - halfLineLength,
-            lineFromEdge,
-            xHalfPhysical + halfLineLength,
-            lineFromEdge + lineLength
-        );
-        dc.drawLine(
-            xHalfPhysical - halfLineLength,
-            lineFromEdge + lineLength,
-            xHalfPhysical + halfLineLength,
-            lineFromEdge
-        );
-
+        renderCross(dc, xHalfPhysical, 20);
+        if (settings.uiMode == UI_MODE_SHOW_ALL || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
+            renderButtonUi(dc);
+        }
         return true;
+    }
+
+    function renderCross(dc as Dc, x as Number or Float, y as Number or Float) as Void {
+        var lineLength = 20;
+        var half = lineLength / 2;
+
+        dc.drawLine(x - half, y - half, x + half, y + half);
+        dc.drawLine(x - half, y + half, x + half, y - half);
     }
 
     function renderMapEnable(dc as Dc) as Boolean {
@@ -1729,6 +1957,12 @@ class BreadcrumbRenderer {
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
+        if (_cachedValues.seeding()) {
+            var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+            renderCross(dc, exitCoords[0], exitCoords[1]);
+            return;
+        }
+
         var modeLetterCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
@@ -1738,9 +1972,9 @@ class BreadcrumbRenderer {
             exitCoords = temp;
         }
 
-            renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
+        renderModeLetter(dc, modeLetterCoords[0], modeLetterCoords[1]);
 
-            renderStopSquare(dc, exitCoords[0], exitCoords[1]);
+        renderStopSquare(dc, exitCoords[0], exitCoords[1]);
 
         var halfArrowSize = ARROW_SIZE / 2.0f;
         if (settings.mode == MODE_MAP_MOVE_LEFT_RIGHT) {
@@ -1748,7 +1982,7 @@ class BreadcrumbRenderer {
             var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
 
             // note on touchscreens this is already rendered, we should probably skip
-            if (!_cachedValues.isTouchScreen) {
+            if (!_cachedValues.isTouchScreen || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
                 // --- Draw LEFT Arrow (Centered on middleLeft) ---
                 var lx = middleLeft[0];
                 var ly = middleLeft[1];
@@ -1846,7 +2080,7 @@ class BreadcrumbRenderer {
         if (settings.mode == MODE_NORMAL) {
             var middleLeft = getButtonCoordinate(dc, center, radius, MIDDLE_LEFT_DEG);
             // note on touchscreens this is already rendered, we should probably skip
-            if (!_cachedValues.isTouchScreen) {
+            if (!_cachedValues.isTouchScreen || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
                 renderZoomAtPaceModeLetter(dc, middleLeft[0], middleLeft[1]);
             }
         }
@@ -1930,6 +2164,12 @@ class BreadcrumbRenderer {
         // var bottomLeft = getButtonCoordinate(dc, center, radius, BOTTOM_LEFT_DEG);
         // var bottomRight = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
+        if (_cachedValues.seeding()) {
+            var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
+            renderCross(dc, exitCoords[0], exitCoords[1]);
+            return;
+        }
+        
         var modeLetterCoords = getButtonCoordinate(dc, center, radius, TOP_RIGHT_DEG);
         var exitCoords = getButtonCoordinate(dc, center, radius, BOTTOM_RIGHT_DEG);
 
@@ -1960,9 +2200,13 @@ class BreadcrumbRenderer {
 
     function renderUi(dc as Dc) as Void {
         if (_cachedValues.isTouchScreen) {
-            renderTouchUi(dc);
+            if (settings.uiMode == UI_MODE_SHOW_ALL || settings.uiMode == UI_MODE_SHOW_TOUCH_ONLY) {
+                renderTouchUi(dc);
+            }
         }
-        renderButtonUi(dc);
+        if (settings.uiMode == UI_MODE_SHOW_ALL || settings.uiMode == UI_MODE_SHOW_BUTTONS_ONLY) {
+            renderButtonUi(dc);
+        }
     }
 
     function renderZoomAtPaceModeLetter(
@@ -2001,7 +2245,10 @@ class BreadcrumbRenderer {
     }
     function renderModeLetter(dc as Dc, x as Number or Float, y as Number or Float) as Void {
         // current mode displayed
-        var modeLetter = "T";
+        var modeLetter =
+            settings.mode >= DATA_PAGE_BASE_ID
+                ? (settings.mode - DATA_PAGE_BASE_ID).toString()
+                : "";
         switch (settings.mode) {
             case MODE_NORMAL:
                 modeLetter = "T";
@@ -2132,7 +2379,7 @@ class BreadcrumbRenderer {
             dc.fillCircle(centerX, centerY, 7);
         }
 
-        if (settings.displayLatLong) {
+        if (settings.displayLatLong && settings.mode < DATA_PAGE_BASE_ID) {
             var bottomDataFieldFromEdge =
                     dc.getTextDimensions(
                         "A",
@@ -2475,7 +2722,11 @@ class BreadcrumbRenderer {
             return false; // something else is running, do not handle touch events
         }
 
-        if (!settings.mapEnabled) {
+        if (
+            !settings.mapEnabled ||
+            (!settings.storageMapTilesOnly && !settings.cacheTilesInStorage)
+        ) {
+            // we do not allow storage tiles, and the "G" is hidden
             _startCacheTilesProgress = 0;
             return false; // maps are not enabled, we hide the start symbol in this case
         }
@@ -2575,8 +2826,8 @@ class BreadcrumbRenderer {
         return [false, variable];
     }
 
-    function returnToUser() as Void {
-        _cachedValues.returnToUser();
+    function returnToUser() as Boolean {
+        return _cachedValues.returnToUser();
     }
 
     // todo move most of these into a ui class

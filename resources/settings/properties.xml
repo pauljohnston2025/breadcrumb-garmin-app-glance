@@ -34,6 +34,8 @@
 	<property id="userColour" type="string">FF5500</property>
 	<property id="normalModeColour" type="string">0000FF</property>
 	<property id="uiColour" type="string">555555</property>
+	<property id="dataFieldPageColour" type="string">555555</property>
+	<property id="dataFieldPageColour2" type="string">555555</property>
 	<property id="debugColour" type="string">FEFFFFFF</property>
 	<property id="defaultRouteColour" type="string">00AAFF</property>
 
@@ -78,6 +80,9 @@
 	<property id="topDataType" type="number">0</property>
 	<property id="bottomDataType" type="number">1</property>
 	<property id="dataFieldTextSize" type="number">0</property>
+	<property id="dataFieldPageCounts" type="string"></property>
+	<property id="dataFieldPageTypes" type="string"></property>
+	<property id="autoLapDistanceM" type="number">-1</property>
 	<property id="minTrackPointDistanceM" type="number">5</property>
 	<property id="trackPointReductionMethod" type="number">0</property>
 

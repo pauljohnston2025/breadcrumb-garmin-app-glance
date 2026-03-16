@@ -214,7 +214,7 @@ class BreadcrumbApp extends Application.AppBase {
     // onStop() is called when your application is exiting
     (:typecheck(disableGlanceCheck))
     function onStop(state as Dictionary?) as Void {
-        System.println("onStop");
+        System.println("" + Time.now().value() + " onStop");
         // https://forums.garmin.com/developer/connect-iq/f/discussion/872/battery-drain-when-connectiq-app-is-not-running/2006348
         // https://forums.garmin.com/developer/connect-iq/i/bug-reports/bug-battery-drain-after-app-exit-caused-by-activityrecording-api
         var timerLocal = timer;
@@ -379,7 +379,7 @@ class BreadcrumbApp extends Application.AppBase {
                 // use to just be PROTOCOL_DROP_TILE_CACHE
                 logT("got tile cache changed req: " + rawData);
                 // they could be using a custom tile server that points to the companion app and has a custom max/min tile layer, we need to clear the cache in this case but not update the tile server settings
-                if (!_breadcrumbContextLocal.settings.tileUrl.equals(COMPANION_APP_TILE_URL)) {
+                if (_breadcrumbContextLocal.settings.tileUrl.find(COMPANION_APP_TILE_URL_MATCH) == null) {
                     logT("not using the companion app tile server");
                     return;
                 }

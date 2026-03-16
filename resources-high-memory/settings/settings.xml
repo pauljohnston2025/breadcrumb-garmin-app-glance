@@ -22,6 +22,8 @@
             <listEntry value="0">@Strings.uiModeShowAll</listEntry>
             <listEntry value="1">@Strings.uiModeHidden</listEntry>
             <listEntry value="2">@Strings.uiModeNone</listEntry>
+            <listEntry value="3">@Strings.uiModeShowTouchOnly</listEntry>
+            <listEntry value="4">@Strings.uiModeShowButtonsOnly</listEntry>
         </settingConfig>
     </setting>
     
@@ -100,6 +102,15 @@
             <listEntry value="10">@Strings.dataTypeDescent</listEntry>
             <listEntry value="11">@Strings.dataTypeAvgPace</listEntry>
             <listEntry value="12">@Strings.dataTypeCurPace</listEntry>
+            <listEntry value="13">@Strings.dataTypeWallClock</listEntry>
+            <listEntry value="14">@Strings.dataTypeCurLapTime</listEntry>
+            <listEntry value="15">@Strings.dataTypeCurLapPace</listEntry>
+            <listEntry value="16">@Strings.dataTypeLastLapTime</listEntry>
+            <listEntry value="17">@Strings.dataTypeLastLapPace</listEntry>
+            <listEntry value="18">@Strings.dataTypeGrade</listEntry>
+            <listEntry value="19">@Strings.dataTypeHeading</listEntry>
+            <listEntry value="20">@Strings.dataTypeGPSAccuracy</listEntry>
+            <listEntry value="21">@Strings.dataTypeCurLapDist</listEntry>
         </settingConfig>
     </setting>
 
@@ -118,6 +129,15 @@
             <listEntry value="10">@Strings.dataTypeDescent</listEntry>
             <listEntry value="11">@Strings.dataTypeAvgPace</listEntry>
             <listEntry value="12">@Strings.dataTypeCurPace</listEntry>
+            <listEntry value="13">@Strings.dataTypeWallClock</listEntry>
+            <listEntry value="14">@Strings.dataTypeCurLapTime</listEntry>
+            <listEntry value="15">@Strings.dataTypeCurLapPace</listEntry>
+            <listEntry value="16">@Strings.dataTypeLastLapTime</listEntry>
+            <listEntry value="17">@Strings.dataTypeLastLapPace</listEntry>
+            <listEntry value="18">@Strings.dataTypeGrade</listEntry>
+            <listEntry value="19">@Strings.dataTypeHeading</listEntry>
+            <listEntry value="20">@Strings.dataTypeGPSAccuracy</listEntry>
+            <listEntry value="21">@Strings.dataTypeCurLapDist</listEntry>
         </settingConfig>
     </setting>
 
@@ -140,6 +160,18 @@
             <listEntry value="12">@Strings.fontSysMedium</listEntry>
             <listEntry value="13">@Strings.fontSysLarge</listEntry> -->
         </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.autoLapDistanceM" title="@Strings.autoLapDistanceMTitle">
+        <settingConfig type="numeric" min="-1"/>
+    </setting>
+
+    <setting propertyKey="@Properties.dataFieldPageCounts" title="@Strings.dataFieldPageCountsTitle">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+    
+    <setting propertyKey="@Properties.dataFieldPageTypes" title="@Strings.dataFieldPageTypesTitle">
+        <settingConfig type="alphaNumeric"/>
     </setting>
 
     <setting propertyKey="@Properties.minTrackPointDistanceM" title="@Strings.minTrackPointDistanceMTitle">
@@ -387,6 +419,14 @@
         </setting>
         
         <setting propertyKey="@Properties.uiColour" title="@Strings.uiColour" prompt="@Strings.colourPrompt">
+            <settingConfig type="alphaNumeric"/>
+        </setting>
+
+        <setting propertyKey="@Properties.dataFieldPageColour" title="@Strings.dataFieldPageColour" prompt="@Strings.colourPrompt">
+            <settingConfig type="alphaNumeric"/>
+        </setting>
+        
+        <setting propertyKey="@Properties.dataFieldPageColour2" title="@Strings.dataFieldPageColour2" prompt="@Strings.colourPrompt">
             <settingConfig type="alphaNumeric"/>
         </setting>
         

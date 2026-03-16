@@ -4,28 +4,12 @@ If enabling map tiles or trying to send routes to the watch app you will require
 If you just wish to use the breadcrumb track feature (a trail of your current track), it can be used without any phone connection.  
 Map support can be enabled without the companion app, but the [garmin connect app](https://play.google.com/store/apps/details?id=com.garmin.android.apps.connectmobile&hl=en_AU) must still be installed, and an active bluetooth connection maintained.
 
-This is a datafield, not a full fledged app, it runs in the context of native activity.  
-The datafield is expected to be used to cover the full available area of a round watchface.  
-It will still work with non-round devices or partial layouts, but the full feature set of the ui will not be possible due to the limited space.
-
-To add datafield to a native app:
-
-1. Open the app (eg. running), you do not have to start the activity, just open it.
-1. Long press to open settings (or use the touchscreen to press settings)
-1. Navigate to Data Screens
-1. Select screen
-1. Choose layout - recommended full screen layout
-1. Edit data fields - choose the 'BreadCrumbDataField' from the 'ConnectIQ Fields' menu
-
-Some helpful guides on adding data fields:
-
-- [For the venu range](https://support.garmin.com/en-AU/?faq=gyywAozBuAAGlvfzvR9VZ8&identifier=707572&searchQuery=data%20field&tab=topics)
-- [A more thorough explanation for a different app](https://support.garmin.com/en-AU/?faq=3HkHX1wT6U7TeNB7YHfiT7&identifier=707572&searchQuery=data%20field&tab=topics)
+If launched from a glance view the app will not remain running unless an activity is started, or the user continuously interacts with the app. Please note this is a garmin limitation that I cannot control https://forums.garmin.com/developer/connect-iq/f/discussion/402551/app-exits-when-started-with-glance-view.
 
 ---
 
 The main differences between the app and the datafield are that i can support button presses and touch input on apps.    
-Please note: If the app crashes from memory or cpu the app will close, adn may or may not save the activity that it was recording. Some users may prefer a datafields so they do not loose their activity progress, and can complete the activity in one session.
+Please note: If the app crashes from memory or cpu the app will close, adn may or may not save the activity that it was recording. Some users may prefer a datafield so they do not loose their activity progress, and can complete the activity in one session.
 
 The on screen ui is currently.
 
@@ -54,9 +38,15 @@ The connectiq store does not work for all settings (namely route configuration),
 
 # Garmin Settings (Connect Iq Store)
 
-Please note: The nested garmin settings have a strange behaviour of the app is not running when the setttings are saved. Please ensure the datafields in running in the foreground to have the best experience when editing the settings through garmin connect iq see detailed note at: https://github.com/pauljohnston2025/breadcrumb-garmin/issues/6#issuecomment-3315417515
+Please note: The nested garmin settings have a strange behaviour of the app is not running when the settings are saved. Please ensure the datafields in running in the foreground to have the best experience when editing the settings through garmin connect iq see detailed note at: https://github.com/pauljohnston2025/breadcrumb-garmin/issues/6#issuecomment-3315417515
 
 ---
+
+# Activity Type
+
+On watch and companion ap this is split into categories, but garmin settings do not allow this level of control, so you get one giant list.
+
+The activity type of the app can be changed whilst the activity session is running, this lets users switch between multisport type activities. You can also discard the previous activity if it was started in error. You need to manually start the new activity once the new type is picked, this is so users can lock in the category and type before starting the new activity session. The same thing will happen if the activity type is changed from garmin settings or companion app, you will be prompted what to do with old activity session.
 
 # General
 
@@ -78,6 +68,7 @@ eg.
 
 Numbers MUST not appear twice in the list also numbers that are not in the modes list below MUST not be included.
 
+Special modes for [Data Field Page Counts](#data-field-page-counts) are 100 onwards. eg. page 0 = mode 100, page 1 = mode 101
 
 
 ### Display Mode
@@ -118,7 +109,9 @@ Note: There is a limitation on garmin that datafields can only receive tap event
 
 Show On Top - Show the ui and the current state of everything its controlling  
 Hidden - Still responds to touch but does not display the current state  
-Disabled - No touch handling, no display of state
+Disabled - No tap handling, no display of state  
+Show Touch Only - Only show touch ui (buttons still work, they are just hidden)  
+Show Buttons Only - Only show button ui (touch still works, its just hidden)  
 
 The ui appears on most screens, but is limited to what that screen can do.
 
@@ -294,7 +287,14 @@ The currently supported fields are:
 * Total Descent - Total elevation loss
 * Avg Pace - Average pace
 * Pace - Current pace
-
+* Time of Day - Current wall clock time
+* Cur. Lap Time - Duration of the current lap
+* Cur. Lap Pace - Average pace of the current lap
+* Last Lap Time - Duration of the previous completed lap
+* Last Lap Pace - Average pace of the previous completed lap
+* Grade - Current incline or decline percentage
+* Heading - Current compass direction of travel
+* GPS Accuracy - Current strength of satellite signal
 
 ### Bottom Data Field Type
 
@@ -303,6 +303,83 @@ Same as [Top Data Field Type](#top-data-field-type) but at the bottom of the scr
 ### Data Field Text Size
 
 The text size for the top and bottom data fields.  
+
+### Auto Lap Distance (m)
+
+How far, in meters, to trigger an auto lap (-1) to disable.
+
+### Data Field Page Counts
+
+Best edited through the watch menus or companion app (data fields -> data pages), but if your feeling game the format is:  
+
+type: CSV integer list  
+
+Defines the number of data fields present on each page. The length of this array determines the total number of custom data pages.  
+
+Example: [1, 2, 4] creates 3 pages: Page 1 has 1 field, Page 2 has 2, and Page 3 has 4.  
+
+The [Mode Display Order](#mode-display-order) will automatically add the data field page to the list, the order can be configured. You should not attempt to remove the data field page from the [Mode Display Order](#mode-display-order), and should ensure it is always added.
+
+### Data Field Page Types
+
+Best edited through the watch menus or companion app (data fields -> data pages), but if your feeling game the format is:  
+
+type: CSV integer list  
+
+A flattened, sequential array containing the DataType enum values for every field across all pages. eg. 0 = none  
+
+The values of these enums can be found here: https://github.com/pauljohnston2025/breadcrumb-garmin-app/blob/master/source/Settings.mc#L37  
+
+For example:
+
+dataFieldPageCounts: [1, 3]
+dataFieldPageTypes: [2, 5, 6, 8]
+
+Page Index: The logical page number (starts at 0).
+Field Index: The specific field slot within that page.
+Data Type Enum: The integer value stored in your flattened dataFieldPageTypes array.
+Resulting Metric: The actual sensor data displayed on the watch.
+
+| Page Index | Field Index | Data Type Enum | Resulting Metric             |
+|------------|-------------|----------------|------------------------------|
+| 0          | 0           | 2              | DATA_TYPE_ALTITUDE           |
+| 1          | 0           | 5              | DATA_TYPE_CURRENT_HEART_RATE |
+| 1          | 1           | 6              | DATA_TYPE_CURRENT_SPEED      |
+| 1          | 2           | 8              | DATA_TYPE_ELAPSED_TIME       |
+
+### Data Pages
+
+![](images/settings/data-pages-1.png)
+![](images/settings/data-pages-2.png)
+![](images/settings/data-pages-3.png)
+![](images/settings/data-pages-4.png)
+
+To change the colours refer to [Data Field Page Colour / Data Field Page Colour 2](#colours)  
+
+You can configure the datafield pages on the companion app and on watch settings. The editors are change the 2 backing properties found in the garmin connect settings [Data Field Page Counts](#data-field-page-types) and [Data Field Page Types](#data-field-page-types).  
+
+If you remove a field or page that is not at the end of the list, all pages/fields will be moved forwards.  
+
+eg. If we have 3 pages 0, 1, 2 and page 1 is removed what happens is:
+
+page 0 stays as 0  
+page 2 becomes 1 
+
+This can be slightly confusing, as all the ids change. But it allows us to pop pages/fields out of the middle rather than just from the end.
+
+On the watch there are 2 ways to configure whats shown on datafield pages, as a ui view or from the menus directly.
+
+Layout: press/swipe up/down to change the number of fields
+
+![](images/settings/data-pages-layout.png)
+![](images/settings/data-pages-layout-4.png)
+
+Edit: Press up/down to navigate around, the orange circle shows the selected field. Then select key to edit the type of datafield. On touch devices you can just tap the field that you wish to edit. The back/esc button saves the datafield page as shown in its current state.
+
+![](images/settings/data-pages-edit-1.png)
+![](images/settings/data-pages-edit-2.png)
+![](images/settings/data-pages-edit-3.png)
+![](images/settings/data-pages-edit-4.png)
 
 ---
 
@@ -674,16 +751,18 @@ How often, in seconds, an alert should fire. Alerts will continue firing until y
 
 ### Colours
 
-Should be set to a valid hex code RRGGBB not all are required eg. FF00 will render as green
+Should be set to a valid hex code RRGGBB not all are required eg. FF00 will render as green  
 
 Track Colour - The colour of the in progress track  
 Track Colour 2 - The secondary colour of the in progress track (only used in some track styles)  
-Default Route Colour - The default colour of newly loaded routes
+Default Route Colour - The default colour of newly loaded routes  
 Elevation Colour - The colour of the scale/numbers on the elevation page  
 User Colour - The colour of the user triangle (current user position)  
 Normal Mode Colour - The colour of scale/numbers on the track/routes page  
 UI Colour - The colour of the on screen ui  
-Debug Colour - The colour of the debug page
+Data Field Page Colour - The colour of the data field values on data pages  
+Data Field Page Colour 2 - The colour of the lines and headings on data pages  
+Debug Colour - The colour of the debug page  
 
 ---
 

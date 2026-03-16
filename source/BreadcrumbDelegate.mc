@@ -16,14 +16,17 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     // onDrag is called when the user drags their finger across the screen
     // Handle map panning when the user drags their finger across the screen.
     function onDrag(dragEvent as WatchUi.DragEvent) as Lang.Boolean {
-        System.println("onDrag: " + dragEvent.getType());
+        // System.println("onDrag: " + dragEvent.getType());
         // Only handle drag events if we are in map move mode.
         // we also allow it on the normal track page, since we can handle drag events in apps unlike on datafields.
         // perhaps on touchscreen devices this should be the only way to move?
         // it can be a bit finicky though, some users might still prefer the tapping interface (so ill leave both)
         if (
             _breadcrumbContext.settings.mode != MODE_MAP_MOVE &&
-            _breadcrumbContext.settings.mode != MODE_NORMAL
+            _breadcrumbContext.settings.mode != MODE_NORMAL &&
+            _breadcrumbContext.settings.mode != MODE_MAP_MOVE_ZOOM &&
+            _breadcrumbContext.settings.mode != MODE_MAP_MOVE_UP_DOWN &&
+            _breadcrumbContext.settings.mode != MODE_MAP_MOVE_LEFT_RIGHT
         ) {
             return false;
         }
@@ -90,15 +93,15 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onFlick(flickEvent as WatchUi.FlickEvent) as Lang.Boolean {
-        var direction = flickEvent.getDirection();
-        System.println("Flick event deg: " + direction);
+        // var direction = flickEvent.getDirection();
+        // System.println("Flick event deg: " + direction);
 
         return false; // let it propagate
     }
 
     function onSwipe(swipeEvent) {
         // prevent exit when we flick instead of drag
-        System.println("onSwipe: " + swipeEvent.getDirection());
+        // System.println("onSwipe: " + swipeEvent.getDirection());
         return true; // this has to be true to prevent the default onback handler (that quits the app)
     }
 
@@ -150,8 +153,9 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             if (y < hitboxSize) {
                 // top of screen
                 cachedValues.cancelCacheCurrentMapArea();
+                return true;
             }
-            return true;
+            return false;
         }
 
         if (renderer.handleStartCacheRoute(x, y)) {
@@ -194,8 +198,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             // reset scale to user tracking mode (we auto set it when enterring move mode so we do not get weird zooms when we are panning)
             // there is a chance the user already had a custom scale set (by pressing the +/- zoom  buttons on the track page)
             // but we will just clear it when they click 'go back to user', and it will now be whatever is in the 'zoom at pace' settings
-            renderer.returnToUser();
-            return true;
+            return renderer.returnToUser();
         }
 
         if (settings.mode == MODE_MAP_MOVE_ZOOM) {
@@ -273,7 +276,7 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             }
             // handled by handleStartCacheRoute
             // cachedValues.startCacheCurrentMapArea();
-            return true;
+            return false;
         } else if (x < hitboxSize) {
             // left of screen
             if (settings.mode == MODE_MAP_MOVE) {
@@ -301,7 +304,18 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
     function onKey(keyEvent as WatchUi.KeyEvent) as Boolean {
         var key = keyEvent.getKey();
         logT("got key event: " + key);
+
         var cachedValues = _breadcrumbContext.cachedValues;
+
+        if (cachedValues.seeding()) {
+            if (key == WatchUi.KEY_ESC) {
+                cachedValues.cancelCacheCurrentMapArea();
+                return true;
+            }
+
+            return false;
+        }
+
         var settings = _breadcrumbContext.settings;
         var renderer = _breadcrumbContext.breadcrumbRenderer;
 
@@ -315,11 +329,6 @@ class BreadcrumbDelegate extends WatchUi.BehaviorDelegate {
             (key == WatchUi.KEY_ESC && !_breadcrumbContext.settings.useStartForStop) ||
             (key == WatchUi.KEY_ENTER && _breadcrumbContext.settings.useStartForStop)
         ) {
-            if (cachedValues.seeding()) {
-                cachedValues.cancelCacheCurrentMapArea();
-                return true;
-            }
-
             var confirmationView = new WatchUi.Confirmation("Exit?");
             var delegate = new DiscardConfirmationDelegate(_breadcrumbContext);
 

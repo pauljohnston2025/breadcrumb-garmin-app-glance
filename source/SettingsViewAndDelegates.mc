@@ -195,7 +195,6 @@ class SettingsMain extends WatchUi.Menu2 {
     }
 }
 
-(:settingsView)
 function getDataTypeString(type as Number) as ResourceId or String {
     switch (type) {
         case DATA_TYPE_NONE:
@@ -224,6 +223,24 @@ function getDataTypeString(type as Number) as ResourceId or String {
             return Rez.Strings.dataTypeAvgPace;
         case DATA_TYPE_CURRENT_PACE:
             return Rez.Strings.dataTypeCurPace;
+        case DATA_TYPE_WALL_CLOCK:
+            return Rez.Strings.dataTypeWallClock;
+        case DATA_TYPE_CURRENT_LAP_TIME:
+            return Rez.Strings.dataTypeCurLapTime;
+        case DATA_TYPE_CURRENT_LAP_PACE:
+            return Rez.Strings.dataTypeCurLapPace;
+        case DATA_TYPE_LAST_LAP_TIME:
+            return Rez.Strings.dataTypeLastLapTime;
+        case DATA_TYPE_LAST_LAP_PACE:
+            return Rez.Strings.dataTypeLastLapPace;
+        case DATA_TYPE_GRADE:
+            return Rez.Strings.dataTypeGrade;
+        case DATA_TYPE_HEADING:
+            return Rez.Strings.dataTypeHeading;
+        case DATA_TYPE_GPS_ACCURACY:
+            return Rez.Strings.dataTypeGPSAccuracy;
+        case DATA_TYPE_CURRENT_LAP_DISTANCE:
+            return Rez.Strings.dataTypeCurLapDist;
         default:
             return "";
     }
@@ -310,9 +327,13 @@ function getModeString(mode as Number) as ResourceId or String {
             return Rez.Strings.mapMoveUD;
         case MODE_MAP_MOVE_LEFT_RIGHT:
             return Rez.Strings.mapMoveLR;
-        default:
-            return "";
     }
+
+    if (mode >= DATA_PAGE_BASE_ID) {
+        return "(" + mode + ") Data Page " + (mode - DATA_PAGE_BASE_ID);
+    }
+
+    return "";
 }
 
 (:settingsView)
@@ -324,6 +345,10 @@ function getUiModeString(mode as Number) as ResourceId or String {
             return Rez.Strings.uiModeHidden;
         case UI_MODE_NONE:
             return Rez.Strings.uiModeNone;
+        case UI_MODE_SHOW_TOUCH_ONLY:
+            return Rez.Strings.uiModeShowTouchOnly;
+        case UI_MODE_SHOW_BUTTONS_ONLY:
+            return Rez.Strings.uiModeShowButtonsOnly;
         default:
             return "";
     }
@@ -556,6 +581,656 @@ class SettingsTrack extends WatchUi.Menu2 {
 }
 
 (:settingsView)
+class SettingsDataFieldPageList extends WatchUi.Menu2 {
+    function initialize() {
+        Menu2.initialize({ :title => "Data Pages" });
+        rerender();
+    }
+
+    function rerender() as Void {
+        while (self.deleteItem(0) != null) {
+            // Keep deleting the first item until nothing is left
+        }
+
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+        var pageCounts = settings.dataFieldPageCounts;
+
+        // Add items for existing pages
+        for (var i = 0; i < pageCounts.size(); i++) {
+            addItem(new WatchUi.MenuItem("Page " + i, "Fields: " + pageCounts[i], i, {}));
+        }
+        // Add a button to add a new page
+        addItem(new WatchUi.MenuItem("Add Page", null, :addPage, {}));
+    }
+}
+
+const DATAFIELD_MAX_FIELD_SIZE = 4;
+
+(:settingsView)
+class VisualDataFieldPageEditorView extends WatchUi.View {
+    var pageIndex as Number;
+    var selectedIndex as Number = 0;
+    var fieldTypes as Array<Number>;
+    var renderer as BreadcrumbRenderer;
+    var settings as Settings;
+
+    function initialize(pageIndex as Number, breadcrumbContext as BreadcrumbContext) {
+        View.initialize();
+        me.pageIndex = pageIndex;
+        // Clone the current field types into our temporary buffer
+        settings = breadcrumbContext.settings;
+        fieldTypes = settings.getTypesForPage(pageIndex);
+        renderer = breadcrumbContext.breadcrumbRenderer;
+    }
+
+    function onUpdate(dc as Dc) as Void {
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+        dc.clear();
+        renderer.renderDataFieldPageFields(dc, fieldTypes, selectedIndex);
+    }
+
+    // Method to update the field type from the delegate
+    function updateSelectedField(newType as Number) as Void {
+        fieldTypes[selectedIndex] = newType;
+        WatchUi.requestUpdate();
+    }
+
+    function setSelectedIndex(i as Number) as Void {
+        selectedIndex = i;
+        WatchUi.requestUpdate();
+    }
+
+    function rerender() as Void {
+        WatchUi.requestUpdate();
+    }
+}
+
+(:settingsView)
+class VisualDataFieldPageEditorDelegate extends WatchUi.BehaviorDelegate {
+    private var view as VisualDataFieldPageEditorView;
+    var pageView as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        view as VisualDataFieldPageEditorView,
+        pageView as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        BehaviorDelegate.initialize();
+        me.view = view;
+        me.pageView = pageView;
+        me.listView = listView;
+    }
+
+    function onNextPage() as Boolean {
+        var idx = view.selectedIndex;
+        var count = view.fieldTypes.size();
+        view.setSelectedIndex((idx + 1) % count);
+        return true;
+    }
+
+    function onPreviousPage() {
+        var idx = view.selectedIndex;
+        var count = view.fieldTypes.size();
+        view.setSelectedIndex(idx == 0 ? count - 1 : idx - 1);
+        return true;
+    }
+
+    function onTap(clickEvent) {
+        var xy = clickEvent.getCoordinates();
+        var count = view.fieldTypes.size();
+
+        // Logical check: which field did they tap?
+        for (var i = 0; i < count; i++) {
+            System.println("checking: " + i);
+            if (isInsideField(xy[0], xy[1], i, count)) {
+                System.println("found: " + i);
+                view.setSelectedIndex(i);
+                openTypePicker();
+                return true;
+            }
+        }
+        return true;
+    }
+
+    (:settingsView)
+    function isInsideField(
+        tx as Number,
+        ty as Number,
+        index as Number,
+        count as Number
+    ) as Boolean {
+        var w = System.getDeviceSettings().screenWidth;
+        var h = System.getDeviceSettings().screenHeight;
+
+        if (count == 1) {
+            return true; // Single field occupies the whole screen
+        } else if (count == 2) {
+            // Top half vs Bottom half
+            if (index == 0) {
+                return ty < h / 2.0f;
+            }
+            if (index == 1) {
+                return ty >= h / 2.0f;
+            }
+        } else if (count == 3) {
+            // Vertical thirds
+            var third = h / 3.0f;
+            if (index == 0) {
+                return ty < third;
+            }
+            if (index == 1) {
+                return ty >= third && ty < 2.0f * third;
+            }
+            if (index == 2) {
+                return ty >= 2.0f * third;
+            }
+        } else if (count == 4) {
+            var third = h / 3.0f;
+            if (index == 0) {
+                // Top row
+                return ty < third;
+            } else if (index == 3) {
+                // Bottom row
+                return ty >= 2.0f * third;
+            } else {
+                // Middle row (Split vertically)
+                if (ty >= third && ty < 2.0f * third) {
+                    if (index == 1) {
+                        return tx < w / 2.0f;
+                    } // Middle Left
+                    if (index == 2) {
+                        return tx >= w / 2.0f;
+                    } // Middle Right
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function onKey(keyEvent as WatchUi.KeyEvent) as Boolean {
+        var key = keyEvent.getKey();
+        logT("got key event: " + key);
+
+        if (key == WatchUi.KEY_ENTER) {
+            openTypePicker();
+            return true;
+        }
+
+        return false;
+    }
+
+    // for touch devices this is touching a section on the screen (we want to handle the onTap instead)
+    // for non touch its the 'confirm' button
+    // function onSelect() as Boolean {
+    // }
+
+    function openTypePicker() as Void {
+        var currentType = view.fieldTypes[view.selectedIndex];
+        WatchUi.pushView(
+            new $.EnumMenu("Select Data", method(:getDataTypeStringL), currentType, DATA_TYPE_MAX),
+            new $.EnumDelegate(method(:onTypeSelected), view),
+            WatchUi.SLIDE_IMMEDIATE
+        );
+    }
+
+    // compiler complains it cannot find the global ones
+    // even $.method(:...) does not seem to work
+    public function getDataTypeStringL(value as Number) as ResourceId or String {
+        return getDataTypeString(value);
+    }
+
+    function onTypeSelected(newType as Number) as Void {
+        view.updateSelectedField(newType);
+    }
+
+    function onBack() as Boolean {
+        // This is where you save the "Buffer" back to global settings
+        view.settings.setPageFields(view.pageIndex, view.fieldTypes);
+        pageView.rerender();
+        listView.rerender();
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
+(:settingsView)
+class VisualDataFieldPageLayoutView extends WatchUi.View {
+    var pageIndex as Number;
+    var fieldTypes as Array<Number>;
+    var renderer as BreadcrumbRenderer;
+    var settings as Settings;
+    var activeCount as Number; // Track how many are actually visible
+
+    function initialize(pageIndex as Number, breadcrumbContext as BreadcrumbContext) {
+        View.initialize();
+        me.pageIndex = pageIndex;
+        settings = breadcrumbContext.settings;
+        renderer = breadcrumbContext.breadcrumbRenderer;
+
+        // Get existing fields
+        var existing = settings.getTypesForPage(pageIndex);
+        activeCount = existing.size();
+
+        // Pad to DATAFIELD_MAX_FIELD_SIZE (4)
+        fieldTypes = new [DATAFIELD_MAX_FIELD_SIZE] as Array<Number>;
+        for (var i = 0; i < DATAFIELD_MAX_FIELD_SIZE; i++) {
+            if (i < activeCount) {
+                fieldTypes[i] = existing[i];
+            } else {
+                fieldTypes[i] = DATA_TYPE_NONE;
+            }
+        }
+    }
+
+    function onUpdate(dc as Dc) as Void {
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+        dc.clear();
+
+        // 1. Render Preview
+        var currentTypes = fieldTypes.slice(0, activeCount);
+        renderer.renderDataFieldPageFields(dc, currentTypes, null);
+
+        // 2. Draw Scroll Gauge on the Left
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var r = w / 2 - 5; // Slightly inside the edge
+        var penWidth = 4;
+        dc.setPenWidth(penWidth);
+
+        // Total span of the arc (e.g., 60 degrees total, centered at 180)
+        var totalSpan = 60;
+        var startAngle = 180 + totalSpan / 2; // 210°
+        var endAngle = 180 - totalSpan / 2; // 150°
+
+        // Draw Background (Grey Arc)
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawArc(w / 2, h / 2, r, Graphics.ARC_CLOCKWISE, startAngle, endAngle);
+
+        // Draw Indicator (Blue Arc)
+        // We split the totalSpan into 4 segments
+        var segmentSize = totalSpan / DATAFIELD_MAX_FIELD_SIZE;
+        // Calculate position: activeCount 1 is top, 4 is bottom
+        var indicatorStart =
+            startAngle - (DATAFIELD_MAX_FIELD_SIZE - activeCount) * segmentSize;
+        var indicatorEnd = indicatorStart - segmentSize;
+
+        dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+        dc.drawArc(w / 2, h / 2, r, Graphics.ARC_CLOCKWISE, indicatorStart, indicatorEnd);
+    }
+
+    function updateLayout(newCount as Number) as Void {
+        activeCount = newCount;
+        WatchUi.requestUpdate();
+    }
+}
+
+(:settingsView)
+class VisualDataFieldPageLayoutDelegate extends WatchUi.BehaviorDelegate {
+    private var view as VisualDataFieldPageLayoutView;
+    var pageView as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        view as VisualDataFieldPageLayoutView,
+        pageView as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        BehaviorDelegate.initialize();
+        me.view = view;
+        me.pageView = pageView;
+        me.listView = listView;
+    }
+
+    function onNextPage() as Boolean {
+        var currentCount = view.activeCount;
+        var nextCount = currentCount + 1;
+
+        if (nextCount > DATAFIELD_MAX_FIELD_SIZE) {
+            nextCount = DATAFIELD_MAX_FIELD_SIZE;
+        }
+
+        view.updateLayout(nextCount);
+        return true;
+    }
+
+    function onPreviousPage() as Boolean {
+        var currentCount = view.activeCount;
+        var nextCount = currentCount - 1;
+
+        if (nextCount < 1) {
+            nextCount = 1;
+        }
+
+        view.updateLayout(nextCount);
+        return true;
+    }
+
+    function onSelect() as Boolean {
+        return onBack(); // Save and exit
+    }
+
+    function onBack() as Boolean {
+        var finalFields = view.fieldTypes.slice(0, view.activeCount);
+        view.settings.setPageFields(view.pageIndex, finalFields);
+        pageView.rerender();
+        listView.rerender();
+
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        return true;
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageEditor extends WatchUi.Menu2 {
+    var pageIndex as Number;
+
+    function initialize(index as Number) {
+        Menu2.initialize({ :title => "Page " + index });
+        pageIndex = index;
+        rerender();
+    }
+
+    function rerender() as Void {
+        while (self.deleteItem(0) != null) {
+            // Keep deleting the first item until nothing is left
+        }
+
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+
+        // Fetch the types corresponding to this page from the global array
+        // (You'll need a helper to calculate the offset in the flattened dataFieldPageTypes array)
+        var types = settings.getTypesForPage(pageIndex);
+
+        addItem(new WatchUi.MenuItem("Layout", null, :layout, {}));
+        addItem(new WatchUi.MenuItem("Edit", null, :edit, {}));
+        for (var i = 0; i < types.size(); i++) {
+            addItem(new WatchUi.MenuItem("Field " + i, getDataTypeString(types[i]), i, {}));
+        }
+        if (types.size() < DATAFIELD_MAX_FIELD_SIZE) {
+            addItem(new WatchUi.MenuItem("Add Field", null, :addField, {}));
+        }
+        addItem(new WatchUi.MenuItem("Delete Page", null, :deletePage, {}));
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageListDelegate extends WatchUi.Menu2InputDelegate {
+    var view as SettingsDataFieldPageList;
+
+    function initialize(view as SettingsDataFieldPageList) {
+        WatchUi.Menu2InputDelegate.initialize();
+        me.view = view;
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var id = item.getId();
+
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+
+        if (id == :addPage) {
+            settings.addNewPage();
+            view.rerender(); // make sure the menu updates, we just added a page to it
+        } else {
+            // Push the editor for the selected page index
+            var pageIndex = id as Number;
+            var pageView = new $.SettingsDataFieldPageEditor(pageIndex);
+            WatchUi.pushView(
+                pageView,
+                new $.SettingsDataFieldPageEditorDelegate(pageIndex, pageView, view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        }
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageEditorDelegate extends WatchUi.Menu2InputDelegate {
+    var pageIndex as Number;
+    var fieldIndex as Number;
+    var view as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        pageIndex as Number,
+        view as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        WatchUi.Menu2InputDelegate.initialize();
+        me.pageIndex = pageIndex;
+        fieldIndex = 0;
+        me.view = view;
+        me.listView = listView;
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+
+        var id = item.getId();
+        if (id == :addField) {
+            settings.addNewField(pageIndex);
+            listView.rerender();
+            view.rerender();
+        } else if (id == :layout) {
+            var layoutView = new VisualDataFieldPageLayoutView(pageIndex, _breadcrumbContextLocal);
+            WatchUi.pushView(
+                layoutView,
+                new VisualDataFieldPageLayoutDelegate(layoutView, view, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (id == :edit) {
+            var editView = new VisualDataFieldPageEditorView(pageIndex, _breadcrumbContextLocal);
+            WatchUi.pushView(
+                editView,
+                new VisualDataFieldPageEditorDelegate(editView, view, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (id == :deletePage) {
+            var dialog = new WatchUi.Confirmation("Delete page?");
+            WatchUi.pushView(
+                dialog,
+                new SettingsDataFieldPageRemoveDelegate(pageIndex, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else {
+            fieldIndex = id as Number;
+
+            // Push a sub-menu to choose between Edit or Remove
+            var fieldActions = new FieldAction(pageIndex, fieldIndex);
+            WatchUi.pushView(
+                fieldActions,
+                new FieldActionDelegate(pageIndex, fieldIndex, view, listView, fieldActions),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        }
+    }
+}
+
+(:settingsView)
+class FieldAction extends WatchUi.Menu2 {
+    var pageIndex as Number;
+    var fieldIndex as Number;
+
+    function initialize(pageIndex as Number, fieldIndex as Number) {
+        Menu2.initialize({ :title => "Page " + pageIndex + " Field " + fieldIndex });
+        me.pageIndex = pageIndex;
+        me.fieldIndex = fieldIndex;
+        addItem(new WatchUi.MenuItem("Type", null, :edit, {}));
+        addItem(new WatchUi.MenuItem("Remove Field", null, :remove, {}));
+        rerender();
+    }
+
+    function rerender() as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+        var types = settings.getTypesForPage(pageIndex);
+        safeSetSubLabel(me, :edit, getDataTypeString(types[fieldIndex]));
+    }
+}
+
+(:settingsView)
+class FieldActionDelegate extends WatchUi.Menu2InputDelegate {
+    var pageIndex as Number;
+    var fieldIndex as Number;
+    var view as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+    var fieldActions as FieldAction;
+
+    function initialize(
+        pIdx as Number,
+        fIdx as Number,
+        v as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList,
+        fieldActions as FieldAction
+    ) {
+        WatchUi.Menu2InputDelegate.initialize();
+        pageIndex = pIdx;
+        fieldIndex = fIdx;
+        view = v;
+        me.listView = listView;
+        me.fieldActions = fieldActions;
+    }
+
+    // compiler complains it cannot find the global ones
+    // even $.method(:...) does not seem to work
+    public function getDataTypeStringL(value as Number) as ResourceId or String {
+        return getDataTypeString(value);
+    }
+
+    public function onSelect(item as WatchUi.MenuItem) as Void {
+        var id = item.getId();
+        if (id == :edit) {
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal == null) {
+                breadcrumbContextWasNull();
+                return;
+            }
+            var settings = _breadcrumbContextLocal.settings;
+            WatchUi.pushView(
+                new $.EnumMenu(
+                    "Select Data",
+                    method(:getDataTypeStringL),
+                    settings.getFieldType(pageIndex, fieldIndex),
+                    DATA_TYPE_MAX
+                ),
+                new $.EnumDelegate(method(:setDataFieldPageType), view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (id == :remove) {
+            var dialog = new WatchUi.Confirmation("Remove field?");
+            WatchUi.pushView(
+                dialog,
+                new FieldRemoveDelegate(pageIndex, fieldIndex, view, listView),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        }
+    }
+
+    public function setDataFieldPageType(newType as Number) as Void {
+        var _breadcrumbContextLocal = $._breadcrumbContext;
+        if (_breadcrumbContextLocal == null) {
+            breadcrumbContextWasNull();
+            return;
+        }
+        var settings = _breadcrumbContextLocal.settings;
+        settings.setPageFieldType(pageIndex, fieldIndex, newType);
+        fieldActions.rerender();
+    }
+}
+
+(:settingsView)
+class FieldRemoveDelegate extends WatchUi.ConfirmationDelegate {
+    var pageIndex as Number;
+    var fieldIndex as Number;
+    var view as SettingsDataFieldPageEditor;
+    var listView as SettingsDataFieldPageList;
+
+    function initialize(
+        pIdx as Number,
+        fIdx as Number,
+        v as SettingsDataFieldPageEditor,
+        listView as SettingsDataFieldPageList
+    ) {
+        WatchUi.ConfirmationDelegate.initialize();
+        pageIndex = pIdx;
+        fieldIndex = fIdx;
+        view = v;
+        me.listView = listView;
+    }
+
+    function onResponse(response as Confirm) as Boolean {
+        if (response == WatchUi.CONFIRM_YES) {
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal == null) {
+                breadcrumbContextWasNull();
+                return false;
+            }
+            var settings = _breadcrumbContextLocal.settings;
+            settings.removeField(pageIndex, fieldIndex);
+            listView.rerender();
+            view.rerender();
+            // Pop the action menu and the confirmation dialog
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+        }
+        return true;
+    }
+}
+
+(:settingsView)
+class SettingsDataFieldPageRemoveDelegate extends WatchUi.ConfirmationDelegate {
+    private var pageIndex as Number;
+    private var view as SettingsDataFieldPageList;
+
+    function initialize(pageIndex as Number, view as SettingsDataFieldPageList) {
+        WatchUi.ConfirmationDelegate.initialize();
+        me.pageIndex = pageIndex;
+        me.view = view;
+    }
+
+    function onResponse(response as Confirm) as Boolean {
+        if (response == WatchUi.CONFIRM_YES) {
+            var _breadcrumbContextLocal = $._breadcrumbContext;
+            if (_breadcrumbContextLocal == null) {
+                breadcrumbContextWasNull();
+                return false;
+            }
+            var settings = _breadcrumbContextLocal.settings;
+            settings.removePage(pageIndex);
+            view.rerender(); // make sure the menu updates, we just removed a page from it
+            // Pop the editor view now that the data is gone
+            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+        }
+
+        return true; // we always handle it
+    }
+}
+
+(:settingsView)
 class SettingsDataField extends WatchUi.Menu2 {
     function initialize() {
         Menu2.initialize({ :title => Rez.Strings.dataFieldSettingsTitle });
@@ -583,6 +1258,15 @@ class SettingsDataField extends WatchUi.Menu2 {
                 {}
             )
         );
+        addItem(
+            new WatchUi.MenuItem(
+                Rez.Strings.autoLapDistanceMTitle,
+                null,
+                :settingsDataFieldAutoLapDistanceM,
+                {}
+            )
+        );
+        addItem(new WatchUi.MenuItem("Data Pages", null, :settingsDataFieldPages, {}));
         rerender();
     }
 
@@ -598,6 +1282,11 @@ class SettingsDataField extends WatchUi.Menu2 {
             me,
             :settingsDataFieldTextSize,
             getFontSizeString(settings.dataFieldTextSize)
+        );
+        safeSetSubLabel(
+            me,
+            :settingsDataFieldAutoLapDistanceM,
+            settings.autoLapDistanceM <= 0 ? "N/A" : settings.autoLapDistanceM.toString() + "m"
         );
         safeSetSubLabel(
             me,
@@ -1270,6 +1959,24 @@ class SettingsColours extends WatchUi.Menu2 {
         );
         addItem(
             new WatchUi.IconMenuItem(
+                Rez.Strings.dataFieldPageColour,
+                null,
+                :settingsColoursDataFieldPageColour,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
+                Rez.Strings.dataFieldPageColour2,
+                null,
+                :settingsColoursDataFieldPageColour2,
+                new ColourIcon(Graphics.COLOR_BLACK),
+                {}
+            )
+        );
+        addItem(
+            new WatchUi.IconMenuItem(
                 Rez.Strings.debugColour,
                 null,
                 :settingsColoursDebugColour,
@@ -1302,6 +2009,16 @@ class SettingsColours extends WatchUi.Menu2 {
             new ColourIcon(settings.normalModeColour)
         );
         safeSetIcon(me, :settingsColoursUiColour, new ColourIcon(settings.uiColour));
+        safeSetIcon(
+            me,
+            :settingsColoursDataFieldPageColour,
+            new ColourIcon(settings.dataFieldPageColour)
+        );
+        safeSetIcon(
+            me,
+            :settingsColoursDataFieldPageColour2,
+            new ColourIcon(settings.dataFieldPageColour2)
+        );
         safeSetIcon(me, :settingsColoursDebugColour, new ColourIcon(settings.debugColour));
     }
 }
@@ -1986,13 +2703,23 @@ class SettingsGeneralDelegate extends WatchUi.Menu2InputDelegate {
                 )
             );
         } else if (itemId == :settingsGeneralMode) {
+            var enumView = new EnumMenu(
+                Rez.Strings.modeTitle,
+                method(:getModeStringL),
+                settings.mode,
+                MODE_MAX
+            );
+
+            // Add items to the end of the list, maybe we should make this generic?
+            for (var i = 0; i < settings.dataFieldPageCounts.size(); i++) {
+                var modeId = DATA_PAGE_BASE_ID + i;
+                var isSelected = modeId == settings.mode;
+                enumView.addItem(
+                    new MenuItem(getModeStringL(modeId), isSelected ? "Selected" : "", modeId, {})
+                );
+            }
             WatchUi.pushView(
-                new EnumMenu(
-                    Rez.Strings.modeTitle,
-                    method(:getModeStringL),
-                    settings.mode,
-                    MODE_MAX
-                ),
+                enumView,
                 new $.EnumDelegate(settings.method(:setMode), view),
                 WatchUi.SLIDE_IMMEDIATE
             );
@@ -2200,6 +2927,21 @@ class SettingsDataFieldDelegate extends WatchUi.Menu2InputDelegate {
                     5
                 ),
                 new $.EnumDelegate(settings.method(:setDataFieldTextSize), view),
+                WatchUi.SLIDE_IMMEDIATE
+            );
+        } else if (itemId == :settingsDataFieldAutoLapDistanceM) {
+            startPicker(
+                new SettingsNumberPicker(
+                    settings.method(:setAutoLapDistanceM),
+                    settings.autoLapDistanceM,
+                    view
+                )
+            );
+        } else if (itemId == :settingsDataFieldPages) {
+            var view = new $.SettingsDataFieldPageList();
+            WatchUi.pushView(
+                view,
+                new $.SettingsDataFieldPageListDelegate(view),
                 WatchUi.SLIDE_IMMEDIATE
             );
         }
@@ -2906,6 +3648,24 @@ class SettingsColoursDelegate extends WatchUi.Menu2InputDelegate {
                 new SettingsColourPickerTransparency(
                     settings.method(:setUiColour),
                     settings.uiColour,
+                    view,
+                    false
+                )
+            );
+        } else if (itemId == :settingsColoursDataFieldPageColour) {
+            startPicker(
+                new SettingsColourPickerTransparency(
+                    settings.method(:setDataFieldPageColour),
+                    settings.dataFieldPageColour,
+                    view,
+                    false
+                )
+            );
+        } else if (itemId == :settingsColoursDataFieldPageColour2) {
+            startPicker(
+                new SettingsColourPickerTransparency(
+                    settings.method(:setDataFieldPageColour2),
+                    settings.dataFieldPageColour2,
                     view,
                     false
                 )
