@@ -225,22 +225,22 @@ function getDataTypeString(type as Number) as ResourceId or String {
             return Rez.Strings.dataTypeCurPace;
         case DATA_TYPE_WALL_CLOCK:
             return Rez.Strings.dataTypeWallClock;
-        case DATA_TYPE_CURRENT_LAP_TIME:
-            return Rez.Strings.dataTypeCurLapTime;
-        case DATA_TYPE_CURRENT_LAP_PACE:
-            return Rez.Strings.dataTypeCurLapPace;
-        case DATA_TYPE_LAST_LAP_TIME:
-            return Rez.Strings.dataTypeLastLapTime;
-        case DATA_TYPE_LAST_LAP_PACE:
-            return Rez.Strings.dataTypeLastLapPace;
-        case DATA_TYPE_GRADE:
-            return Rez.Strings.dataTypeGrade;
+        // case DATA_TYPE_CURRENT_LAP_TIME:
+        //     return Rez.Strings.dataTypeCurLapTime;
+        // case DATA_TYPE_CURRENT_LAP_PACE:
+        //     return Rez.Strings.dataTypeCurLapPace;
+        // case DATA_TYPE_LAST_LAP_TIME:
+        //     return Rez.Strings.dataTypeLastLapTime;
+        // case DATA_TYPE_LAST_LAP_PACE:
+        //     return Rez.Strings.dataTypeLastLapPace;
+        // case DATA_TYPE_GRADE:
+        //     return Rez.Strings.dataTypeGrade;
         case DATA_TYPE_HEADING:
             return Rez.Strings.dataTypeHeading;
         case DATA_TYPE_GPS_ACCURACY:
             return Rez.Strings.dataTypeGPSAccuracy;
-        case DATA_TYPE_CURRENT_LAP_DISTANCE:
-            return Rez.Strings.dataTypeCurLapDist;
+        // case DATA_TYPE_CURRENT_LAP_DISTANCE:
+        //     return Rez.Strings.dataTypeCurLapDist;
         default:
             return "";
     }
@@ -857,8 +857,7 @@ class VisualDataFieldPageLayoutView extends WatchUi.View {
         // We split the totalSpan into 4 segments
         var segmentSize = totalSpan / DATAFIELD_MAX_FIELD_SIZE;
         // Calculate position: activeCount 1 is top, 4 is bottom
-        var indicatorStart =
-            startAngle - (DATAFIELD_MAX_FIELD_SIZE - activeCount) * segmentSize;
+        var indicatorStart = startAngle - (DATAFIELD_MAX_FIELD_SIZE - activeCount) * segmentSize;
         var indicatorEnd = indicatorStart - segmentSize;
 
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
@@ -1258,14 +1257,6 @@ class SettingsDataField extends WatchUi.Menu2 {
                 {}
             )
         );
-        addItem(
-            new WatchUi.MenuItem(
-                Rez.Strings.autoLapDistanceMTitle,
-                null,
-                :settingsDataFieldAutoLapDistanceM,
-                {}
-            )
-        );
         addItem(new WatchUi.MenuItem("Data Pages", null, :settingsDataFieldPages, {}));
         rerender();
     }
@@ -1282,11 +1273,6 @@ class SettingsDataField extends WatchUi.Menu2 {
             me,
             :settingsDataFieldTextSize,
             getFontSizeString(settings.dataFieldTextSize)
-        );
-        safeSetSubLabel(
-            me,
-            :settingsDataFieldAutoLapDistanceM,
-            settings.autoLapDistanceM <= 0 ? "N/A" : settings.autoLapDistanceM.toString() + "m"
         );
         safeSetSubLabel(
             me,
@@ -2928,14 +2914,6 @@ class SettingsDataFieldDelegate extends WatchUi.Menu2InputDelegate {
                 ),
                 new $.EnumDelegate(settings.method(:setDataFieldTextSize), view),
                 WatchUi.SLIDE_IMMEDIATE
-            );
-        } else if (itemId == :settingsDataFieldAutoLapDistanceM) {
-            startPicker(
-                new SettingsNumberPicker(
-                    settings.method(:setAutoLapDistanceM),
-                    settings.autoLapDistanceM,
-                    view
-                )
             );
         } else if (itemId == :settingsDataFieldPages) {
             var view = new $.SettingsDataFieldPageList();

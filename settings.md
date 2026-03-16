@@ -4,7 +4,7 @@ If enabling map tiles or trying to send routes to the watch app you will require
 If you just wish to use the breadcrumb track feature (a trail of your current track), it can be used without any phone connection.  
 Map support can be enabled without the companion app, but the [garmin connect app](https://play.google.com/store/apps/details?id=com.garmin.android.apps.connectmobile&hl=en_AU) must still be installed, and an active bluetooth connection maintained.
 
-If launched from a glance view the app will not remain running unless an activity is started, or the user continuously interacts with the app. Please note this is a garmin limitation that I cannot control https://forums.garmin.com/developer/connect-iq/f/discussion/402551/app-exits-when-started-with-glance-view.
+If launched from a glance view the app will not remain running unless the user continuously interacts with the app. Please note this is a garmin limitation that I cannot control https://forums.garmin.com/developer/connect-iq/f/discussion/402551/app-exits-when-started-with-glance-view.
 
 ---
 
@@ -41,12 +41,6 @@ The connectiq store does not work for all settings (namely route configuration),
 Please note: The nested garmin settings have a strange behaviour of the app is not running when the settings are saved. Please ensure the datafields in running in the foreground to have the best experience when editing the settings through garmin connect iq see detailed note at: https://github.com/pauljohnston2025/breadcrumb-garmin/issues/6#issuecomment-3315417515
 
 ---
-
-# Activity Type
-
-On watch and companion ap this is split into categories, but garmin settings do not allow this level of control, so you get one giant list.
-
-The activity type of the app can be changed whilst the activity session is running, this lets users switch between multisport type activities. You can also discard the previous activity if it was started in error. You need to manually start the new activity once the new type is picked, this is so users can lock in the category and type before starting the new activity session. The same thing will happen if the activity type is changed from garmin settings or companion app, you will be prompted what to do with old activity session.
 
 # General
 
@@ -288,11 +282,6 @@ The currently supported fields are:
 * Avg Pace - Average pace
 * Pace - Current pace
 * Time of Day - Current wall clock time
-* Cur. Lap Time - Duration of the current lap
-* Cur. Lap Pace - Average pace of the current lap
-* Last Lap Time - Duration of the previous completed lap
-* Last Lap Pace - Average pace of the previous completed lap
-* Grade - Current incline or decline percentage
 * Heading - Current compass direction of travel
 * GPS Accuracy - Current strength of satellite signal
 

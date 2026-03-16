@@ -25,9 +25,6 @@ class BreadcrumbRenderer {
     var settings as Settings;
     var _cachedValues as CachedValues;
     private var _distanceAccumulator as Float = 0.0f;
-    var _lastGradeAlt as Float = 0.0f;
-    var _lastGradeDist as Float = 0.0f;
-    var _lastGrade as Float = 0.0f;
 
     // units in mm (float/int)
     const SCALE_KEYS as Array<Number> = [
@@ -388,61 +385,6 @@ class BreadcrumbRenderer {
                 timeStr = Lang.format("$1$:$2$", [hour, clockTime.min.format("%02d")]);
             }
             renderTextMetric(dc, x, y, timeStr);
-        } else if (type == DATA_TYPE_CURRENT_LAP_TIME) {
-            if (info.elapsedTime != null) {
-                var lapTime = (info.elapsedTime as Number) - _cachedValues._lapStartTime;
-                renderTimeMetric(dc, x, y, lapTime);
-            } else {
-                renderTimeMetric(dc, x, y, null);
-            }
-        } else if (type == DATA_TYPE_CURRENT_LAP_PACE) {
-            if (info.elapsedTime != null && info.elapsedDistance != null) {
-                var lapTime = (info.elapsedTime as Number) - _cachedValues._lapStartTime;
-                var lapDist = (info.elapsedDistance as Float) - _cachedValues._lapStartDistance;
-
-                // Avoid division by zero and ensure enough data for a meaningful pace
-                if (lapDist > 1.0f) {
-                    var speedMps = lapDist / (lapTime / 1000.0f);
-                    renderPaceMetric(dc, x, y, speedMps);
-                } else {
-                    renderPaceMetric(dc, x, y, null);
-                }
-            } else {
-                renderPaceMetric(dc, x, y, null);
-            }
-        } else if (type == DATA_TYPE_LAST_LAP_TIME) {
-            // Pass the duration to your existing render function
-            renderTimeMetric(dc, x, y, _cachedValues._lastLapDuration);
-        } else if (type == DATA_TYPE_LAST_LAP_PACE) {
-            if (_cachedValues._lastLapDistance > 0) {
-                var speedMps =
-                    _cachedValues._lastLapDistance / (_cachedValues._lastLapDuration / 1000.0f);
-                renderPaceMetric(dc, x, y, speedMps);
-            } else {
-                renderPaceMetric(dc, x, y, null);
-            }
-        } else if (type == DATA_TYPE_GRADE) {
-            if (info.altitude != null && info.elapsedDistance != null) {
-                var currentAlt = info.altitude as Float;
-                var currentDist = info.elapsedDistance as Float;
-
-                // Only update the calculation if we have traveled 10 meters
-                // since the last calculation to smooth out noise
-                if (currentDist - _lastGradeDist > 10.0f) {
-                    var deltaAlt = currentAlt - _lastGradeAlt;
-                    var deltaDist = currentDist - _lastGradeDist;
-
-                    // Calculate grade as (rise / run) * 100
-                    _lastGrade = (deltaAlt / deltaDist) * 100.0f;
-
-                    // Update the markers for the next calculation
-                    _lastGradeAlt = currentAlt;
-                    _lastGradeDist = currentDist;
-                }
-                renderTextMetric(dc, x, y, _lastGrade.format("%.1f") + "%");
-            } else {
-                renderTextMetric(dc, x, y, "---");
-            }
         } else if (type == DATA_TYPE_HEADING) {
             var degrees = Math.toDegrees(_cachedValues.rotationRad as Float);
             if (degrees < 0) {
@@ -486,13 +428,6 @@ class BreadcrumbRenderer {
                 label = "Good";
             }
             renderTextMetric(dc, x, y, label);
-        } else if (type == DATA_TYPE_CURRENT_LAP_DISTANCE) {
-            if (info.elapsedDistance != null) {
-                var lapDist = (info.elapsedDistance as Float) - _cachedValues._lapStartDistance;
-                renderDistanceMetric(dc, x, y, lapDist);
-            } else {
-                renderDistanceMetric(dc, x, y, null);
-            }
         } else {
             renderTextMetric(dc, x, y, "INVALID");
         }

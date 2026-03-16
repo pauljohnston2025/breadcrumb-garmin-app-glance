@@ -49,14 +49,15 @@ enum /*DataType*/ {
     DATA_TYPE_AVERAGE_PACE = 11,
     DATA_TYPE_CURRENT_PACE = 12,
     DATA_TYPE_WALL_CLOCK = 13,
-    DATA_TYPE_CURRENT_LAP_TIME = 14,
-    DATA_TYPE_CURRENT_LAP_PACE = 15,
-    DATA_TYPE_LAST_LAP_TIME = 16,
-    DATA_TYPE_LAST_LAP_PACE = 17,
-    DATA_TYPE_GRADE = 18,
+    // DATA_TYPE_CURRENT_LAP_TIME = 14,
+    // DATA_TYPE_CURRENT_LAP_PACE = 15,
+    // DATA_TYPE_LAST_LAP_TIME = 16,
+    // DATA_TYPE_LAST_LAP_PACE = 17,
+    // DATA_TYPE_GRADE = 18,
     DATA_TYPE_HEADING = 19,
     DATA_TYPE_GPS_ACCURACY = 20,
-    DATA_TYPE_CURRENT_LAP_DISTANCE = 21,
+    // DATA_TYPE_CURRENT_LAP_DISTANCE = 21,
+    DATA_TYPE_CURRENT_PLACEHOLDER = 21, // ensures max is set correctly (glance does not support lap based metrics)
 
     // other metrics that might be good
     // most of these are inbuilt garmin ones (so could easily be added to a second data screen)
@@ -533,7 +534,6 @@ class Settings {
     // dataFieldPageTypes is the types of datafields on the pages eg.
     // 0,1,1,0 to show DATA_TYPE_NONE, DATA_TYPE_SCALE, DATA_TYPE_ALTITUDE and DATA_TYPE_NONE the number of  dataFieldPageTypes needs to match the number of dataFieldPageCounts added together
     var dataFieldPageTypes as Array<Number> = [];
-    var autoLapDistanceM as Number = -1;
     var minTrackPointDistanceM as Number = 5; // minimum distance between 2 track points
     var trackPointReductionMethod as Number = TRACK_POINT_REDUCTION_METHOD_DOWNSAMPLE;
     var uiMode as Number = UI_MODE_SHOW_ALL;
@@ -1115,12 +1115,6 @@ class Settings {
     function setBottomDataType(value as Number) as Void {
         bottomDataType = value;
         setValue("bottomDataType", bottomDataType);
-    }
-
-    (:settingsView)
-    function setAutoLapDistanceM(value as Number) as Void {
-        autoLapDistanceM = value;
-        setValue("autoLapDistanceM", autoLapDistanceM);
     }
 
     (:settingsView)
@@ -2953,7 +2947,6 @@ class Settings {
                 "useTrackAsHeadingSpeedMPS" => useTrackAsHeadingSpeedMPS,
                 "topDataType" => topDataType,
                 "bottomDataType" => bottomDataType,
-                "autoLapDistanceM" => autoLapDistanceM,
                 "minTrackPointDistanceM" => minTrackPointDistanceM,
                 "trackPointReductionMethod" => trackPointReductionMethod,
                 "dataFieldTextSize" => dataFieldTextSize,
@@ -3144,7 +3137,6 @@ class Settings {
         );
         topDataType = parseNumber("topDataType", topDataType);
         bottomDataType = parseNumber("bottomDataType", bottomDataType);
-        autoLapDistanceM = parseNumber("autoLapDistanceM", autoLapDistanceM);
         minTrackPointDistanceM = parseNumber("minTrackPointDistanceM", minTrackPointDistanceM);
         trackPointReductionMethod = parseNumber(
             "trackPointReductionMethod",

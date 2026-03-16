@@ -245,14 +245,6 @@ class BreadcrumbView extends WatchUi.View {
         updateScratchPadBitmap();
     }
 
-    function onTimerStart() as Void {
-        _breadcrumbContext.track.onStartResume();
-    }
-
-    function onTimerStop() as Void {
-        _breadcrumbContext.track.onTimerStop();
-    }
-
     function compute(info as Activity.Info) as Void {
         try {
             actualCompute(info);
@@ -591,14 +583,6 @@ class BreadcrumbView extends WatchUi.View {
             } else if (quality == Position.QUALITY_LAST_KNOWN) {
                 // Allow QUALITY_POOR, its still got a fix of some sort
                 qualityMsg = "~GPS~";
-            }
-
-            var sessionLocal = _breadcrumbContext.session;
-            if (sessionLocal == null || !sessionLocal.isRecording()) {
-                if (qualityMsg.length() > 0) {
-                    qualityMsg += "\n";
-                }
-                qualityMsg += "Start Activity";
             }
 
             if (qualityMsg.length() > 0) {

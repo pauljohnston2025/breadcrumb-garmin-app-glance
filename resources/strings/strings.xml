@@ -15,7 +15,6 @@
     <string id="useTrackAsHeadingSpeedMPSTitle">Use Track As Heading Speed (m/s)</string>
     <string id="topDataTypeTitle">Top Data Field</string>
     <string id="bottomDataTypeTitle">Bottom Data Field</string>
-    <string id="autoLapDistanceMTitle">Auto Lap Distance (m)</string>
     <string id="tileLayerMaxTitle">Tile Layer Max</string>
     <string id="tileLayerMaxPrompt">15</string>
     <string id="tileLayerMinTitle">Tile Layer Min</string>
@@ -213,14 +212,14 @@
     <string id="dataTypeAvgPace">Avg Pace</string>
     <string id="dataTypeCurPace">Pace</string>
     <string id="dataTypeWallClock">Time of Day</string>
-    <string id="dataTypeCurLapTime">Cur. Lap Time</string>
+    <!-- <string id="dataTypeCurLapTime">Cur. Lap Time</string>
     <string id="dataTypeCurLapPace">Cur. Lap Pace</string>
     <string id="dataTypeLastLapTime">Last Lap Time</string>
     <string id="dataTypeLastLapPace">Last Lap Pace</string>
-    <string id="dataTypeGrade">Grade</string>
+    <string id="dataTypeGrade">Grade</string> -->
     <string id="dataTypeHeading">Heading</string>
     <string id="dataTypeGPSAccuracy">GPS Accuracy</string>
-    <string id="dataTypeCurLapDist">Cur. Lap Dist.</string>
+    <!-- <string id="dataTypeCurLapDist">Cur. Lap Dist.</string> -->
 
     <string id="dataFieldTextSizeTitle">Data Field Text Size</string>
     <string id="dataFieldPageCountsTitle">Data Field Page Counts</string>

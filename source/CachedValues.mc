@@ -191,27 +191,6 @@ class CachedValues {
     (:storage)
     var seedingLastTileY as Number = 0;
 
-    var _lapStartTime as Number = 0;
-    var _lapStartDistance as Float = 0f;
-    var _lastLapDuration as Number = 0;
-    var _lastLapDistance as Float = 0f;
-
-    function onTimerLap() as Void {
-        var info = Activity.getActivityInfo();
-        if (info != null) {
-            onTimerLapInner(info);
-        }
-    }
-
-    function onTimerLapInner(info as Activity.Info) as Void {
-        if (info.elapsedTime != null && info.elapsedDistance != null) {
-            _lastLapDuration = (info.elapsedTime as Number) - _lapStartTime;
-            _lastLapDistance = (info.elapsedDistance as Float) - _lapStartDistance;
-            _lapStartTime = info.elapsedTime as Number;
-            _lapStartDistance = info.elapsedDistance as Float;
-        }
-    }
-
     function atMinTileLayer() as Boolean {
         return tileZ == _settings.tileLayerMin;
     }
@@ -532,16 +511,6 @@ class CachedValues {
         var _elapsedDistance = activityInfo.elapsedDistance;
         if (_elapsedDistance != null) {
             elapsedDistanceM = _elapsedDistance;
-
-            // Auto-lap logic: Check if current distance since last lap exceeds threshold
-            // Replace 'AUTO_LAP_THRESHOLD_METERS' with your setting (e.g., 1000f for 1km)
-            if (
-                _settings.autoLapDistanceM > 0 &&
-                _elapsedDistance - _lapStartDistance >= _settings.autoLapDistanceM
-            ) {
-                onTimerLapInner(activityInfo);
-                showLapMessage(me, _settings, true);
-            }
         }
 
         // we are either in 2 cases
