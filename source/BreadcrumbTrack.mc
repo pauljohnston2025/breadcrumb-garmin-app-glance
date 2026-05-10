@@ -85,7 +85,13 @@ class BreadcrumbTrack {
     var seenStartupPoints as Number = 0;
     var possibleBadPointsAdded as Number = 0;
     var inRestartMode as Boolean = true;
-    var timerStopped as Boolean = true;
+    // In the apps we want the timer running as soon as its opened, 
+    // that way we get the users location before the activity starts.
+    // This is not a problem for data fields, as it only shows the view 
+    // once the activity has began (or during the setup stage).
+    // Datafields also need to start as timerStopped=true, because the datefield is 
+    // launched before the activity starts (whilst on the "start activity" screen).
+    var timerStopped as Boolean = false; 
     var minDistanceMScaled as Float = 5f; // SCALED
     var maxDistanceMScaled as Float = STABILITY_MAX_DISTANCE_M.toFloat(); // SCALED
 
