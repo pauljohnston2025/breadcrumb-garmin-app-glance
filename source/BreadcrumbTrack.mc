@@ -85,13 +85,6 @@ class BreadcrumbTrack {
     var seenStartupPoints as Number = 0;
     var possibleBadPointsAdded as Number = 0;
     var inRestartMode as Boolean = true;
-    // In the apps we want the timer running as soon as its opened, 
-    // that way we get the users location before the activity starts.
-    // This is not a problem for data fields, as it only shows the view 
-    // once the activity has began (or during the setup stage).
-    // Datafields also need to start as timerStopped=true, because the datefield is 
-    // launched before the activity starts (whilst on the "start activity" screen).
-    var timerStopped as Boolean = false; 
     var minDistanceMScaled as Float = 5f; // SCALED
     var maxDistanceMScaled as Float = STABILITY_MAX_DISTANCE_M.toFloat(); // SCALED
 
@@ -424,7 +417,6 @@ class BreadcrumbTrack {
         elevationMin = FLOAT_MAX;
         elevationMax = FLOAT_MIN;
         _neverStarted = false;
-        timerStopped = false;
         onStartResume();
     }
 
@@ -438,11 +430,6 @@ class BreadcrumbTrack {
         seenStartupPoints = 0;
         possibleBadPointsAdded = 0;
         inRestartMode = true;
-        timerStopped = false;
-    }
-
-    function onTimerStop() as Void {
-        timerStopped = true;
     }
 
     function handlePointAddStartup(newPoint as RectangularPoint) as [Boolean, Boolean] {
@@ -1073,10 +1060,6 @@ class BreadcrumbTrack {
 
     // returns [if a new point was added to the track, if a complex operation occurred]
     function onActivityInfo(newScaledPoint as RectangularPoint) as [Boolean, Boolean] {
-        if (timerStopped) {
-            // we are paused, do not add points or fire any alert logic
-            return [false, false];
-        }
         // todo only call this when a point is added (some points are skipped on smaller distances)
         // _breadcrumbContext.mapRenderer.loadMapTilesForPosition(newPoint, _breadcrumbContext.breadcrumbRenderer._currentScale);
 
